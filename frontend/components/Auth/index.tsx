@@ -1,0 +1,5 @@
+export { default as LoginAuth } from '@/components/Auth/LoginAuth'
+export { default as SignUpAuth } from '@/components/Auth/SignUpAuth'
+export * from '@/components/Auth/VerifyEmailAuth'
+export * from '@/components/Auth/ForgotPasswordAuth'
+export * from '@/components/Auth/ResetPasswordAuth'

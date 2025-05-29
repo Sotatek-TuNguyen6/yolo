@@ -1,0 +1,250 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*:focus {
+   outline: none;
+}
+
+body {
+   font-family: 'Open Sans', sans-serif;
+}
+
+html {
+   scroll-behavior: smooth;
+}
+
+input {
+   --tw-ring-shadow: 0 0 #000 !important;
+   --tw-ring-offset-width: 0px !important;
+}
+
+input[type='range']::-webkit-slider-thumb {
+   @apply bg-secondary-dark;
+}
+
+textarea {
+   --tw-ring-shadow: 0 0 #000 !important;
+}
+
+video {
+   outline: none;
+   border: none;
+}
+
+p {
+   @apply leading-normal;
+}
+
+.btn {
+   @apply py-2 px-4 rounded text-white inline-flex justify-center items-center bg-secondary-dark hover:bg-secondary-darker ease-in-out duration-200;
+}
+
+.btn-cancel {
+   @apply !bg-transparent border rounded border-gray-border w-full flex-1 !text-gray-darker font-semibold uppercase hover:!bg-gray-light-border;
+}
+
+.disabled-btn {
+   @apply disabled:!bg-gray-light-border disabled:!text-white disabled:hover:!bg-gray-light-border disabled:cursor-not-allowed;
+}
+
+.disabled-btn-submit {
+   @apply disabled:!bg-secondary-light disabled:hover:!bg-secondary-light disabled:cursor-not-allowed;
+}
+
+.disabled-btn-primary-submit {
+   @apply disabled:!bg-primary-lighter disabled:hover:!bg-primary-lighter disabled:cursor-not-allowed;
+}
+
+.disabled-input {
+   @apply disabled:cursor-not-allowed disabled:text-gray-light;
+}
+
+.duration-common {
+   @apply duration-200 ease-in-out;
+}
+
+.section {
+   @apply pt-4 pb-4 mt-4 mb-2;
+}
+
+.title-home {
+   @apply font-semibold text-primary;
+}
+
+.table-purchase thead th {
+   @apply text-sm font-semibold px-4 py-2.5 text-left;
+}
+
+.purchase-td {
+   @apply font-normal text-sm p-4 text-left;
+}
+
+/* HEADING */
+
+.heading-1 {
+   @apply text-5xl font-bold text-gray-800 text-center;
+}
+
+.heading-2 {
+   @apply text-4xl font-bold text-gray-800 text-center;
+}
+
+.heading-3 {
+   @apply text-3xl font-bold text-gray-800 text-center;
+}
+
+.heading-4 {
+   @apply text-2xl font-bold text-gray-800 text-center;
+}
+
+.heading-5 {
+   @apply text-xl font-bold text-gray-800 text-center;
+}
+
+.img {
+   @apply object-cover rounded;
+}
+
+.d-flex {
+   @apply flex justify-center items-center;
+}
+
+.logo {
+   @apply font-bold text-2xl text-gray-800;
+}
+
+.nav-link {
+   @apply text-primary font-semibold;
+}
+
+.list-description p {
+   @apply relative text-sm text-black pl-6 leading-6 my-1;
+}
+
+.list-content p {
+   @apply font-medium text-sapo mb-4;
+}
+
+.list-content p img {
+   border-radius: 4px;
+}
+
+.list-description p::before {
+   @apply content-['•'] absolute d-flex top-0 left-0 w-6 h-6;
+}
+
+.item-ingredient {
+   @apply text-description mb-2 list-disc;
+}
+
+.input-rating:not(:checked) ~ label:hover ~ label > svg {
+   @apply text-transparent stroke-secondary-dark;
+}
+
+.input-rating + label > svg {
+   transition: 0.1s ease-in-out;
+}
+
+/* SWIPER */
+
+span.swiper-pagination-bullet.swiper-pagination-bullet-active {
+   @apply bg-secondary;
+}
+
+/* Track Scroll */
+
+::-webkit-scrollbar {
+   @apply w-2;
+}
+
+::-webkit-scrollbar-track {
+   @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+   @apply bg-tag rounded-xl;
+}
+
+.filter-scroll::-webkit-scrollbar {
+   @apply w-[6px];
+}
+
+.filter-scroll::-webkit-scrollbar-track {
+   @apply bg-gray-border rounded;
+}
+
+.filter-scroll::-webkit-scrollbar-thumb {
+   @apply bg-tag;
+}
+
+/* Loading */
+.spinner {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+   height: 100%;
+   width: 100%;
+}
+
+.svg-icon:hover path {
+   fill: #ee4d2d;
+}
+
+/* loading facebook */
+
+.loading-facebook {
+   @apply w-2 h-10 rounded block my-5 mx-auto relative bg-secondary text-white animate-animateLoader;
+}
+
+.loading-facebook::after,
+.loading-facebook::before {
+   content: '';
+   width: 8px;
+   height: 40px;
+   border-radius: 4px;
+   background: #fcaf17;
+   position: absolute;
+   top: 50%;
+   transform: translateY(-50%);
+   left: 20px;
+   box-sizing: border-box;
+   animation: animloader 0.3s 0.45s linear infinite alternate;
+}
+.loading-facebook::before {
+   left: -20px;
+   animation-delay: 0s;
+}
+
+@keyframes animloader {
+   0% {
+      height: 48px;
+   }
+   100% {
+      height: 4px;
+   }
+}
+
+@keyframes phoneCall {
+   10% {
+      transform: rotate(-25deg);
+   }
+   20% {
+      transform: rotate(25deg);
+   }
+   30% {
+      transform: rotate(-25deg);
+   }
+   40% {
+      transform: rotate(25deg);
+   }
+   50% {
+      transform: rotate(0);
+   }
+   100% {
+      transform: rotate(0);
+   }
+}

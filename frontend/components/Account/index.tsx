@@ -1,0 +1,6 @@
+export { default as AddressPage } from '@/components/Account/AddressPage'
+export { default as ChangePasswordPage } from '@/components/Account/ChangePasswordPage'
+export { default as FavoriteProductsPage } from '@/components/Account/FavoriteProductsPage'
+export { default as PurchasePage } from '@/components/Account/PurchasePage'
+export { default as RecentlyViewedPage } from '@/components/Account/RecentlyViewedPage'
+export { default as AccountPage } from '@/components/Account/AccountPage'
