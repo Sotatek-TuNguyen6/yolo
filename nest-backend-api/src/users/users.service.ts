@@ -8,14 +8,12 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { AddressService } from 'src/address/address.service';
-import { IUser } from 'src/interface/user.interface';
 import { ICommonObj } from 'src/interface/common.interface';
-import { Address } from 'src/address/entities/address.entity';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import * as bcrypt from 'bcrypt';
 import { UserStatus } from 'src/enum';
-import { CreateAddressDto } from 'src/address/dto/create-address.dto';
+import { CounterService } from 'src/common/services/counter.service';
+import { UserReportResponse } from './dto/user-report.dto';
 
 const populate = [
   {
@@ -42,24 +40,26 @@ const populate = [
   },
 ];
 
-interface UserWithAddresses extends User {
-  addresses: Address[] | Address | [];
-}
+// interface UserWithAddresses extends User {
+//   addresses: Address[] | Address | [];
+// }
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
-    private readonly addressService: AddressService,
+    // private readonly addressService: TypeError: Invalid schema configuration: `OrderDetail` is not a valid type within the array `orderDetails`.See https://bit.ly/mongoose-schematypes for a list of valid schema types.AddressService,
+    private readonly counterService: CounterService,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     try {
-      const { userName, email, phoneNumber } = createUserDto;
+      const userId = await this.counterService.getNextSequence('user');
+      const { email } = createUserDto;
 
       const user = await this.userModel
         .findOne({
-          $or: [{ userName }, { email }, { phoneNumber }],
+          $or: [{ email }],
         })
         .select('-password');
 
@@ -69,86 +69,60 @@ export class UsersService {
 
       const newUser = new this.userModel({
         ...createUserDto,
+        userId,
       });
 
       const savedUser = await newUser.save();
-      return savedUser.toObject({
-        transform: (doc, ret) => {
-          delete ret.password;
-          return ret;
-        },
-      });
+      return savedUser;
     } catch (error) {
       throw new BadRequestException(error);
     }
   }
 
-  async findAll(): Promise<IUser[]> {
+  async findAll(): Promise<User[]> {
     const users = await this.userModel.find().select('-password').exec();
 
-    // Lấy thêm address cho mỗi user
-    const usersWithAddresses = await Promise.all(
-      users.map(async (user) => {
-        const addresses = await this.addressService.findById(
-          user._id as string,
-        );
-        const userObj = user.toObject();
-        return {
-          ...userObj,
-          addresses: addresses ? addresses : [],
-        };
-      }),
-    );
-
-    return usersWithAddresses as unknown as IUser[];
+    return users;
   }
 
   async findOne(id: string): Promise<User | null> {
     const user = await this.userModel
       .findById(id)
-      .populate(populate)
+      // .populate(populate)
       .select('-password')
       .exec();
-    if (user) {
-      const addresses = await this.addressService.findByUserId(
-        user._id as string,
-      );
-      const addressesArray = Array.isArray(addresses)
-        ? addresses
-        : addresses
-          ? [addresses]
-          : [];
-      return {
-        ...user.toObject(),
-        addresses: addressesArray,
-      } as unknown as UserWithAddresses;
+
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
-    return null;
+
+    return user;
+    // if (user) {
+    //   const addresses = await this.addressService.findByUserId(
+    //     user._id as string,
+    //   );
+    //   const addressesArray = Array.isArray(addresses)
+    //     ? addresses
+    //     : addresses
+    //       ? [addresses]
+    //       : [];
+    //   return {
+    //     ...user.toObject(),
+    //     addresses: addressesArray,
+    //   } as unknown as UserWithAddresses;
+    // }
+    // return null;
   }
 
   async findByEmail(
     email: string,
     isSelectPassword = false,
-  ): Promise<UserWithAddresses | null> {
+  ): Promise<User | null> {
     const query = this.userModel.findOne({ email });
     if (isSelectPassword) {
       query.select('+password');
     }
-    const user = await query.exec();
-    if (user) {
-      const addresses = await this.addressService.findById(user._id as string);
-      const addressesArray = Array.isArray(addresses)
-        ? addresses
-        : addresses
-          ? [addresses]
-          : [];
-
-      return {
-        ...user.toObject(),
-        addresses: addressesArray,
-      } as unknown as UserWithAddresses;
-    }
-    return null;
+    return query.exec();
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
@@ -228,11 +202,100 @@ export class UsersService {
     return user;
   }
 
-  async createAddress(createAddressDto: CreateAddressDto, userId: string) {
-    try {
-      return this.addressService.create(createAddressDto, userId);
-    } catch (error) {
-      throw new BadRequestException(error);
+  async getUserReport(): Promise<UserReportResponse> {
+    const now = new Date();
+    const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+    // Get all users within date range
+    // const users = await this.userModel
+    //   .find({
+    //     createdAt: { $gte: reportStartDate, $lte: reportEndDate },
+    //   })
+    //   .lean();
+
+    // Count total users
+    const totalUsers = await this.userModel.countDocuments();
+
+    // Count active/inactive users
+    const activeUsers = await this.userModel.countDocuments({
+      status: UserStatus.ACTIVE,
+    });
+    const inactiveUsers = totalUsers - activeUsers;
+
+    // Count new users this month and last month
+    const newUsersThisMonth = await this.userModel.countDocuments({
+      createdAt: { $gte: currentMonth, $lte: now },
+    });
+    const newUsersLastMonth = await this.userModel.countDocuments({
+      createdAt: { $gte: lastMonth, $lt: currentMonth },
+    });
+
+    // Calculate growth rate
+    const growthRate =
+      newUsersLastMonth === 0
+        ? 100 // if no users last month, growth rate is 100%
+        : ((newUsersThisMonth - newUsersLastMonth) / newUsersLastMonth) * 100;
+
+    // Group users by status
+    const statusStats = {};
+    const statuses = Object.values(UserStatus);
+
+    for (const status of statuses) {
+      statusStats[status] = await this.userModel.countDocuments({ status });
     }
+
+    // Group users by registration month
+    const monthlyStats = {};
+
+    // Get users for the last 12 months
+    const lastYearDate = new Date();
+    lastYearDate.setFullYear(lastYearDate.getFullYear() - 1);
+
+    // const usersLastYear = await this.userModel
+    //   .find({
+    //     createdAt: { $gte: lastYearDate },
+    //   })
+    //   .lean();
+
+    // Group by month
+    // usersLastYear.forEach((user: any) => {
+    //   if (user && user.createdAt) {
+    //     const date = new Date(user.createdAt);
+    //     const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+    //     if (!monthlyStats[monthKey]) {
+    //       monthlyStats[monthKey] = 0;
+    //     }
+
+    //     monthlyStats[monthKey]++;
+    //   }
+    // });
+
+    // Create report with users that have password set to undefined
+    return {
+      summary: {
+        totalUsers,
+        activeUsers,
+        inactiveUsers,
+        newUsersThisMonth,
+        newUsersLastMonth,
+        growthRate: parseFloat(growthRate.toFixed(2)),
+      },
+      statusStats,
+      monthlyStats,
+      // users: users.map((user: any) => ({
+      //   ...user,
+      //   password: undefined,
+      // })),
+    };
   }
+
+  // async createAddress(createAddressDto: CreateAddressDto, userId: string) {
+  //   try {
+  //     return this.addressService.create(createAddressDto, userId);
+  //   } catch (error) {
+  //     throw new BadRequestException(error);
+  //   }
+  // }
 }

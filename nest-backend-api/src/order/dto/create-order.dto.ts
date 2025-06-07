@@ -9,102 +9,119 @@ import {
   IsObject,
   IsOptional,
   IsString,
-  Matches,
-  Min,
-  ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
-import { IAddress } from 'src/interface/address.interface';
-import { IItemCart } from 'src/interface/cart.interface';
-import { PaymentMethodOrder, StatusOrder } from 'src/enum';
+import { DeliveryType, PaymentType } from 'src/enum';
 
-class ItemCartDto {
-  @ApiProperty()
-  @IsNotEmpty()
+export class AddressDetailsDto {
+  @ApiProperty({ description: 'City', example: 'Thành phố Hà Nội' })
   @IsString()
-  product: string;
-
-  @ApiProperty()
   @IsNotEmpty()
+  city: string;
+
+  @ApiProperty({ description: 'District', example: 'Huyện Đông Anh' })
   @IsString()
-  color: string;
-
-  @ApiProperty()
   @IsNotEmpty()
+  district: string;
+
+  @ApiProperty({ description: 'Ward', example: 'Xã Dục Tú' })
   @IsString()
-  size: string;
-
-  @ApiProperty()
   @IsNotEmpty()
+  ward: string;
+
+  @ApiProperty({ description: 'Specific address', example: 'test' })
+  @IsString()
+  @IsNotEmpty()
+  specificAddress: string;
+}
+
+export class ProductOrderDto {
+  @ApiProperty({ description: 'Product ID', example: 16 })
   @IsNumber()
-  @Min(1)
-  quantities: number;
+  id: number;
+
+  @ApiProperty({ description: 'Quantity', example: 3 })
+  @IsNumber()
+  quantity: number;
+
+  @ApiProperty({
+    description: 'Selected Image ID',
+    example: 'image_123',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  selectedImageId?: string;
 }
 
 export class CreateOrderDto {
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({ description: 'Customer ID (0 for guest)', example: 0 })
+  @IsNumber()
+  customerId: number;
+
+  @ApiProperty({ description: 'Customer name', example: 'Nguyễn Đình Tư' })
   @IsString()
-  fullName: string;
-
-  @ApiProperty()
   @IsNotEmpty()
-  @IsEmail()
-  emailAddress: string;
+  customerName: string;
 
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsObject()
-  @ValidateNested()
-  @Type(() => Object)
-  address: IAddress;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  @Matches(/^([+]\d{2})?\d{10}$/, {
-    message: 'Phone number must be a valid 10-digit number',
+  @ApiProperty({
+    description: 'Customer email',
+    example: 'nguyendinhtu11022002@gmail.com',
   })
-  phoneNumber: string;
+  @IsEmail()
+  @IsNotEmpty()
+  customerEmail: string;
 
-  @ApiProperty({ required: false })
-  @IsOptional()
+  @ApiProperty({ description: 'Customer phone number', example: '0988597401' })
   @IsString()
-  noteAddress?: string;
+  @IsNotEmpty()
+  customerPhone: string;
 
-  @ApiProperty({ enum: StatusOrder, default: StatusOrder.PENDING })
-  @IsEnum(StatusOrder)
-  @IsOptional()
-  status?: StatusOrder;
+  @ApiProperty({
+    description: 'Shipping address',
+    example: 'test, Xã Dục Tú, Huyện Đông Anh, Thành phố Hà Nội',
+  })
+  @IsString()
+  @IsNotEmpty()
+  shippingAddress: string;
 
-  @ApiProperty({ enum: PaymentMethodOrder, default: PaymentMethodOrder.CASH })
-  @IsEnum(PaymentMethodOrder)
-  @IsOptional()
-  paymentMethod?: PaymentMethodOrder;
+  @ApiProperty({ description: 'Address details', type: AddressDetailsDto })
+  @IsObject()
+  @IsNotEmpty()
+  addressDetails: AddressDetailsDto;
 
-  @ApiProperty({ default: false })
-  @IsBoolean()
-  @IsOptional()
-  isPayment?: boolean;
+  @ApiProperty({ description: 'Total price', example: '599.97' })
+  @IsString()
+  @IsNotEmpty()
+  totalPrice: string;
 
-  @ApiProperty({ type: [ItemCartDto] })
+  @ApiProperty({
+    description: 'Delivery date timestamp',
+    example: 1749637522271,
+  })
+  @IsNumber()
+  deliveryDate: number;
+
+  @ApiProperty({
+    type: String,
+    enum: PaymentType,
+    enumName: 'PaymentType',
+  })
+  @IsEnum(PaymentType)
+  paymentType: PaymentType;
+
+  @ApiProperty({
+    type: String,
+    enum: DeliveryType,
+    enumName: 'DeliveryType',
+  })
+  @IsEnum(DeliveryType)
+  deliveryType: DeliveryType;
+
+  @ApiProperty({ description: 'Products to order', type: [ProductOrderDto] })
   @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ItemCartDto)
-  items: IItemCart[];
+  products: ProductOrderDto[];
 
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsNumber()
-  subTotal: number;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsNumber()
-  shippingFee: number;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsNumber()
-  total: number;
+  @ApiProperty({ description: 'Send email confirmation', example: false })
+  @IsBoolean()
+  sendEmail: boolean;
 }

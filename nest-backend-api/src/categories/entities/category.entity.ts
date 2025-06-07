@@ -5,7 +5,10 @@ import { Document } from 'mongoose';
 @Schema({
   timestamps: true,
 })
-export class Category extends Document {
+export class Category {
+  @Prop({ required: true, type: Number, unique: true })
+  categoryId: number;
+
   @Prop({
     type: String,
     required: true,
@@ -30,13 +33,8 @@ export class Category extends Document {
     required: true,
   })
   @ApiProperty()
-  imageUrl: string;
-
-  @Prop({
-    type: String,
-  })
-  @ApiProperty()
-  slug: string;
+  thumbnailImage: string;
 }
+export type CategoryDocument = Category & Document;
 
 export const CategorySchema = SchemaFactory.createForClass(Category);

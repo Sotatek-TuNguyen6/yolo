@@ -1,141 +1,156 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty } from '@nestjs/swagger';
 import mongoose, { Document, Types } from 'mongoose';
-import { PaymentMethodOrder, StatusOrder } from 'src/enum';
-import { IAddress } from 'src/interface/address.interface';
-import { IItemCart } from 'src/interface/cart.interface';
-import { IPaymentMethodOrder, IStatusOrder } from 'src/types';
-
+import { DeliveryType, PaymentStatus, PaymentType } from 'src/enum';
 export type OrderDocument = Order & Document;
 
 @Schema({ timestamps: true })
+export class OrderDetail {
+  @Prop({ required: true, type: Number, unique: true })
+  orderDetailId: number;
+
+  @Prop({ required: true, type: Number })
+  quantity: number;
+
+  @Prop({
+    required: true,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product',
+  })
+  product: Types.ObjectId;
+
+  @Prop({ required: true, type: Number })
+  price: number;
+
+  @Prop({ required: false, type: String })
+  imageId?: string;
+}
+
+export const OrderDetailSchema = SchemaFactory.createForClass(OrderDetail);
+
+@Schema({ timestamps: true })
+export class CustomerInfo {
+  @Prop({
+    type: String,
+    required: true,
+    trim: true,
+  })
+  name: string;
+
+  @Prop({
+    type: String,
+    required: true,
+    trim: true,
+  })
+  email: string;
+
+  @Prop({
+    type: String,
+    required: true,
+    trim: true,
+  })
+  phone: string;
+}
+
+@Schema({ timestamps: true })
 export class Order {
+  @Prop({ required: true, type: Number, unique: true })
+  orderId: number;
+
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
+    required: false,
+  })
+  user?: Types.ObjectId;
+
+  @Prop({
+    type: CustomerInfo,
     required: true,
   })
-  user: Types.ObjectId;
+  customerInfo: CustomerInfo;
 
   @Prop({
     type: String,
     required: true,
     trim: true,
   })
-  fullName: string;
+  shippingAddress: string;
 
   @Prop({
     type: String,
-    required: true,
+    // required: true,
     trim: true,
-    match: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
   })
-  emailAddress: string;
-
-  @Prop({
-    type: Object,
-    required: true,
-  })
-  address: IAddress;
+  township: string;
 
   @Prop({
     type: String,
-    required: true,
+    // required: true,
     trim: true,
-    match: /^([+]\d{2})?\d{10}$/,
   })
-  phoneNumber: string;
+  city: string;
 
   @Prop({
     type: String,
+    // required: true,
+    trim: true,
   })
-  noteAddress?: string;
+  state: string;
 
   @Prop({
     type: String,
-    enum: StatusOrder,
-    default: StatusOrder.PENDING,
+    // required: true,
+    trim: true,
   })
-  @ApiProperty({
-    required: false,
-    default: StatusOrder.PENDING,
+  zipCode: string;
+
+  @Prop({
+    type: Date,
+    default: new Date(),
   })
-  status: IStatusOrder;
+  orderDate: Date;
 
   @Prop({
     type: String,
-    enum: PaymentMethodOrder,
-    default: PaymentMethodOrder.CASH,
+    enum: PaymentType,
+    default: PaymentType.CASH_ON_DELIVERY,
   })
-  @ApiProperty({
-    required: false,
-    default: PaymentMethodOrder.CASH,
-  })
-  paymentMethod: IPaymentMethodOrder;
+  paymentType: PaymentType;
 
   @Prop({
-    type: Boolean,
-    default: false,
+    type: String,
+    enum: DeliveryType,
+    default: DeliveryType.STORE_PICKUP,
   })
-  @ApiProperty({
-    required: false,
-    default: false,
-  })
-  isPayment: boolean;
-
-  @Prop({
-    type: [
-      {
-        product: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Product',
-          required: true,
-        },
-        color: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Color',
-          required: true,
-        },
-        size: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Size',
-          required: true,
-        },
-        quantities: {
-          type: Number,
-          min: 1,
-          required: true,
-        },
-      },
-    ],
-    validate: {
-      validator: (items: IItemCart[]) => items.length > 0,
-      message: 'Your cart must be at least 1 item',
-    },
-  })
-  @ApiProperty()
-  items: IItemCart[];
+  deliveryType: DeliveryType;
 
   @Prop({
     type: Number,
-    required: true,
   })
-  @ApiProperty()
-  subTotal: number;
+  totalPrice: number;
 
   @Prop({
     type: Number,
+  })
+  deliveryDate: number;
+
+  @Prop({
+    type: [OrderDetailSchema],
     required: true,
   })
-  @ApiProperty()
-  shippingFee: number;
+  orderDetails: OrderDetail[];
 
   @Prop({
     type: Number,
-    required: true,
   })
-  @ApiProperty()
-  total: number;
+  totalQuantity: number;
+
+  @Prop({
+    type: String,
+    enum: PaymentStatus,
+    default: PaymentStatus.PENDING,
+  })
+  paymentStatus: PaymentStatus;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

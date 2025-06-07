@@ -24,6 +24,7 @@ interface QueryRequestConfig<TData> {
   successMessage?: string;
   errorMessage?: string;
   queryOptions?: Omit<UseQueryOptions<TData, ApiError, TData, QueryKey>, 'queryKey' | 'queryFn'>;
+  
 }
 
 export interface MutationRequestConfig<TData, TVariables> {

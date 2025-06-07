@@ -1,297 +1,83 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import * as mongoose from 'mongoose';
-import { Comment } from 'src/comments/entities/comment.entity';
-import { User } from 'src/users/entities/user.entity';
-import { Types } from 'mongoose';
+import mongoose, { Document, Types } from 'mongoose';
 
 export type ProductDocument = Product & Document;
 
 @Schema()
-export class ImageGroup {
-  @Prop({
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Color',
-  })
-  @ApiProperty({ type: String })
-  color: Types.ObjectId;
+export class ProductImage {
+  @ApiProperty({ description: 'Image URL' })
+  @Prop({ required: true, type: [String] })
+  url: string[];
 
-  @Prop({
-    type: [String],
-  })
-  @ApiProperty({ type: [String] })
-  images: string[];
+  @ApiProperty({ description: 'Color name associated with the image' })
+  @Prop({ required: true, type: String })
+  color: string;
+
+  @ApiProperty({ description: 'Color code (hex, rgb, etc)' })
+  @Prop({ required: true, type: String })
+  colorCode: string;
+
+  @ApiProperty({ description: 'Quantity' })
+  @Prop({ required: true, type: Number, default: 0 })
+  quantity: number;
+
+  @ApiProperty({ description: 'Size' })
+  @Prop({ required: true, type: [String] })
+  size: string[];
 }
 
-export const ImageGroupSchema = SchemaFactory.createForClass(ImageGroup);
+export type ProductImageDocument = ProductImage & Document;
+export const ProductImageSchema = SchemaFactory.createForClass(ProductImage);
 
 @Schema({ timestamps: true })
 export class Product {
-  @Prop({
-    type: Number,
-    unique: true,
-  })
-  @ApiProperty({
-    description: 'Custom product ID number',
-    example: 10001,
-  })
+  @ApiProperty({ description: 'Auto incremented product ID' })
+  @Prop({ required: true, unique: true })
   productId: number;
 
-  @Prop({
-    type: String,
-    required: true,
-    trim: true,
-    unique: true,
-  })
-  @ApiProperty()
+  @ApiProperty({ description: 'Product name' })
+  @Prop({ required: true })
   name: string;
 
-  @Prop({
-    type: String,
-    trim: true,
-  })
-  @ApiProperty({
-    required: false,
-  })
-  subContent: string;
+  @ApiProperty({ description: 'Product description' })
+  @Prop({ required: false })
+  description: string;
 
-  @Prop({
-    type: String,
-    required: true,
-    trim: true,
-  })
-  @ApiProperty()
-  content: string;
-
-  @Prop({
-    type: String,
-    required: true,
-    trim: true,
-  })
-  featuredImage: string;
-
-  @Prop({
-    type: String,
-    required: true,
-    trim: true,
-  })
-  summary: string;
-
-  @Prop({
-    type: Number,
-    required: true,
-  })
-  @ApiProperty()
-  originPrice: number;
-
-  @Prop({
-    type: Number,
-  })
-  @ApiProperty()
+  @ApiProperty({ description: 'Product price' })
+  @Prop({ required: true })
   price: number;
 
-  @Prop({
-    type: Number,
-    default: 0,
-    min: 0,
-  })
-  @ApiProperty({
-    required: false,
-    default: 0,
-    minimum: 0,
-  })
-  discount: number;
+  @ApiProperty({ description: 'Product images with associated colors' })
+  @Prop({ type: [ProductImageSchema], default: [] })
+  images: ProductImage[];
 
-  @Prop({
-    type: [ImageGroupSchema],
-    required: true,
-  })
-  @ApiProperty({ type: [ImageGroup] })
-  imageUrls: ImageGroup[];
+  // @ApiProperty({ description: 'Legacy product images field' })
+  // @Prop({ type: [String], default: [] })
+  // legacyImages: string[];
 
-  @Prop({
-    type: Boolean,
-    default: false,
-  })
-  @ApiProperty({
-    required: false,
-    default: false,
-  })
-  isFreeShip: boolean;
-
-  @Prop({
-    type: Number,
-    default: 0,
-    min: 0,
-  })
-  @ApiProperty({
-    required: false,
-    default: 0,
-  })
-  views: number;
-
-  @Prop({
-    type: Number,
-    default: 0,
-  })
-  @ApiProperty({
-    required: false,
-    default: 0,
-  })
-  ratingAverage: number;
-
-  @Prop({
-    type: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Color',
-      },
-    ],
-    required: true,
-  })
-  @ApiProperty({
-    type: String,
-    isArray: true,
-  })
-  colors: Types.ObjectId[];
-
-  @Prop({
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Category',
-    required: true,
-  })
-  @ApiProperty()
+  @ApiProperty({ description: 'Product category' })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Category' })
   category: Types.ObjectId;
 
-  @Prop({
-    type: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Size',
-      },
-    ],
-    required: true,
-    validate: {
-      validator: (val: []) => val.length > 0,
-      message: 'Sizes must be at least 1 size',
-    },
-  })
-  @ApiProperty()
-  sizes: Types.ObjectId[];
+  @ApiProperty({ description: 'Product slug' })
+  @Prop({ type: String })
+  detail: string;
 
-  @Prop({
-    type: Number,
-    required: true,
-    min: 1,
-  })
-  @ApiProperty()
-  availableQuantities: number;
+  @ApiProperty({ description: 'Product stock' })
+  @Prop({ type: Number, default: 0 })
+  stock: number;
 
+  @ApiProperty({ description: 'Product discount percent' })
+  @Prop({ type: Number, default: 0 })
+  discountPercent: number;
+
+  @ApiProperty({ description: 'Product tags' })
   @Prop({
-    type: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Comment',
-      },
-    ],
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }],
     default: [],
   })
-  @ApiProperty({
-    type: Comment,
-    required: false,
-    isArray: true,
-    default: [],
-  })
-  comments?: Comment[];
-
-  @Prop({
-    type: [
-      {
-        type: mongoose.Types.ObjectId,
-        ref: 'User',
-      },
-    ],
-  })
-  @ApiProperty({
-    type: User,
-    required: false,
-    isArray: true,
-    default: [],
-  })
-  likes: mongoose.Types.ObjectId[];
-
-  @Prop({
-    type: Number,
-    default: 0,
-    min: 0,
-  })
-  @ApiProperty({
-    type: Number,
-    required: false,
-    default: 0,
-    minimum: 0,
-  })
-  unitsSold: number;
-
-  @Prop([
-    {
-      type: mongoose.Schema.Types.ObjectId,
-    },
-  ])
-  @ApiProperty({
-    type: User,
-    required: false,
-    isArray: true,
-    default: [],
-  })
-  usersSold: mongoose.Types.ObjectId[];
-
-  @Prop({
-    type: String,
-  })
-  @ApiProperty()
-  slug: string;
-
-  @Prop({
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'SubCategory',
-    required: true,
-  })
-  @ApiProperty()
-  subCategory: Types.ObjectId;
-
-  @Prop({
-    type: Boolean,
-    default: false,
-  })
-  @ApiProperty({
-    description: 'Flag indicating if product is deleted',
-    default: false,
-  })
-  isDeleted: boolean;
+  tags: Types.ObjectId[];
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);
-
-ProductSchema.pre('save', async function (next) {
-  if (!this.productId) {
-    try {
-      // Dùng this.constructor thay vì mongoose.model
-      const ProductModel = this.constructor as mongoose.Model<ProductDocument>;
-      const highestProduct = await ProductModel.findOne({}, { productId: 1 })
-        .sort({ productId: -1 })
-        .limit(1);
-
-      const nextId = highestProduct?.productId
-        ? highestProduct.productId + 1
-        : 1;
-
-      this.productId = nextId;
-      next();
-    } catch (error) {
-      next(error);
-    }
-  } else {
-    next();
-  }
-});

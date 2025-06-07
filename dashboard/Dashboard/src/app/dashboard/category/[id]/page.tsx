@@ -96,10 +96,10 @@ export default function CategoryDetailPage() {
             <CardTitle>Hình ảnh</CardTitle>
           </CardHeader>
           <CardContent>
-            {category.imageUrl ? (
+            {category.thumbnailImage ? (
               <div className="rounded-md overflow-hidden">
                 <Image
-                  src={category.imageUrl}
+                  src={category.thumbnailImage}
                   alt={category.name}
                   width={400}
                   height={300}
@@ -123,11 +123,6 @@ export default function CategoryDetailPage() {
             <div>
               <h3 className="font-medium text-sm">Tên danh mục</h3>
               <p>{category.name}</p>
-            </div>
-
-            <div>
-              <h3 className="font-medium text-sm">Slug</h3>
-              <p>{category.slug}</p>
             </div>
 
             <div>

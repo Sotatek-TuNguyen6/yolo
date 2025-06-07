@@ -32,18 +32,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Image from 'next/image';
 
-type CategoryListData = CommonResponse<{
-  categories: Category[];
-  prevPage: number;
-  nextPage: number;
-  total: number;
-}>;
+type CategoryListData = CommonResponse<Category[]>;
 
 // Define form type
 type CategoryFormValues = {
   name: string;
   description: string;
-  slug: string;
 };
 
 // Define the form schema to match the type
@@ -53,9 +47,6 @@ const categoryFormSchema = z.object({
   }),
   description: z.string().min(1, {
     message: 'Mô tả phải có ít nhất 10 ký tự',
-  }),
-  slug: z.string().min(1, {
-    message: 'Slug phải có ít nhất 3 ký tự',
   }),
 });
 
@@ -70,9 +61,16 @@ export default function CategoryPage() {
     defaultValues: {
       name: '',
       description: '',
-      slug: '',
     },
   });
+
+  // For easier access to form methods
+  const {
+    handleSubmit,
+    formState: { errors },
+  } = form;
+
+  console.log(errors);
 
   // Category list data
   const { data: categories, isLoading } = useQueryRequest<CategoryListData>({
@@ -166,7 +164,7 @@ export default function CategoryPage() {
         </div>
       ) : (
         <DataTable
-          data={categories?.data?.categories ?? []}
+          data={categories?.data ?? []}
           columns={columns}
           filterConfigs={filterConfigs}
           searchColumn="name"
@@ -185,7 +183,7 @@ export default function CategoryPage() {
             <LoadingSpinner />
           ) : (
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleCreateCategory)} className="space-y-6">
+              <form onSubmit={handleSubmit(handleCreateCategory)} className="space-y-6">
                 <div className="space-y-4">
                   <FormField
                     control={form.control}
@@ -193,20 +191,6 @@ export default function CategoryPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Tên danh mục</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="slug"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Slug</FormLabel>
                         <FormControl>
                           <Input {...field} />
                         </FormControl>

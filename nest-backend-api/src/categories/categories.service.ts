@@ -8,17 +8,24 @@ import { Category } from './entities/category.entity';
 import { Model, Types } from 'mongoose';
 import { ICommonObj } from 'src/interface/common.interface';
 import { Gender } from 'src/enum';
+import { CounterService } from 'src/common/services/counter.service';
+import { CreateCategoryDto } from './dto/create-category.dto';
 
 @Injectable()
 export class CategoriesService {
   constructor(
     @InjectModel(Category.name)
     private categoryModel: Model<Category>,
+    private readonly counterService: CounterService,
   ) {}
 
-  async create(createCategoryDto: Partial<Category>) {
+  async create(createCategoryDto: CreateCategoryDto) {
     try {
-      const category = await this.categoryModel.create(createCategoryDto);
+      const categoryId = await this.counterService.getNextSequence('category');
+      const category = await this.categoryModel.create({
+        ...createCategoryDto,
+        categoryId,
+      });
       return category;
     } catch (error) {
       throw new BadRequestException(error);

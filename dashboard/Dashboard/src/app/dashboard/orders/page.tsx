@@ -1,29 +1,16 @@
 'use client';
 
 import { useQueryRequest } from '@/hooks/useQuery';
-import { Order } from '@/interface/order.interface';
+import { EPaymentStatus, Order } from '@/interface/order.interface';
 import { DataTable } from '../tasks/components/data-table';
 import { columns } from './columns';
 import { CommonResponse } from '@/types/common';
 import { LoadingSpinner } from '@/components/Loading';
 import { Button } from '@/components/ui/button';
 import { FilterConfig } from '../tasks/components/data-table-toolbar';
-import {
-  ArrowDownToLine,
-  CheckCircle2,
-  ClipboardList,
-  Truck,
-  Ban,
-  RotateCcw,
-  Loader2,
-} from 'lucide-react';
+import { ArrowDownToLine } from 'lucide-react';
 
-type OrderListData = CommonResponse<{
-  orders: Order[];
-  prevPage: number;
-  nextPage: number;
-  total: number;
-}>;
+type OrderListData = CommonResponse<Order[]>;
 
 export default function OrdersPage() {
   // Fetch orders data
@@ -40,109 +27,43 @@ export default function OrdersPage() {
     );
   }
 
-  const orders = ordersData?.data?.orders || [];
+  const orders = ordersData?.data || [];
 
   // Filter configurations
   const filterConfigs: FilterConfig[] = [
     {
-      column: 'status',
-      title: 'Trạng thái đơn hàng',
-      options: [
-        {
-          label: 'Đang chờ xử lý',
-          value: 'pending',
-          icon: ClipboardList,
-        },
-        {
-          label: 'Đang xử lý',
-          value: 'processing',
-          icon: Loader2,
-        },
-        {
-          label: 'Đang giao hàng',
-          value: 'shipping',
-          icon: Truck,
-        },
-        {
-          label: 'Đã giao hàng',
-          value: 'delivered',
-          icon: CheckCircle2,
-        },
-        {
-          label: 'Đã hủy',
-          value: 'cancelled',
-          icon: Ban,
-        },
-        {
-          label: 'Đã hoàn tiền',
-          value: 'refunded',
-          icon: RotateCcw,
-        },
-      ],
-    },
-    // {
-    //   column: 'paymentStatus',
-    //   title: 'Trạng thái thanh toán',
-    //   options: [
-    //     {
-    //       label: 'Chờ thanh toán',
-    //       value: 'pending',
-    //       icon: ClipboardList,
-    //     },
-    //     {
-    //       label: 'Đã thanh toán',
-    //       value: 'paid',
-    //       icon: CreditCard,
-    //     },
-    //     {
-    //       label: 'Thanh toán thất bại',
-    //       value: 'failed',
-    //       icon: XCircle,
-    //     },
-    //     {
-    //       label: 'Đã hoàn tiền',
-    //       value: 'refunded',
-    //       icon: RotateCcw,
-    //     },
-    //   ],
-    // },
-    {
-      column: 'paymentMethod',
+      column: 'paymentType',
       title: 'Phương thức thanh toán',
       options: [
         {
           label: 'Tiền mặt',
-          value: 'cash',
+          value: 'CASH_ON_DELIVERY',
         },
         {
-          label: 'Tiền mặt khi nhận hàng',
-          value: 'cod',
-        },
-        {
-          label: 'Paypal',
-          value: 'paypal',
-        },
-        {
-          label: 'Vnpay',
-          value: 'vnpay',
-        },
-        {
-          label: 'Ví MoMo',
-          value: 'momo',
+          label: 'Chuyển khoản',
+          value: 'BANK_TRANSFER',
         },
       ],
     },
     {
-      column: 'isPayment',
+      column: 'paymentStatus',
       title: 'Trạng thái thanh toán',
       options: [
         {
           label: 'Đã thanh toán',
-          value: true,
+          value: EPaymentStatus.PAID,
         },
         {
           label: 'Chờ thanh toán',
-          value: false,
+          value: EPaymentStatus.PENDING,
+        },
+        {
+          label: 'Thanh toán thất bại',
+          value: EPaymentStatus.FAILED,
+        },
+        {
+          label: 'Đã hoàn tiền',
+          value: EPaymentStatus.REFUNDED,
         },
       ],
     },
@@ -168,21 +89,21 @@ export default function OrdersPage() {
           <div className="bg-yellow-50 p-4 rounded-md border border-yellow-100">
             <h3 className="text-lg font-semibold text-yellow-700">Chờ xử lý</h3>
             <p className="text-2xl font-bold">
-              {orders.filter(order => order.status === 'pending').length}
+              {orders.filter(order => order.paymentStatus === EPaymentStatus.PENDING).length}
             </p>
           </div>
 
           <div className="bg-green-50 p-4 rounded-md border border-green-100">
-            <h3 className="text-lg font-semibold text-green-700">Đã giao hàng</h3>
+            <h3 className="text-lg font-semibold text-green-700">Đã thanh toán</h3>
             <p className="text-2xl font-bold">
-              {orders.filter(order => order.status === 'delivered').length}
+              {orders.filter(order => order.paymentStatus === EPaymentStatus.PAID).length}
             </p>
           </div>
 
           <div className="bg-red-50 p-4 rounded-md border border-red-100">
             <h3 className="text-lg font-semibold text-red-700">Đã hủy</h3>
             <p className="text-2xl font-bold">
-              {orders.filter(order => order.status === 'cancelled').length}
+              {orders.filter(order => order.paymentStatus === EPaymentStatus.FAILED).length}
             </p>
           </div>
         </div>
@@ -192,7 +113,7 @@ export default function OrdersPage() {
         columns={columns}
         data={orders}
         filterConfigs={filterConfigs}
-        searchColumn="orderNumber"
+        searchColumn="orderId"
         searchPlaceholder="Tìm kiếm theo mã đơn hàng..."
       />
     </div>

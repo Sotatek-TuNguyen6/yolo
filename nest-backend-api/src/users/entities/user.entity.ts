@@ -1,18 +1,15 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Document, Types } from 'mongoose';
-import { Gender, UserRole, UserStatus } from 'src/enum';
+import { UserRole } from 'src/enum';
 import * as mongoose from 'mongoose';
 
 @Schema({
   timestamps: true,
 })
 export class User extends Document {
-  @ApiProperty({
-    description: 'Username',
-  })
-  @Prop({ required: true, type: String, unique: true })
-  userName: string;
+  @Prop({ required: true, type: Number, unique: true })
+  userId: number;
 
   @ApiProperty({
     description: 'Email',
@@ -38,13 +35,10 @@ export class User extends Document {
   fullName: string;
 
   @ApiProperty({
-    description: 'Date of Birth',
+    description: 'ShippingAddress',
   })
-  @Prop({
-    type: String,
-    default: new Date(),
-  })
-  dateOfBirth?: Date;
+  @Prop({ required: true, type: String })
+  shippingAddress: string;
 
   @ApiProperty({
     description: 'Role',
@@ -55,23 +49,9 @@ export class User extends Document {
 
   @ApiProperty({
     description: 'Status',
-    enum: UserStatus,
   })
-  @Prop({ type: String, default: UserStatus.ACTIVE, enum: UserStatus })
-  status: UserStatus;
-
-  @ApiProperty({
-    description: 'Gender',
-    enum: Gender,
-  })
-  @Prop({ type: String, default: Gender.OTHER, enum: Gender })
-  gender: Gender;
-
-  @ApiProperty({
-    description: 'Avatar',
-  })
-  @Prop({ type: String, default: '' })
-  avatar: string;
+  @Prop({ type: Boolean, default: true })
+  active: boolean;
 
   @ApiProperty({
     description: 'Phone Number',
@@ -82,16 +62,7 @@ export class User extends Document {
     unique: true,
     match: /^([+]\d{2})?\d{10}$/,
   })
-  phoneNumber: string;
-
-  @ApiProperty()
-  @Prop([
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product',
-    },
-  ])
-  favoriteProducts: Types.ObjectId[];
+  phone: string;
 
   @ApiProperty()
   @Prop([
@@ -101,6 +72,14 @@ export class User extends Document {
     },
   ])
   orders: Types.ObjectId[];
+
+  @ApiProperty()
+  @Prop({ type: String, default: '' })
+  resetPwdToken: string;
+
+  @ApiProperty()
+  @Prop({ type: Number, default: 0 })
+  resetPwdTokenExpired: number;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

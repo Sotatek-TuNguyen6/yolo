@@ -7,16 +7,12 @@ import {
   Param,
   Delete,
   UseGuards,
-  Query,
-  Req,
-  UnauthorizedException,
-  NotFoundException,
   InternalServerErrorException,
   UseInterceptors,
   UploadedFiles,
-  BadRequestException,
+  Query,
 } from '@nestjs/common';
-import { ProductsService } from './products.service';
+import { IQueryProduct, ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import {
@@ -27,29 +23,26 @@ import {
   ApiTags,
   ApiQuery,
   ApiConsumes,
-  ApiParam,
 } from '@nestjs/swagger';
 import { RolesGuard } from 'src/decorator/roles.guard';
 import { AuthGuard } from '@nestjs/passport';
-import { ColorsService } from 'src/colors/colors.service';
 import { CategoriesService } from 'src/categories/categories.service';
-import { SubCategoryService } from 'src/sub-category/sub-category.service';
 import { LimitDto } from 'src/common/model/dtos.model';
 import { PageDto } from 'src/common/model/dtos.model';
-import { IQueryProduct, RequestUser } from 'src/interface/common.interface';
-import { Gender, UserRole } from 'src/enum';
+import { UserRole } from 'src/enum';
 import { SearchDto } from './dto/search-product.dto';
 import { UsersService } from 'src/users/users.service';
 import { Roles } from 'src/decorator/roles.decorator';
-import { Types } from 'mongoose';
-import { Request } from 'express';
-import * as qs from 'qs';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { UploadService } from 'src/upload/upload.service';
+import { ImageMeta } from 'src/interface/imageMeta.interface';
 
-// Define interface for the request with parsed query
-interface RequestWithParsedQuery extends Request {
-  _parsedQuery?: qs.ParsedQs;
+interface ImageWithColor {
+  url: string[];
+  color: string;
+  colorCode: string;
+  quantity: number;
+  size: string;
 }
 
 @ApiTags('Products')
@@ -58,9 +51,7 @@ interface RequestWithParsedQuery extends Request {
 export class ProductsController {
   constructor(
     private readonly productsService: ProductsService,
-    private readonly colorsService: ColorsService,
     private readonly categoriesService: CategoriesService,
-    private readonly subCategoriesService: SubCategoryService,
     private readonly usersService: UsersService,
     private readonly uploadService: UploadService,
   ) {}
@@ -151,81 +142,11 @@ export class ProductsController {
     status: 200,
     description: 'The products has been successfully fetched.',
   })
-  async findAll(
-    @Query() query: IQueryProduct,
-    @Req() req: RequestWithParsedQuery,
-  ) {
+  async findAll(@Query() query: any) {
     // Lấy dữ liệu đã parse từ middleware
-    const parsedQuery = (req._parsedQuery as IQueryProduct) || query;
-    const [products, total] = await this.productsService.findAll(parsedQuery);
+    const products = await this.productsService.findAll(query);
 
-    const page = Math.ceil(Number(total) / (parsedQuery.limit ?? 9));
-    const pageNum = Number(parsedQuery.page);
-    const nextPage =
-      pageNum && pageNum >= page ? null : (isNaN(pageNum) ? 1 : pageNum) + 1;
-    const prevPage =
-      pageNum && pageNum === 1 ? null : (isNaN(pageNum) ? 1 : pageNum) - 1;
-
-    return {
-      products,
-      prevPage,
-      nextPage,
-      total,
-    };
-  }
-
-  @Get('top')
-  @ApiOperation({ summary: 'Get top products' })
-  @ApiResponse({
-    status: 200,
-    description: 'The top products has been successfully fetched.',
-  })
-  async top() {
-    const products = await this.productsService.top();
-    return {
-      products,
-    };
-  }
-
-  @Get('new')
-  @ApiOperation({ summary: 'Get new products' })
-  @ApiResponse({
-    status: 200,
-    description: 'The new products has been successfully fetched.',
-  })
-  async new() {
-    const products = await this.productsService.new();
-    return {
-      products,
-    };
-  }
-
-  @Get('recommend-user')
-  @ApiOperation({ summary: 'Get recommendation products' })
-  @ApiResponse({
-    status: 200,
-    description: 'The recommendation products has been successfully fetched.',
-  })
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  async recommendUser(@Req() req: RequestUser) {
-    if (req.user?.gender !== Gender.OTHER) {
-      const categoryId = await this.categoriesService.findCategoryByGender(
-        req?.user?.gender || Gender.OTHER,
-      );
-      if (!categoryId)
-        return {
-          products: [],
-        };
-      const products = await this.productsService.recommendForUser(
-        categoryId as string,
-      );
-      return {
-        products,
-      };
-    }
-    return {
-      products: [],
-    };
+    return products;
   }
 
   @Post('/search')
@@ -241,30 +162,15 @@ export class ProductsController {
     };
   }
 
-  @Get('related/:id')
-  @ApiOperation({ summary: 'Get related products' })
-  @ApiResponse({
-    status: 200,
-    description: 'The related products has been successfully fetched.',
-  })
-  async related(@Param('id') id: string) {
-    const relatedProducts = await this.productsService.related(id);
-    return {
-      products: relatedProducts,
-    };
-  }
-
-  @Get('/:slug')
-  @ApiOperation({ summary: 'Get a product by slug' })
+  @Get('/:productId')
+  @ApiOperation({ summary: 'Get a product by productId' })
   @ApiResponse({
     status: 200,
     description: 'The product has been successfully fetched.',
   })
-  async getProductBySlug(@Param('slug') slug: string) {
-    const product = await this.productsService.findBySlug(slug, true);
-    return {
-      product,
-    };
+  async getProductByProductId(@Param('productId') productId: string) {
+    const product = await this.productsService.findByProductId(productId);
+    return product;
   }
 
   @Get('/detail/:id')
@@ -280,14 +186,17 @@ export class ProductsController {
     };
   }
 
-  @Patch(':id')
+  @Patch(':productId')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(UserRole.ADMIN)
   async update(
-    @Param('id') id: string,
+    @Param('productId') productId: string,
     @Body() updateProductDto: UpdateProductDto,
   ) {
-    const product = await this.productsService.update(id, updateProductDto);
+    const product = await this.productsService.update(
+      productId,
+      updateProductDto,
+    );
     return {
       product,
     };
@@ -301,186 +210,34 @@ export class ProductsController {
     return result;
   }
 
-  @ApiOperation({ summary: 'Like a product' })
-  @ApiResponse({
-    status: 200,
-    description: 'The product has been successfully liked.',
-  })
-  @Get('/like/:productId')
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  async likeProduct(@Param('productId') id: string, @Req() req: RequestUser) {
-    if (!req.user) {
-      throw new UnauthorizedException('Bạn cần đăng nhập để thích sản phẩm');
-    }
-
-    const product = await this.productsService.like(id, req.user.sub);
-    const user = await this.usersService.findOne(req.user.sub.toString()); // cần có hàm này
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    const alreadyLiked = user.favoriteProducts.some((prodId: Types.ObjectId) =>
-      prodId.equals(product._id),
-    );
-
-    if (alreadyLiked) {
-      return {
-        product,
-      };
-    }
-
-    await this.usersService.updateAny(req.user.sub.toString(), {
-      $push: { favoriteProducts: { $each: [product._id], $position: 0 } },
-    });
-
-    return {
-      product,
-    };
-  }
-
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Get('/unlike/:productId')
-  @ApiOperation({ summary: 'Unlike a product' })
-  @ApiResponse({
-    status: 200,
-    description: 'The product has been successfully unliked.',
-  })
-  async unlikeProduct(@Param('productId') id: string, @Req() req: RequestUser) {
-    if (!req.user) {
-      throw new UnauthorizedException('Bạn cần đăng nhập để bỏ thích sản phẩm');
-    }
-
-    const product = await this.productsService.unlike(id, req.user.sub);
-    await this.usersService.updateAny(req.user.sub.toString(), {
-      $pull: {
-        favoriteProducts: product._id,
-      },
-    });
-    return {
-      product,
-    };
-  }
-
-  @Get('/calculator-rating/:productId')
-  async calculatorRating(@Param('productId') id: string) {
-    const product = await this.productsService.findOne(id, true);
-
-    try {
-      const newProduct = await this.productsService.calcAverageRating(
-        id,
-        product.comments || [],
-      );
-      return { product: newProduct };
-    } catch (error) {
-      throw new InternalServerErrorException(error);
-    }
-  }
-
-  @ApiOperation({ summary: 'Get recommender products' })
-  @ApiResponse({
-    status: 200,
-    description: 'The recommender products has been successfully fetched.',
-  })
-  @Get('/recommender/:productId')
-  async recommenderProducts(
-    @Param('productId') id: string,
-    // @Req() req: RequestUser,
-  ) {
-    const recommendProducts = await this.productsService.recommendation(id);
-
-    return {
-      products: recommendProducts,
-    };
-  }
-
-  @Post('upload-images/:id')
-  @ApiOperation({ summary: 'Upload images for a product' })
-  @ApiConsumes('multipart/form-data')
-  @ApiParam({ name: 'id', description: 'Product ID' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        colorId: {
-          type: 'string',
-          description: 'Color ID to associate with the images',
-        },
-        files: {
-          type: 'array',
-          items: {
-            type: 'string',
-            format: 'binary',
-          },
-        },
-      },
-    },
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'The images have been successfully uploaded.',
-  })
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @UseInterceptors(FilesInterceptor('files', 10))
-  async uploadProductImages(
-    @Param('id') id: string,
-    @Body('colorId') colorId: string,
-    @UploadedFiles() files: Express.Multer.File[],
-  ) {
-    const fileUrls = files.map((file) => file.path);
-
-    const product = await this.productsService.findOne(id);
-
-    if (!product) {
-      throw new NotFoundException('Product not found');
-    }
-
-    // Find if there's already an image group for this color
-    const existingGroupIndex = product.imageUrls.findIndex(
-      (group) => group.color.toString() === colorId,
-    );
-
-    if (existingGroupIndex >= 0) {
-      // Add to existing group
-      await this.productsService.updateAny(id, {
-        $push: {
-          [`imageUrls.${existingGroupIndex}.images`]: { $each: fileUrls },
-        },
-      });
-    } else {
-      // Create new image group
-      await this.productsService.updateAny(id, {
-        $push: {
-          imageUrls: {
-            color: new Types.ObjectId(colorId),
-            images: fileUrls,
-          },
-        },
-      });
-    }
-
-    const updatedProduct = await this.productsService.findOne(id);
-    return { product: updatedProduct };
-  }
-
-  @Post('with-images')
-  @ApiOperation({ summary: 'Create a new product with images' })
+  @Post('create-with-color-images')
+  @ApiOperation({ summary: 'Create a product with multiple colored images' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
       type: 'object',
       properties: {
+        productId: { type: 'number' },
         name: { type: 'string' },
         description: { type: 'string' },
         price: { type: 'number' },
         category: { type: 'string' },
-        subCategory: { type: 'string' },
-        colors: { type: 'array', items: { type: 'string' } },
-        sizes: { type: 'array', items: { type: 'string' } },
-        colorId: {
-          type: 'string',
-          description: 'Color ID for the uploaded images',
+        imageColors: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              color: { type: 'string' },
+              colorCode: { type: 'string' },
+              fileNames: {
+                type: 'array',
+                items: { type: 'string' },
+              },
+              quantity: { type: 'number' },
+            },
+          },
+          description:
+            'Array of JSON objects with color information for each image',
         },
         files: {
           type: 'array',
@@ -489,83 +246,263 @@ export class ProductsController {
             format: 'binary',
           },
         },
-        featuredImage: { type: 'string', format: 'binary' },
-        // Optional fields
-        isFreeShip: { type: 'boolean' },
-        discount: { type: 'number' },
         stock: { type: 'number' },
-        summary: { type: 'string' },
-        content: { type: 'string' },
-        subContent: { type: 'string' },
-        availableQuantities: { type: 'number' },
+        discountPercent: { type: 'number' },
+        detail: { type: 'string' },
+        tags: { type: 'array', items: { type: 'string' } },
       },
     },
   })
   @ApiResponse({
     status: 201,
-    description: 'The product has been successfully created with images.',
+    description:
+      'The product has been successfully created with multiple colored images.',
   })
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(UserRole.ADMIN)
+  // @UseGuards(AuthGuard('jwt'), RolesGuard)
+  // @Roles(UserRole.ADMIN)
   @UseInterceptors(FilesInterceptor('files', 10))
-  async createWithImages(
+  async createWithColorImages(
     @Body() createProductDto: CreateProductDto,
-    @Body('colorId') colorId: string,
+    @Body('images') imagesMetaRaw: string,
     @UploadedFiles() files: Express.Multer.File[],
   ) {
+    if (!files || files.length === 0) {
+      throw new InternalServerErrorException('No files uploaded');
+    }
+
+    // console.log('fimagesMetaRawiles', imagesMetaRaw);
+    // console.log('files', efiles);
     try {
-      console.log(colorId);
-      // luu cac anh da tao vao database
-      const upload = await this.uploadService.uploadFile(files[0]);
-      const uploadFiles = await Promise.all(
-        files.slice(1).map((file) => this.uploadService.uploadFile(file)),
-      );
-
-      const allUploadedFiles = [upload, ...uploadFiles];
-      const uploadedIds = allUploadedFiles.map((file) => file.public_id);
-
+      // Parse image color data from JSON string
+      let imagesMetaArray: ImageMeta[] = [];
       try {
-        // Kiểm tra colorId có phải là ObjectId hợp lệ không
-        if (!Types.ObjectId.isValid(colorId)) {
-          throw new BadRequestException(
-            `ColorId "${colorId}" không phải là một ID hợp lệ`,
+        const parsed: unknown = imagesMetaRaw ? JSON.parse(imagesMetaRaw) : [];
+        console.log('parsed', parsed);
+        if (
+          Array.isArray(parsed) &&
+          parsed.every(
+            (item) =>
+              typeof item === 'object' &&
+              item !== null &&
+              'fileNames' in item &&
+              'color' in item &&
+              'colorCode' in item,
+          )
+        ) {
+          imagesMetaArray = parsed as ImageMeta[];
+        } else {
+          throw new Error('Invalid format');
+        }
+      } catch {
+        throw new InternalServerErrorException('Invalid images metadata');
+      }
+
+      const uploadResults: ImageWithColor[] = [];
+      const uploadedIds: string[] = [];
+
+      // Group files by color
+      const filesByColor = new Map<string, Express.Multer.File[]>();
+
+      // console.log(imagesMetaArray);
+      for (const file of files) {
+        const meta = imagesMetaArray.find((m) =>
+          m.fileNames.includes(file.originalname),
+        );
+        if (!meta) {
+          throw new InternalServerErrorException(
+            `No metadata found for file: ${file.originalname}`,
           );
         }
 
-        // First create the product
-        const product = await this.productsService.create({
-          ...createProductDto,
-          featuredImage: upload?.url || '',
-          imageUrls: [
-            {
-              color: new Types.ObjectId(colorId),
-              images: allUploadedFiles.map((file) => file.url) || [],
-            },
-          ],
-        });
-
-        // if (createProductDto?.category) {
-        //   await this.categoriesService.updateOne(createProductDto?.category, {
-        //     $push: {
-        //       products: product._id,
-        //     },
-        //   });
-        // }
-        return { product };
-      } catch (error) {
-        // console.log(error);
-        // Nếu tạo product lỗi, xóa tất cả ảnh đã upload
-        await Promise.all(
-          uploadedIds.map((id) => this.uploadService.deleteFile(id)),
-        );
-        throw error;
+        if (!filesByColor.has(meta.color)) {
+          filesByColor.set(meta.color, []);
+        }
+        filesByColor.get(meta.color)?.push(file);
       }
-    } catch (error) {
+
+      // Upload files for each color
+      for (const [color, colorFiles] of filesByColor) {
+        const meta = imagesMetaArray.find((m) => m.color === color);
+        if (!meta) continue;
+
+        const urls: string[] = [];
+        for (const file of colorFiles) {
+          try {
+            const result = await this.uploadService.uploadFile(file);
+            urls.push(result.url);
+            uploadedIds.push(result.public_id);
+          } catch (err) {
+            // Cleanup uploaded files if there's an error
+            for (const id of uploadedIds) {
+              await this.uploadService.deleteFile(id);
+            }
+            throw new InternalServerErrorException(
+              `Failed to upload ${file.originalname}: ${err instanceof Error ? err.message : 'Unknown error'}`,
+            );
+          }
+        }
+
+        uploadResults.push({
+          url: urls,
+          color: meta.color,
+          colorCode: meta.colorCode,
+          quantity: meta.quantity,
+          size: meta.size,
+        });
+      }
+
+      const createdProduct = await this.productsService.create({
+        ...createProductDto,
+        images: uploadResults,
+      });
+
+      return {
+        product: createdProduct,
+        message: `Product created successfully with ${uploadResults.length} colors and ${files.length} total images.`,
+      };
+    } catch (err) {
       throw new InternalServerErrorException(
-        'Lỗi khi tạo sản phẩm: ' +
-          (typeof error === 'object' && error !== null && 'message' in error
-            ? (error as Error).message
-            : 'Unknown error'),
+        'Error creating product: ' +
+          (err instanceof Error ? err.message : 'Unknown error'),
+      );
+    }
+  }
+
+  // @P q
+
+  @Get('/count/get')
+  async count(@Query() query: IQueryProduct) {
+    const count = await this.productsService.count(query);
+    return count;
+  }
+
+  @Get('report/stats')
+  @ApiOperation({ summary: 'Get product statistics and reports' })
+  @ApiResponse({
+    status: 200,
+    description: 'Product report generated successfully',
+  })
+  // @UseGuards(AuthGuard('jwt'), RolesGuard)
+  // @Roles(UserRole.ADMIN)
+  async getProductReport() {
+    const report = await this.productsService.getProductReport();
+    return {
+      success: true,
+      data: report,
+    };
+  }
+
+  @Patch('/update-size/:productId')
+  async updateSize(
+    @Param('productId') productId: string,
+    @Body() updateSizeDto: { imagesId: string; size: string[] },
+  ) {
+    const product = await this.productsService.updateSize(
+      productId,
+      updateSizeDto.imagesId,
+      updateSizeDto.size,
+    );
+    return product;
+  }
+
+  @Patch(':productId/variants')
+  async updateVariants(
+    @Param('productId') productId: string,
+    @Body() updateVariantsDto: { quantity: number; imagesId: string },
+  ) {
+    const product = await this.productsService.updateVariants(
+      productId,
+      updateVariantsDto,
+    );
+    return product;
+  }
+
+  @Delete(':productId/variants')
+  async deleteVariant(
+    @Param('productId') productId: string,
+    @Body() body: { imagesId: string },
+  ) {
+    const product = await this.productsService.deleteVariant(
+      productId,
+      body.imagesId,
+    );
+    return product;
+  }
+
+  @Post(':productId/variants')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        color: { type: 'string' },
+        colorCode: { type: 'string' },
+        size: { type: 'array', items: { type: 'string' } },
+        quantity: { type: 'integer' },
+        files: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
+        },
+      },
+    },
+  })
+  @UseInterceptors(FilesInterceptor('files', 10))
+  async createVariant(
+    @Param('productId') productId: string,
+    @Body()
+    body: {
+      color: string;
+      colorCode: string;
+      quantity: string;
+      size: string[];
+    },
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    if (!files || files.length === 0) {
+      throw new InternalServerErrorException('No files uploaded');
+    }
+
+    try {
+      // Upload all files to Cloudinary
+      const uploadedUrls: string[] = [];
+      const uploadedIds: string[] = [];
+
+      for (const file of files) {
+        try {
+          const result = await this.uploadService.uploadFile(file);
+          uploadedUrls.push(result.url);
+          uploadedIds.push(result.public_id);
+        } catch (err) {
+          // Cleanup already uploaded files if there's an error
+          for (const id of uploadedIds) {
+            await this.uploadService.deleteFile(id);
+          }
+          throw new InternalServerErrorException(
+            `Failed to upload ${file.originalname}: ${err instanceof Error ? err.message : 'Unknown error'}`,
+          );
+        }
+      }
+
+      // Create new variant with uploaded image URLs
+      const product = await this.productsService.createVariant(productId, {
+        color: body.color,
+        colorCode: body.colorCode,
+        size: body.size,
+        quantity: parseInt(body.quantity, 10),
+        urls: uploadedUrls,
+      });
+
+      return {
+        product,
+        message: `Variant created successfully with ${files.length} images.`,
+      };
+    } catch (err) {
+      throw new InternalServerErrorException(
+        'Error creating variant: ' +
+          (err instanceof Error ? err.message : 'Unknown error'),
       );
     }
   }

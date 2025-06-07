@@ -8,7 +8,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { AuthService, RegisterResponse } from './auth.service';
 
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
@@ -37,8 +37,11 @@ export class AuthController {
   @ApiBody({ type: CreateUserDto })
   @ApiResponse({ status: 201, description: 'User registered successfully' })
   @Post('signup')
-  register(@Body() createUserDto: CreateUserDto) {
-    return this.authService.register(createUserDto);
+  async register(
+    @Body() createUserDto: CreateUserDto,
+  ): Promise<RegisterResponse> {
+    const result = await this.authService.register(createUserDto);
+    return result;
   }
 
   @ApiOperation({ summary: 'Login a user' })
@@ -121,33 +124,33 @@ export class AuthController {
     return result;
   }
 
-  @ApiOperation({ summary: 'Logout a user' })
-  @ApiResponse({ status: 200, description: 'User logged out successfully' })
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Post('logout')
-  async logout(
-    @Req() req: RequestUser,
-    @Headers() headers: Record<string, string>,
-  ) {
-    if (!req.user) {
-      throw new UnauthorizedException('User not found');
-    }
+  // @ApiOperation({ summary: 'Logout a user' })
+  // @ApiResponse({ status: 200, description: 'User logged out successfully' })
+  // @UseGuards(AuthGuard('jwt'), RolesGuard)
+  // @Post('logout')
+  // async logout(
+  //   @Req() req: RequestUser,
+  //   @Headers() headers: Record<string, string>,
+  // ) {
+  //   if (!req.user) {
+  //     throw new UnauthorizedException('User not found');
+  //   }
 
-    const authorization = headers['authorization'];
-    if (!authorization) {
-      throw new NotFoundException('Not found token');
-    }
+  //   const authorization = headers['authorization'];
+  //   if (!authorization) {
+  //     throw new NotFoundException('Not found token');
+  //   }
 
-    const token = authorization.split(' ')[1];
-    const userId = req.user.sub.toString();
+  //   const token = authorization.split(' ')[1];
+  //   const userId = req.user.sub.toString();
 
-    // Thêm token vào blacklist
-    const success = await this.authService.logout(token, userId);
+  //   // Thêm token vào blacklist
+  //   const success = await this.authService.logout(token, userId);
 
-    if (success) {
-      return { message: 'Đăng xuất thành công' };
-    } else {
-      throw new UnauthorizedException('Không thể đăng xuất, vui lòng thử lại');
-    }
-  }
+  //   if (success) {
+  //     return { message: 'Đăng xuất thành công' };
+  //   } else {
+  //     throw new UnauthorizedException('Không thể đăng xuất, vui lòng thử lại');
+  //   }
+  // }
 }

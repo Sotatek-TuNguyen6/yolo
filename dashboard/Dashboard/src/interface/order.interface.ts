@@ -1,5 +1,5 @@
 // import { Product } from "./product.interface";
-import { Product } from "@/types/product";
+import { Product } from "./product.interface";
 import { User } from "./user.interface";
 
 // Các type để sử dụng trong frontend
@@ -11,9 +11,27 @@ export type OrderStatus =
   | 'cancelled'
   | 'refunded';
 
-export type PaymentMethod = 'cash' | 'bank_transfer' | 'credit_card' | 'momo' | 'zalopay';
+export enum EPaymentStatus {
+  PENDING = 'pending',
+  PAID = 'paid',
+  FAILED = 'failed',
+  REFUNDED = 'refunded',
+}
 
+export type PaymentMethod = 'CASH_ON_DELIVERY' | 'BANK_TRANSFER';
+
+// Keeping this for backward compatibility, but prefer using EPaymentStatus enum
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
+
+// PaymentType is the same as PaymentMethod, keeping for backward compatibility
+export type PaymentType = 'CASH_ON_DELIVERY' | 'BANK_TRANSFER';
+
+export enum EDeliveryType {
+  STORE_PICKUP = 'STORE_PICKUP',
+  HOME_DELIVERY = 'HOME_DELIVERY',
+}
+
+export type DeliveryType = 'STORE_PICKUP' | 'HOME_DELIVERY';
 
 export interface IAddress {
   ward: {
@@ -53,30 +71,42 @@ export interface IOrderItem {
   totalPrice?: number;
 }
 
+export interface CustomerInfo {
+  name: string;
+  email: string;
+  phone: string;
+}
+
+export interface OrderDetail {
+  orderDetailId: number;
+  quantity: number;
+  product: Product; // Using string for ObjectId
+  price: number;
+  imageId?: string;
+}
+
 // Interface chính cho Order
 export interface Order {
   _id?: string;
-  user: User;
-  fullName: string;
-  emailAddress: string;
-  address: IAddress;
-  phoneNumber: string;
-  noteAddress?: string;
-  status: OrderStatus;
-  paymentMethod: PaymentMethod;
-  isPayment: boolean;
-  items: IOrderItem[];
-  subTotal: number;
-  shippingFee: number;
-  total: number;
+  orderId: number;
+  user?: User | string; // Using string for ObjectId
+  customerInfo: CustomerInfo;
+  shippingAddress: string;
+  township?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  orderDate: Date | string;
+  paymentType: PaymentMethod; // Using PaymentMethod instead of PaymentType
+  deliveryType: DeliveryType;
+  totalPrice: number;
+  deliveryDate?: number;
+  orderDetails: OrderDetail[];
+  totalQuantity: number;
+  paymentStatus: EPaymentStatus | PaymentStatus; // Support both enum and string type
+  isPayment?: boolean; // Added based on usage in the UI
   createdAt?: string | Date;
   updatedAt?: string | Date;
-
-  // Các trường bổ sung cho frontend
-  orderNumber?: string;
-  paymentStatus?: PaymentStatus;
-  discount?: number;
-  grandTotal?: number;
 }
 
 // Thêm các trường tương thích cho code cũ

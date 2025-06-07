@@ -43,7 +43,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Get a user by id' })
   @ApiResponse({ status: 200, description: 'User fetched successfully' })
   @Get(':id')
-  // @Roles('admin')
+  @Roles('admin')
   async findOne(@Param('id') id: string) {
     const user = await this.usersService.findOne(id);
     return { user };
@@ -95,5 +95,21 @@ export class UsersController {
   async lockUser(@Param('id') id: string) {
     const user = await this.usersService.lockUser(id);
     return { user };
+  }
+
+  @Roles('admin')
+  @ApiOperation({ summary: 'Get user reports and statistics' })
+  @ApiResponse({
+    status: 200,
+    description: 'User report generated successfully',
+  })
+  @Post('/reports')
+  async getUserReport() {
+    const report = await this.usersService.getUserReport();
+
+    return {
+      success: true,
+      data: report,
+    };
   }
 }

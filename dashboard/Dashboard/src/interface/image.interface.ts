@@ -1,5 +1,8 @@
 export type Image = {
+  url: string[];
   color: string;
-  images: string[];
-  _id: string;
+  colorCode: string;
+  quantity: number;
+  size: string[];
+  _id?: string;
 }

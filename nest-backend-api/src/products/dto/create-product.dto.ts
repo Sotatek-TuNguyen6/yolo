@@ -1,121 +1,131 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsArray,
-  IsBoolean,
+  IsMongoId,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   Min,
+  ValidateNested,
 } from 'class-validator';
-import { Types } from 'mongoose';
-import { ImageGroup } from '../entities/product.entity';
+import mongoose from 'mongoose';
+import { Type } from 'class-transformer';
+
+export class ProductImageDto {
+  @ApiProperty({ description: 'Image URL' })
+  @IsString()
+  @IsNotEmpty()
+  url: string[];
+
+  @ApiProperty({ description: 'Color name associated with the image' })
+  @IsString()
+  @IsNotEmpty()
+  color: string;
+
+  @ApiProperty({ description: 'Color code (hex, rgb, etc)' })
+  @IsString()
+  @IsNotEmpty()
+  colorCode: string;
+
+  @ApiProperty({ description: 'Quantity' })
+  @IsNumber()
+  @IsNotEmpty()
+  quantity: number;
+
+  @ApiProperty({ description: 'Size' })
+  @IsString()
+  @IsNotEmpty()
+  size: string;
+}
 
 export class CreateProductDto {
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Auto incremented product ID',
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  productId?: number;
+
+  @ApiProperty({ description: 'Product name' })
   @IsNotEmpty()
   @IsString()
   name: string;
 
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({ description: 'Product description' })
+  @IsOptional()
   @IsString()
-  description: string;
+  description?: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Product price' })
   @IsNotEmpty()
   @IsNumber()
   @Min(0)
   price: number;
 
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Product images with associated colors',
+    type: [ProductImageDto],
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProductImageDto)
+  images?: ProductImageDto[];
+
+  @ApiProperty({
+    description: 'Image metadata for file uploads',
+    type: 'array',
+    required: false,
+  })
+  @IsOptional()
   @IsString()
-  category: Types.ObjectId;
+  imagesMetaRaw?: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Category ID',
+    example: '60d21b4667d0d8992e610c85',
+  })
   @IsNotEmpty()
+  @IsMongoId()
+  category: mongoose.Types.ObjectId;
+
+  @ApiProperty({
+    description: 'Product slug/detail',
+    required: false,
+  })
+  @IsOptional()
   @IsString()
-  subCategory: Types.ObjectId;
+  detail?: string;
 
-  @ApiProperty({ type: [ImageGroup] })
-  @IsArray()
-  @IsString({ each: true })
-  imageUrls: ImageGroup[];
-
-  @ApiProperty({ type: [String] })
-  @IsArray()
-  @IsString({ each: true })
-  colors: Types.ObjectId[];
-
-  @ApiProperty({ type: [String] })
-  @IsArray()
-  @IsString({ each: true })
-  sizes: Types.ObjectId[];
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsBoolean()
-  isFreeShip?: boolean;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  discount?: number;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  rating?: number;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  sold?: number;
-
-  @ApiProperty({ required: false })
+  @ApiProperty({
+    description: 'Product stock quantity',
+    default: 0,
+  })
   @IsOptional()
   @IsNumber()
   @Min(0)
   stock?: number;
 
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsNumber()
-  @Min(1)
-  availableQuantities?: number;
-
-  @ApiProperty({ required: false })
+  @ApiProperty({
+    description: 'Product discount percentage',
+    default: 0,
+  })
   @IsOptional()
   @IsNumber()
   @Min(0)
-  originPrice?: number;
+  discountPercent?: number;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({
+    description: 'Tag IDs',
+    type: [String],
+    required: false,
+    example: ['60d21b4667d0d8992e610c85'],
+  })
   @IsOptional()
-  @IsString()
-  slug?: string;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
-  summary?: string;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
-  featuredImage?: string;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
-  content?: string;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
-  subContent?: string;
+  @IsArray()
+  @IsMongoId({ each: true })
+  tags?: mongoose.Types.ObjectId[];
 }

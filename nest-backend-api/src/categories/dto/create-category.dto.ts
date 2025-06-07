@@ -1,29 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateCategoryDto {
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
+  @ApiProperty({ description: 'Category name' })
   name: string;
 
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
+  @ApiProperty({ description: 'Category description' })
   description: string;
 
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  imageUrl: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  slug: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  file: string;
+  @ApiProperty({ description: 'Category image' })
+  thumbnailImage: string;
 }

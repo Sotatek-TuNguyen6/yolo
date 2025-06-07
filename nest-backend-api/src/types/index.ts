@@ -35,4 +35,5 @@ export type IImageUrls = {
   color: Types.ObjectId;
   images: string[];
 }[];
+
 export { QueryParamsDto } from './query-params.dto';

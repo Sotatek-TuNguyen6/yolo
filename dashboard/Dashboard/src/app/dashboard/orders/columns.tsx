@@ -2,7 +2,7 @@
 
 import { ColumnDef } from '@tanstack/react-table';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Order, OrderStatus, PaymentMethod } from '@/interface/order.interface';
+import { Order, PaymentMethod, PaymentStatus } from '@/interface/order.interface';
 import { DataTableColumnHeader } from '../tasks/components/data-table-column-header';
 import { DataTableRowActions } from '../tasks/components/data-table-row-actions';
 import { Row } from '@tanstack/react-table';
@@ -22,40 +22,6 @@ import { Button } from '@/components/ui/button';
 import { useMutationRequest } from '@/hooks/useQuery';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-
-function getOrderStatusColor(status: OrderStatus) {
-  switch (status) {
-    case 'pending':
-      return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80';
-    case 'processing':
-      return 'bg-blue-100 text-blue-800 hover:bg-blue-100/80';
-    case 'shipping':
-      return 'bg-indigo-100 text-indigo-800 hover:bg-indigo-100/80';
-    case 'delivered':
-      return 'bg-green-100 text-green-800 hover:bg-green-100/80';
-    case 'cancelled':
-      return 'bg-red-100 text-red-800 hover:bg-red-100/80';
-    case 'refunded':
-      return 'bg-gray-100 text-gray-800 hover:bg-gray-100/80';
-    default:
-      return 'bg-gray-100 text-gray-800 hover:bg-gray-100/80';
-  }
-}
-
-// function getPaymentStatusColor(status: PaymentStatus) {
-//   switch (status) {
-//     case 'pending':
-//       return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80';
-//     case 'confirmed':
-//       return 'bg-green-100 text-green-800 hover:bg-green-100/80';
-//     case 'shipping':
-//       return 'bg-red-100 text-red-800 hover:bg-red-100/80';
-//     case 'refunded':
-//       return 'bg-gray-100 text-gray-800 hover:bg-gray-100/80';
-//     default:
-//       return 'bg-gray-100 text-gray-800 hover:bg-gray-100/80';
-//   }
-// }
 
 function ActionCell({ row }: { row: Row<Order> }) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -110,7 +76,7 @@ function ActionCell({ row }: { row: Row<Order> }) {
             </DialogTitle>
             <DialogDescription>
               Bạn có chắc chắn muốn xóa đơn hàng &ldquo;
-              {row.original.orderNumber || row.original._id}&rdquo;? Hành động này không thể hoàn
+              {row.original.orderId || row.original._id}&rdquo;? Hành động này không thể hoàn
               tác.
             </DialogDescription>
           </DialogHeader>
@@ -130,6 +96,21 @@ function ActionCell({ row }: { row: Row<Order> }) {
       </Dialog>
     </>
   );
+}
+
+function getPaymentStatusColor(status: PaymentStatus) {
+  switch (status) {
+    case 'pending':
+      return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80';
+    case 'paid':
+      return 'bg-green-100 text-green-800 hover:bg-green-100/80';
+    case 'failed':
+      return 'bg-red-100 text-red-800 hover:bg-red-100/80';
+    case 'refunded':
+      return 'bg-gray-100 text-gray-800 hover:bg-gray-100/80';
+    default:
+      return 'bg-gray-100 text-gray-800 hover:bg-gray-100/80';
+  }
 }
 
 export const columns: ColumnDef<Order>[] = [
@@ -157,16 +138,16 @@ export const columns: ColumnDef<Order>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'orderNumber',
+    accessorKey: 'orderId',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Mã đơn hàng" />,
     cell: ({ row }) => {
       return (
         <div className="flex space-x-2">
           <Link
-            href={`/dashboard/orders/${row.original._id}`}
+            href={`/dashboard/orders/${row.original.orderId}`}
             className="font-medium hover:underline text-blue-600"
           >
-            {row.getValue('orderNumber') || `#${row.original._id?.substring(0, 8)}`}
+            {row.getValue('orderId') || `#${row.original.orderId}`}
           </Link>
         </div>
       );
@@ -192,48 +173,22 @@ export const columns: ColumnDef<Order>[] = [
     cell: ({ row }) => {
       return (
         <div className="flex space-x-2">
-          <span className="max-w-[500px] truncate font-medium">{row.original.fullName}</span>
+          <span className="max-w-[500px] truncate font-medium">{row.original.customerInfo.name}</span>
         </div>
       );
     },
   },
   {
-    accessorKey: 'status',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Trạng thái" />,
-    cell: ({ row }) => {
-      const status = row.getValue('status') as OrderStatus;
-      const statusText: Record<OrderStatus, string> = {
-        pending: 'Đang chờ xử lý',
-        processing: 'Đang xử lý',
-        shipping: 'Đang giao hàng',
-        delivered: 'Đã giao hàng',
-        cancelled: 'Đã hủy',
-        refunded: 'Đã hoàn tiền',
-      };
-
-      return (
-        <Badge className={getOrderStatusColor(status)} variant="outline">
-          {statusText[status]}
-        </Badge>
-      );
-    },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
-    },
-  },
-  {
-    accessorKey: 'paymentMethod',
+    accessorKey: 'paymentType',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Phương thức thanh toán" />
     ),
     cell: ({ row }) => {
-      const method = row.getValue('paymentMethod') as PaymentMethod;
+      const method = row.getValue('paymentType') as PaymentMethod;
+      console.log(method);
       const methodText: Record<PaymentMethod, string> = {
-        cash: 'Tiền mặt khi nhận hàng',
-        bank_transfer: 'Chuyển khoản',
-        credit_card: 'Thẻ tín dụng',
-        momo: 'Ví MoMo',
-        zalopay: 'ZaloPay',
+        CASH_ON_DELIVERY: 'Tiền mặt khi nhận hàng',
+        BANK_TRANSFER: 'Chuyển khoản',
       };
 
       return <div className="font-medium">{methodText[method] || method}</div>;
@@ -243,17 +198,23 @@ export const columns: ColumnDef<Order>[] = [
     },
   },
   {
-    accessorKey: 'isPayment',
+    accessorKey: 'paymentStatus',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Trạng thái thanh toán" />,
     cell: ({ row }) => {
-      const isPayment = row.getValue('isPayment') as boolean;
+      const isPayment = row.getValue('paymentStatus') as PaymentStatus;
       console.log(isPayment);
+      const paymentStatusText: Record<PaymentStatus, string> = {
+        pending: 'Chờ thanh toán',
+        paid: 'Đã thanh toán',
+        failed: 'Thất bại',
+        refunded: 'Đã hoàn tiền',
+      };
       return (
         <Badge
           variant="outline"
-          className={isPayment ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
+          className={getPaymentStatusColor(isPayment)}
         >
-          {isPayment ? 'Đã thanh toán' : 'Chờ thanh toán'}
+          {paymentStatusText[isPayment]}
         </Badge>
       );
     },
@@ -262,11 +223,10 @@ export const columns: ColumnDef<Order>[] = [
     },
   },
   {
-    accessorKey: 'total',
+    accessorKey: 'totalPrice',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Tổng tiền" />,
     cell: ({ row }) => {
-      const totalValue = row.getValue('total') as number;
-      console.log(totalValue);
+      const totalValue = (row.getValue('totalPrice') as number) || 0;
       return <div className="font-medium">{totalValue.toLocaleString('vi-VN')} VND</div>;
     },
   },

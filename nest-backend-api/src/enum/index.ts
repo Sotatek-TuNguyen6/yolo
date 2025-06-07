@@ -35,3 +35,20 @@ export enum PaymentMethodOrder {
   MOMO = 'momo', // paid by Momo
   PAYPAL = 'paypal', // paid by Paypal
 }
+
+export enum PaymentType {
+  CASH_ON_DELIVERY = 'CASH_ON_DELIVERY',
+  BANK_TRANSFER = 'BANK_TRANSFER',
+}
+
+export enum DeliveryType {
+  STORE_PICKUP = 'STORE_PICKUP',
+  OTHER = 'OTHER',
+}
+
+export enum PaymentStatus {
+  PENDING = 'pending',
+  PAID = 'paid',
+  FAILED = 'failed',
+  REFUNDED = 'refunded',
+}

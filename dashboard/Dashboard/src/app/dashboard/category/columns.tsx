@@ -43,17 +43,13 @@ const categoryFormSchema = z.object({
   }),
   description: z.string().min(1, {
     message: 'Mô tả phải có ít nhất 10 ký tự',
-  }),
-  slug: z.string().min(1, {
-    message: 'Slug phải có ít nhất 3 ký tự',
-  }),
+  })
 });
 
 // Define form type
 type CategoryFormValues = {
   name: string;
   description: string;
-  slug: string;
 };
 
 // Category Detail Dialog Component
@@ -74,7 +70,6 @@ function CategoryDetailDialog({
     defaultValues: {
       name: category.name,
       description: category.description,
-      slug: category.slug,
     },
   });
 
@@ -140,20 +135,6 @@ function CategoryDetailDialog({
 
               <FormField
                 control={form.control}
-                name="slug"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Slug</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
                 name="description"
                 render={({ field }) => (
                   <FormItem>
@@ -173,9 +154,9 @@ function CategoryDetailDialog({
               <div className="space-y-2">
                 <Label>Ảnh danh mục</Label>
                 <div className="flex flex-wrap gap-4 border rounded-md p-2 bg-muted">
-                  {category.imageUrl && (
+                  {category.thumbnailImage && (
                     <Image
-                      src={category.imageUrl}
+                      src={category.thumbnailImage}
                       alt={category.name}
                       width={100}
                       height={60}
@@ -199,10 +180,10 @@ function CategoryDetailDialog({
         // Chế độ xem thông tin
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
           <div>
-            {category.imageUrl && (
+            {category.thumbnailImage && (
               <div className="rounded-md overflow-hidden relative">
                 <Image
-                  src={category.imageUrl}
+                  src={category.thumbnailImage}
                   alt={category.name}
                   width={400}
                   height={300}
@@ -216,11 +197,6 @@ function CategoryDetailDialog({
             <div>
               <Label className="font-bold">Tên danh mục</Label>
               <p className="text-sm text-muted-foreground">{category.name}</p>
-            </div>
-
-            <div>
-              <Label className="font-bold">Slug</Label>
-              <p className="text-sm text-muted-foreground">{category.slug}</p>
             </div>
 
             <div>
@@ -378,16 +354,23 @@ export const columns: ColumnDef<Category>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: 'imageUrl',
+    accessorKey: 'categoryId',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="ID" />,
+    cell: ({ row }) => {
+      return <div className="flex space-x-2">{row.getValue('categoryId')}</div>;
+    },
+  },
+  {
+    accessorKey: 'thumbnailImage',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Ảnh" />,
     cell: ({ row }) => {
-      const imageUrl = row.getValue('imageUrl') as string;
+      const thumbnailImage = row.getValue('thumbnailImage') as string;
       return (
         <div className="flex space-x-2">
           <Dialog>
             <DialogTrigger>
               <Image
-                src={imageUrl}
+                src={thumbnailImage}
                 alt="Category Image"
                 width={50}
                 height={50}
@@ -396,7 +379,7 @@ export const columns: ColumnDef<Category>[] = [
             </DialogTrigger>
             <DialogContent className="max-w-3xl p-0">
               <Image
-                src={imageUrl}
+                src={thumbnailImage}
                 alt="Category Image"
                 width={800}
                 height={600}
@@ -432,17 +415,6 @@ export const columns: ColumnDef<Category>[] = [
       );
     },
     enableSorting: false,
-  },
-  {
-    accessorKey: 'slug',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Slug" />,
-    cell: ({ row }) => {
-      return (
-        <div className="flex space-x-2">
-          <span className="max-w-[150px] truncate font-medium">{row.getValue('slug')}</span>
-        </div>
-      );
-    },
   },
   {
     accessorKey: 'createdAt',

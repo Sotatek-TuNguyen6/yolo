@@ -7,30 +7,22 @@ import {
   Param,
   Delete,
   UseGuards,
-  UseInterceptors,
-  UploadedFile,
   BadRequestException,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import {
-  ApiBearerAuth,
-  ApiTags,
-  ApiOperation,
-  ApiBody,
-  ApiResponse,
-  ApiConsumes,
-} from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
+import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
+import { ApiConsumes, ApiOperation } from '@nestjs/swagger';
 import { RolesGuard } from 'src/decorator/roles.guard';
+import { AuthGuard } from '@nestjs/passport';
+import { ApiResponse } from '@nestjs/swagger';
 import { Category } from './entities/category.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from 'src/upload/upload.service';
-import { Roles } from 'src/decorator/roles.decorator';
-import { UserRole } from 'src/enum';
 
-@ApiTags('Categories')
 @Controller('categories')
 export class CategoriesController {
   constructor(
@@ -47,8 +39,8 @@ export class CategoriesController {
     description: 'The category has been successfully created.',
     type: Category,
   })
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(UserRole.ADMIN)
+  // @UseGuards(AuthGuard('jwt'), RolesGuard)
+  // @Roles(UserRole.ADMIN)
   async create(@Body() createCategoryDto: CreateCategoryDto) {
     const categories = await this.categoriesService.create(createCategoryDto);
     return {
@@ -78,24 +70,24 @@ export class CategoriesController {
     type: Category,
   })
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(UserRole.ADMIN)
+  // @Roles(UserRole.ADMIN)
   @UseInterceptors(FileInterceptor('file'))
   async createWithImage(
     @Body() createCategoryDto: CreateCategoryDto,
-    @UploadedFile() files: Express.Multer.File,
+    @UploadedFile() file: Express.Multer.File,
   ) {
     try {
-      if (!files) {
+      if (!file) {
         throw new BadRequestException('Ảnh là bắt buộc');
       }
 
       // Upload ảnh
-      const uploadedImage = await this.uploadService.uploadFile(files);
+      const uploadedImage = await this.uploadService.uploadFile(file);
 
       // Tạo category với URL ảnh từ upload
       const category = await this.categoriesService.create({
         ...createCategoryDto,
-        imageUrl: uploadedImage.url,
+        thumbnailImage: uploadedImage.url,
       });
 
       return { category };
@@ -109,7 +101,6 @@ export class CategoriesController {
       );
     }
   }
-
   @Get()
   @ApiOperation({ summary: 'Get all categories' })
   @ApiResponse({
@@ -119,9 +110,7 @@ export class CategoriesController {
   })
   async findAll() {
     const categories = await this.categoriesService.findAll();
-    return {
-      categories,
-    };
+    return categories;
   }
 
   @Get(':id')

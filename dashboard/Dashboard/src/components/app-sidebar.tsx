@@ -6,11 +6,9 @@ import {
   SidebarMenu,
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { LucideIcon, User } from 'lucide-react';
+import { LucideIcon, Tag, User } from 'lucide-react';
 import {
   Home,
-  DatabaseIcon,
-  MenuIcon,
   ChevronRight,
   Package,
   Layers,
@@ -34,7 +32,7 @@ const sidebarItems: SidebarItemType[] = [
   },
   {
     title: 'Product',
-    icon: DatabaseIcon,
+    icon: Package,
     children: [
       {
         title: 'List Product',
@@ -45,7 +43,7 @@ const sidebarItems: SidebarItemType[] = [
   },
   {
     title: 'Orders',
-    icon: DatabaseIcon,
+    icon: ShoppingCart,
     children: [
       {
         title: 'List Orders',
@@ -56,7 +54,7 @@ const sidebarItems: SidebarItemType[] = [
   },
   {
     title: 'User',
-    icon: DatabaseIcon,
+    icon: User,
     children: [
       {
         title: 'List User',
@@ -67,70 +65,23 @@ const sidebarItems: SidebarItemType[] = [
   },
   {
     title: 'Category',
-    icon: DatabaseIcon,
+    icon: Layers,
     children: [
       {
         title: 'List Category',
         url: '/dashboard/category',
         icon: Layers,
-      },
-      {
-        title: 'List Sub Category',
-        url: '/dashboard/sub-category',
-        icon: Layers,
-      },
+      }
     ],
   },
   {
-    title: 'Sizes',
-    icon: DatabaseIcon,
+    title: 'Tags',
+    icon: Tag,
     children: [
       {
-        title: 'List Sizes',
-        url: '/dashboard/sizes',
-        icon: Layers,
-      },
-    ],
-  },
-  {
-    title: 'Colors',
-    icon: DatabaseIcon,
-    children: [
-      {
-        title: 'List Colors',
-        url: '/dashboard/colors',
-        icon: Layers,
-      },
-    ],
-  },
-  {
-    title: 'Menu Level',
-    icon: MenuIcon,
-    children: [
-      {
-        title: 'Level 1',
-        url: '/admin/level-1',
-      },
-      {
-        title: 'Level 2',
-        children: [
-          {
-            title: 'Level 2',
-            url: '/admin/level-2-1',
-          },
-          {
-            title: 'Level 2',
-            url: '/admin/level-2-2',
-          },
-          {
-            title: 'Level 2',
-            url: '/admin/level-2-3',
-          },
-        ],
-      },
-      {
-        title: 'Level 3',
-        url: '/admin/level-3',
+        title: 'List Tags',
+        url: '/dashboard/tags',
+        icon: Tag,
       },
     ],
   },

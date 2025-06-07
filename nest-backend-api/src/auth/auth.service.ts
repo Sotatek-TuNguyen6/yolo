@@ -8,17 +8,14 @@ import { JwtService } from '@nestjs/jwt';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { JwtPayloadResetPassword } from 'src/types';
 import { ResetPasswordDto } from './dto/reset-auth.dto';
-import { UserStatus } from 'src/enum';
 import { User } from 'src/users/entities/user.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { TokenBlacklist } from './schema/token-blacklist.schema';
 import { Model } from 'mongoose';
 
-// Định nghĩa interface cho token payload
-interface TokenPayload {
-  exp: number;
-  sub: string;
-  [key: string]: any;
+export interface RegisterResponse {
+  userId: string;
+  token: string;
 }
 
 @Injectable()
@@ -48,40 +45,22 @@ export class AuthService {
     });
   }
 
-  async register(createUserDto: CreateUserDto): Promise<User> {
-    const { password, address } = createUserDto;
+  async register(createUserDto: CreateUserDto): Promise<RegisterResponse> {
+    const { password } = createUserDto;
     const hashedPassword = await this.hashPassword(password);
 
-    // Xóa địa chỉ từ createUserDto để tạo user trước
-    const userDataToCreate = {
+    const user = await this.usersService.create({
       ...createUserDto,
       password: hashedPassword,
-    };
-    delete userDataToCreate.address;
+    });
 
-    // Tạo người dùng
-    const user = await this.usersService.create(userDataToCreate);
+    const token = this.jwtService.sign({
+      sub: user._id,
+      role: user.role,
+      email: user.email,
+    });
 
-    // Nếu có địa chỉ, tạo địa chỉ cho người dùng
-    if (address && user) {
-      // Tự động đặt là địa chỉ mặc định nếu không có giá trị
-      if (address.isDefault === undefined) {
-        address.isDefault = true;
-      }
-
-      // Tự động sử dụng tên và số điện thoại từ thông tin đăng ký nếu không cung cấp
-      if (!address.fullName) {
-        address.fullName = createUserDto.fullName;
-      }
-
-      if (!address.phoneNumber) {
-        address.phoneNumber = createUserDto.phoneNumber;
-      }
-
-      await this.usersService.createAddress(address, user._id as string);
-    }
-
-    return user;
+    return { userId: user._id as string, token };
   }
 
   async login(
@@ -99,7 +78,7 @@ export class AuthService {
       throw new UnauthorizedException('Mật khẩu không chính xác');
     }
 
-    if (user.status === UserStatus.INACTIVE) {
+    if (!user.active) {
       throw new UnauthorizedException('Tài khoản đã bị khóa');
     }
 
@@ -107,7 +86,6 @@ export class AuthService {
       sub: user._id,
       role: user.role,
       email: user.email,
-      gender: user.gender,
     });
 
     const userNotPassword = await this.usersService.findOne(user._id as string);
@@ -119,41 +97,41 @@ export class AuthService {
     return { token, user: userNotPassword };
   }
 
-  async logout(token: string, userId: string): Promise<boolean> {
-    try {
-      // Giải mã token để lấy thông tin hết hạn
-      const decodedToken: unknown = this.jwtService.decode(token);
-      if (
-        !decodedToken ||
-        typeof decodedToken !== 'object' ||
-        !('exp' in decodedToken)
-      ) {
-        throw new UnauthorizedException('Invalid token');
-      }
+  // async logout(token: string, userId: string): Promise<boolean> {
+  //   try {
+  //     // Giải mã token để lấy thông tin hết hạn
+  //     const decodedToken: unknown = this.jwtService.decode(token);
+  //     if (
+  //       !decodedToken ||
+  //       typeof decodedToken !== 'object' ||
+  //       !('exp' in decodedToken)
+  //     ) {
+  //       throw new UnauthorizedException('Invalid token');
+  //     }
 
-      // Tạo đối tượng expiresAt từ timestamp trong token
-      const payload = decodedToken as TokenPayload;
-      const expiresAt = new Date(payload.exp * 1000);
+  //     // Tạo đối tượng expiresAt từ timestamp trong token
+  //     const payload = decodedToken as TokenPayload;
+  //     const expiresAt = new Date(payload.exp * 1000);
 
-      // Kiểm tra xem token đã có trong blacklist chưa
-      const existingToken = await this.tokenBlacklistModel.findOne({ token });
-      if (existingToken) {
-        return true; // Token đã bị vô hiệu hóa trước đó
-      }
+  //     // Kiểm tra xem token đã có trong blacklist chưa
+  //     const existingToken = await this.tokenBlacklistModel.findOne({ token });
+  //     if (existingToken) {
+  //       return true; // Token đã bị vô hiệu hóa trước đó
+  //     }
 
-      // Thêm token vào blacklist
-      await this.tokenBlacklistModel.create({
-        token,
-        userId,
-        expiresAt,
-      });
+  //     // Thêm token vào blacklist
+  //     await this.tokenBlacklistModel.create({
+  //       token,
+  //       userId,
+  //       expiresAt,
+  //     });
 
-      return true;
-    } catch (error) {
-      console.error('Error invalidating token:', error);
-      return false;
-    }
-  }
+  //     return true;
+  //   } catch (error) {
+  //     console.error('Error invalidating token:', error);
+  //     return false;
+  //   }
+  // }
 
   async isTokenBlacklisted(token: string): Promise<boolean> {
     const blacklistedToken = await this.tokenBlacklistModel.findOne({ token });
@@ -192,7 +170,7 @@ export class AuthService {
       throw new UnauthorizedException('User không tồn tại');
     }
 
-    if (user.status === UserStatus.INACTIVE) {
+    if (!user.active) {
       throw new UnauthorizedException('Tài khoản đã bị khóa');
     }
 

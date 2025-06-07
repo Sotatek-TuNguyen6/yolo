@@ -7,15 +7,11 @@ import { UsersModule } from './users/users.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
-import { AddressModule } from './address/address.module';
 import { ProductsModule } from './products/products.module';
-import { ColorsModule } from './colors/colors.module';
-import { CategoriesModule } from './categories/categories.module';
-import { SubCategoryModule } from './sub-category/sub-category.module';
-import { CommentsModule } from './comments/comments.module';
-import { SizeModule } from './size/size.module';
-import { CartsModule } from './carts/carts.module';
 import { UploadModule } from './upload/upload.module';
+import { TagsModule } from './tags/tags.module';
+import { ReportModule } from './report/report.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
@@ -31,15 +27,11 @@ import { UploadModule } from './upload/upload.module';
     UsersModule,
     AuthModule,
     MailModule,
-    AddressModule,
     ProductsModule,
-    ColorsModule,
-    CategoriesModule,
-    SubCategoryModule,
-    CommentsModule,
-    SizeModule,
-    CartsModule,
     UploadModule,
+    TagsModule,
+    ReportModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
