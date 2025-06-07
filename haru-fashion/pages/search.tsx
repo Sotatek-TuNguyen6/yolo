@@ -63,7 +63,7 @@ const Search: React.FC<Props> = ({ items, searchWord }) => {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-10 sm:gap-y-6 mb-10">
               {items.map((item) => (
-                <Card key={item.id} item={item} />
+                <Card key={item.productId} item={item} />
               ))}
             </div>
           )}
@@ -81,13 +81,13 @@ export const getServerSideProps: GetServerSideProps = async ({
   query: { q = "" },
 }) => {
   const res = await axios.get(
-    `${process.env.NEXT_PUBLIC_PROD_BACKEND_URL}/api/v1/products/search?q=${q}`
+    `${process.env.NEXT_PUBLIC_PROD_BACKEND_URL}/api/v1/products/search/any/product?q=${q}`
   );
   const fetchedProducts: apiProductsType[] = res.data.data.map(
     (product: apiProductsType) => ({
       ...product,
-      img1: product.image1,
-      img2: product.image2,
+      img1: product.images?.[0],
+      img2: product.images?.[1],
     })
   );
 

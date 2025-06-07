@@ -9,7 +9,7 @@ module.exports = withPWA({
   reactStrictMode: true,
   // swcMinify: true,
   compiler: {
-    removeConsole: process.env.NODE_ENV === "production",
+    removeConsole: true,
   },
   images: {
     domains: ["robohash.org", "res.cloudinary.com"],

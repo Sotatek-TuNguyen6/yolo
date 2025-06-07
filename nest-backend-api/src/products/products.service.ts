@@ -557,4 +557,13 @@ export class ProductsService {
     await product.save();
     return product;
   }
+
+  async querySearch(query: { q: string }) {
+    const products = await this.productModel
+      .find({
+        name: { $regex: query.q, $options: 'i' },
+      })
+      .populate(populate);
+    return products;
+  }
 }

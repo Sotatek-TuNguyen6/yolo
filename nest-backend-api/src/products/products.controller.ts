@@ -162,6 +162,16 @@ export class ProductsController {
     };
   }
 
+  @Get('/search/any/product')
+  @ApiOperation({ summary: 'Search products' })
+  @ApiResponse({
+    status: 200,
+    description: 'The products has been successfully fetched.',
+  })
+  async getAnyProduct(@Query() query: { q: string }) {
+    const products = await this.productsService.querySearch(query);
+    return products;
+  }
   @Get('/:productId')
   @ApiOperation({ summary: 'Get a product by productId' })
   @ApiResponse({

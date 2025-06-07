@@ -16,7 +16,7 @@ export default function SearchForm() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
-  const [searchItems, setSearchItems] = useState<itemType[]>([]);
+  const [searchItems, setSearchItems] = useState<apiProductsType[]>([]);
   const [isFetching, setIsFetching] = useState(false);
   const [noResult, setNoResult] = useState(false);
   const [moreThanFour, setMoreThanFour] = useState(false);
@@ -36,13 +36,13 @@ export default function SearchForm() {
     if (!isFetching) return;
     const fetchData = async () => {
       const res = await axios.get(
-        `${process.env.NEXT_PUBLIC_PROD_BACKEND_URL}/api/v1/products/search?q=${searchValue}`
+        `${process.env.NEXT_PUBLIC_PROD_BACKEND_URL}/api/v1/products/search/any/product?q=${searchValue}`
       );
       const fetchedProducts: apiProductsType[] = res.data.data.map(
         (product: apiProductsType) => ({
           ...product,
-          img1: product.image1,
-          img2: product.image2,
+          img1: product?.images?.[0],
+          img2: product?.images?.[1],
         })
       );
       if (fetchedProducts.length < 1) setNoResult(true);
@@ -160,7 +160,7 @@ export default function SearchForm() {
                         }}
                       >
                         {searchItems.map((item) => (
-                          <Card key={item.id} item={item} />
+                          <Card key={item.productId} item={item} />
                         ))}
                       </div>
                       {moreThanFour && (
