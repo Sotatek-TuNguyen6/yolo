@@ -83,6 +83,7 @@ export interface OrderDetail {
   product: Product; // Using string for ObjectId
   price: number;
   imageId?: string;
+  size?: string;
 }
 
 // Interface chính cho Order
@@ -104,6 +105,7 @@ export interface Order {
   orderDetails: OrderDetail[];
   totalQuantity: number;
   paymentStatus: EPaymentStatus | PaymentStatus; // Support both enum and string type
+  orderStatus?: OrderStatus; // Add orderStatus field
   isPayment?: boolean; // Added based on usage in the UI
   createdAt?: string | Date;
   updatedAt?: string | Date;

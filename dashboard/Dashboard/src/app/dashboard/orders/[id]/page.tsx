@@ -1,7 +1,7 @@
 'use client';
 
 import { useQueryRequest, useMutationRequest } from '@/hooks/useQuery';
-import { EPaymentStatus, Order, PaymentStatus } from '@/interface/order.interface';
+import { EPaymentStatus, Order, PaymentStatus, OrderStatus } from '@/interface/order.interface';
 import { CommonResponse } from '@/types/common';
 import { LoadingSpinner } from '@/components/Loading';
 import { Button } from '@/components/ui/button';
@@ -40,7 +40,26 @@ import { useState } from 'react';
 
 type OrderDetailData = CommonResponse<Order>;
 
-function getOrderStatusColor(status: PaymentStatus) {
+function getOrderStatusColor(status: OrderStatus) {
+  switch (status) {
+    case 'pending':
+      return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80';
+    case 'processing':
+      return 'bg-blue-100 text-blue-800 hover:bg-blue-100/80';
+    case 'shipping':
+      return 'bg-indigo-100 text-indigo-800 hover:bg-indigo-100/80';
+    case 'delivered':
+      return 'bg-green-100 text-green-800 hover:bg-green-100/80';
+    case 'cancelled':
+      return 'bg-red-100 text-red-800 hover:bg-red-100/80';
+    case 'refunded':
+      return 'bg-gray-100 text-gray-800 hover:bg-gray-100/80';
+    default:
+      return 'bg-gray-100 text-gray-800 hover:bg-gray-100/80';
+  }
+}
+
+function getPaymentStatusColor(status: PaymentStatus) {
   switch (status) {
     case EPaymentStatus.PENDING:
       return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80';
@@ -70,6 +89,7 @@ export default function OrderDetailPage() {
   const router = useRouter();
   const { id } = useParams();
   const [isUpdatingPayment, setIsUpdatingPayment] = useState(false);
+  const [isUpdatingOrderStatus, setIsUpdatingOrderStatus] = useState(false);
 
   // Fetch order details
   const { data: orderData, isLoading } = useQueryRequest<OrderDetailData>({
@@ -86,6 +106,19 @@ export default function OrderDetailPage() {
     mutationOptions: {
       onSuccess: () => {
         setIsUpdatingPayment(false);
+      },
+    },
+  });
+  // Add order status mutation
+  const { mutate: updateOrderStatus } = useMutationRequest<Order, { orderStatus: OrderStatus }>({
+    url: `/orders/${id}/order-status`,
+    method: 'patch',
+    successMessage: 'Cập nhật trạng thái đơn hàng thành công',
+    errorMessage: 'Cập nhật trạng thái đơn hàng thất bại',
+    queryKey: ['order', id],
+    mutationOptions: {
+      onSuccess: () => {
+        setIsUpdatingOrderStatus(false);
       },
     },
   });
@@ -144,10 +177,15 @@ export default function OrderDetailPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Badge className={getOrderStatusColor(order.paymentStatus)} variant="outline">
-            {statusText[order.paymentStatus]}
+          {order.orderStatus && (
+            <Badge className={getOrderStatusColor(order.orderStatus)} variant="outline">
+              {statusText[order.orderStatus]}
+            </Badge>
+          )}
+          <Badge className={getPaymentStatusColor(order.paymentStatus as PaymentStatus)} variant="outline">
+            {statusText[order.paymentStatus as PaymentStatus]}
           </Badge>
-          <Badge className={getPaymentStatusBadge(order.paymentStatus)} variant="outline">
+          <Badge className={getPaymentStatusBadge(order.paymentStatus as PaymentStatus)} variant="outline">
             {order.isPayment ? 'Đã thanh toán' : 'Chưa thanh toán'}
           </Badge>
         </div>
@@ -209,9 +247,39 @@ export default function OrderDetailPage() {
               </div>
             </div>
 
-            <div>
-              <h3 className="font-medium text-sm">Ghi chú đơn hàng</h3>
-              <p className="text-wrap">{'Không có ghi chú'}</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <h3 className="font-medium text-sm">Trạng thái đơn hàng</h3>
+                <div className="mt-1">
+                  <Select
+                    defaultValue={order.orderStatus || 'pending'}
+                    onValueChange={value => {
+                      setIsUpdatingOrderStatus(true);
+                      updateOrderStatus({
+                        orderStatus: value as OrderStatus,
+                      });
+                    }}
+                    disabled={isUpdatingOrderStatus}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Chọn trạng thái đơn hàng" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Đang chờ xử lý</SelectItem>
+                      <SelectItem value="processing">Đang xử lý</SelectItem>
+                      <SelectItem value="shipping">Đang giao hàng</SelectItem>
+                      <SelectItem value="delivered">Đã giao hàng</SelectItem>
+                      <SelectItem value="cancelled">Đã hủy</SelectItem>
+                      <SelectItem value="refunded">Đã hoàn tiền</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-medium text-sm">Ghi chú đơn hàng</h3>
+                <p className="text-wrap">{'Không có ghi chú'}</p>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -309,7 +377,7 @@ export default function OrderDetailPage() {
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className="text-xs">
-                        {detail.product.images[0].size}
+                        {detail.size}
                       </Badge>
                     </TableCell>
                     <TableCell>

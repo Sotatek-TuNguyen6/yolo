@@ -39,8 +39,10 @@ export type imagesType = {
   color: string;
   colorCode: string;
   _id: string;
-  quantity?: number;
-  size?: string;
+  sizeQuantities?: {
+    size: string;
+    quantity: number;
+  }[];
 };
 
 export type TagType = {

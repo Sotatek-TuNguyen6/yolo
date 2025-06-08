@@ -25,16 +25,16 @@ import { useMutationRequest } from '@/hooks/useQuery';
 import { Category } from '@/types/category';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-
+import { Image as ImageType } from '@/interface/image.interface';
 // Define ProductImage interface to match the schema
-interface ProductImage {
-  _id?: string;
-  url: string[];
-  color: string;
-  colorCode: string;
-  quantity: number;
-  size: string[];
-}
+// interface ProductImage {
+//   _id?: string;
+//   url: string[];
+//   color: string;
+//   colorCode: string;
+//   quantity: number;
+//   size: string[];
+// }
 
 // Action cell component to avoid useState in cell function
 function ActionCell({ row }: { row: Row<Product> }) {
@@ -328,7 +328,7 @@ export function ProductImagesExpanded({ product }: { product: Product }) {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {product.images && product.images.length > 0 ? (
-          product.images.map((imageObj: ProductImage, idx: number) => (
+          product.images.map((imageObj: ImageType, idx: number) => (
             <div
               key={`${imageObj._id || idx}`}
               className="bg-white dark:bg-gray-800 p-3 rounded-md shadow-sm"
@@ -345,10 +345,10 @@ export function ProductImagesExpanded({ product }: { product: Product }) {
                 </Badge>
 
                 <Badge variant="outline" className="mr-1">
-                  Size: {imageObj.size.join(', ') || 'N/A'}
+                  Size: {imageObj.sizeQuantities.map(sq => sq.size).join(', ') || 'N/A'}
                 </Badge>
 
-                <Badge variant="secondary">SL: {imageObj.quantity || 0}</Badge>
+                <Badge variant="secondary">SL: {imageObj.sizeQuantities.map(sq => sq.quantity).join(', ') || 0}</Badge>
               </div>
 
               <div className="flex flex-wrap gap-2 mt-3">
@@ -385,9 +385,9 @@ export function ProductImagesExpanded({ product }: { product: Product }) {
                               {imageObj.color || 'Không có màu'}
                             </Badge>
                             <Badge variant="outline" className="bg-white/20">
-                              Size: {imageObj.size.join(', ') || 'N/A'}
+                              Size: {imageObj.sizeQuantities.map(sq => sq.size).join(', ') || 'N/A'}
                             </Badge>
-                            <Badge variant="secondary">SL: {imageObj.quantity || 0}</Badge>
+                            <Badge variant="secondary">SL: {imageObj.sizeQuantities.map(sq => sq.quantity).join(', ') || 0}</Badge>
                           </div>
                         </div>
                       </div>

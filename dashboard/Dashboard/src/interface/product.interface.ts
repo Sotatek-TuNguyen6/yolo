@@ -9,6 +9,7 @@ export interface Product {
   name: string;
   description?: string;
   detail?: string;
+  slug?: string;
   
   price: number;
   discountPercent?: number;

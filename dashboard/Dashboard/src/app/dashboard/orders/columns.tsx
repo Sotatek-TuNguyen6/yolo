@@ -2,7 +2,7 @@
 
 import { ColumnDef } from '@tanstack/react-table';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Order, PaymentMethod, PaymentStatus } from '@/interface/order.interface';
+import { Order, PaymentMethod, PaymentStatus, OrderStatus } from '@/interface/order.interface';
 import { DataTableColumnHeader } from '../tasks/components/data-table-column-header';
 import { DataTableRowActions } from '../tasks/components/data-table-row-actions';
 import { Row } from '@tanstack/react-table';
@@ -22,9 +22,11 @@ import { Button } from '@/components/ui/button';
 import { useMutationRequest } from '@/hooks/useQuery';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 function ActionCell({ row }: { row: Row<Order> }) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const router = useRouter();
 
   const { mutate: deleteOrder, isPending: isDeleting } = useMutationRequest<
     { success: boolean },
@@ -49,12 +51,12 @@ function ActionCell({ row }: { row: Row<Order> }) {
         actions={[
           {
             label: 'Xem chi tiết',
-            onClick: () => {},
+            onClick: () => router.push(`/dashboard/orders/${row.original.orderId}`),
             icon: <Eye className="h-4 w-4" />,
           },
           {
             label: 'Chỉnh sửa',
-            onClick: () => {},
+            onClick: () => router.push(`/dashboard/orders/${row.original.orderId}/edit`),
             icon: <Edit className="h-4 w-4" />,
           },
           {
@@ -105,6 +107,25 @@ function getPaymentStatusColor(status: PaymentStatus) {
     case 'paid':
       return 'bg-green-100 text-green-800 hover:bg-green-100/80';
     case 'failed':
+      return 'bg-red-100 text-red-800 hover:bg-red-100/80';
+    case 'refunded':
+      return 'bg-gray-100 text-gray-800 hover:bg-gray-100/80';
+    default:
+      return 'bg-gray-100 text-gray-800 hover:bg-gray-100/80';
+  }
+}
+
+function getOrderStatusColor(status: OrderStatus) {
+  switch (status) {
+    case 'pending':
+      return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80';
+    case 'processing':
+      return 'bg-blue-100 text-blue-800 hover:bg-blue-100/80';
+    case 'shipping':
+      return 'bg-indigo-100 text-indigo-800 hover:bg-indigo-100/80';
+    case 'delivered':
+      return 'bg-green-100 text-green-800 hover:bg-green-100/80';
+    case 'cancelled':
       return 'bg-red-100 text-red-800 hover:bg-red-100/80';
     case 'refunded':
       return 'bg-gray-100 text-gray-800 hover:bg-gray-100/80';
@@ -215,6 +236,35 @@ export const columns: ColumnDef<Order>[] = [
           className={getPaymentStatusColor(isPayment)}
         >
           {paymentStatusText[isPayment]}
+        </Badge>
+      );
+    },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id));
+    },
+  },
+  {
+    accessorKey: 'orderStatus',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Trạng thái đơn hàng" />,
+    cell: ({ row }) => {
+      const status = row.getValue('orderStatus') as OrderStatus;
+      const orderStatusText: Record<OrderStatus, string> = {
+        pending: 'Chờ xử lý',
+        processing: 'Đang xử lý',
+        shipping: 'Đang giao hàng',
+        delivered: 'Đã giao hàng',
+        cancelled: 'Đã hủy',
+        refunded: 'Đã hoàn tiền',
+      };
+      
+      if (!status) return null;
+      
+      return (
+        <Badge
+          variant="outline"
+          className={getOrderStatusColor(status)}
+        >
+          {orderStatusText[status] || status}
         </Badge>
       );
     },

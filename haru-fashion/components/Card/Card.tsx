@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
@@ -25,9 +25,10 @@ const Card: FC<Props> = ({ item }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isWLHovered, setIsWLHovered] = useState(false);
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
+  const [selectedSizeIndex, setSelectedSizeIndex] = useState(0);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
 
-  const { name, price, discountPercent, images, productId, tags, size } = item;
+  const { name, price, discountPercent, images, productId, tags } = item;
 
   const itemLink = `/products/${encodeURIComponent(productId)}`;
 
@@ -51,6 +52,10 @@ const Card: FC<Props> = ({ item }) => {
   // Lấy thông tin màu đã chọn
   const selectedColor = uniqueColors[selectedColorIndex];
 
+  // Lấy danh sách size từ ảnh đã chọn
+  const availableSizes = selectedImage.sizeQuantities || [];
+  const selectedSize = availableSizes[selectedSizeIndex] || "";
+
   // Chuyển đổi item từ cart-types sang wishlist-types với thông tin màu sắc đã chọn
   const wishlistItem: WishlistItemType = {
     id: productId,
@@ -62,7 +67,7 @@ const Card: FC<Props> = ({ item }) => {
       colorName: selectedColor?.color || "",
     },
     selectedImageId: selectedImage._id,
-    size: size,
+    size: selectedSize.size,
     cartImage: Array.isArray(selectedImage.url) ? selectedImage.url[0] : selectedImage.url
   };
 
@@ -86,7 +91,23 @@ const Card: FC<Props> = ({ item }) => {
 
   const handleColorSelect = (index: number) => {
     setSelectedColorIndex(index);
+    
+    // Find the first available size with stock after color change
+    const newImage = images.find(
+      (img) => img.colorCode === uniqueColors[index]?.colorCode
+    ) || images[0];
+    
+    const newSizes = newImage.sizeQuantities || [];
+    const firstInStockSizeIndex = newSizes.findIndex(size => size.quantity > 0);
+    
+    // Set to first in-stock size or 0 if all are out of stock
+    setSelectedSizeIndex(firstInStockSizeIndex >= 0 ? firstInStockSizeIndex : 0);
+    
     setIsImageLoaded(false); // Reset trạng thái load khi đổi màu
+  };
+
+  const handleSizeSelect = (index: number) => {
+    setSelectedSizeIndex(index);
   };
 
   // Helper function to format price based on locale
@@ -103,6 +124,31 @@ const Card: FC<Props> = ({ item }) => {
   const discountedPrice = hasDiscount 
     ? price - (price * (discountPercent / 100))
     : price;
+
+  // Check if selected size is out of stock
+  const selectedSizeOutOfStock = availableSizes.length > 0 && 
+    availableSizes[selectedSizeIndex] && 
+    availableSizes[selectedSizeIndex].quantity <= 0;
+
+  // Find and select the first in-stock size on initial render
+  useEffect(() => {
+    if (availableSizes.length > 0) {
+      const firstInStockSizeIndex = availableSizes.findIndex(size => size.quantity > 0);
+      if (firstInStockSizeIndex >= 0) {
+        setSelectedSizeIndex(firstInStockSizeIndex);
+      }
+    }
+  }, []);
+
+  // Update selected size when availableSizes changes (when color changes)
+  useEffect(() => {
+    if (availableSizes.length > 0) {
+      const firstInStockSizeIndex = availableSizes.findIndex(size => size.quantity > 0);
+      if (firstInStockSizeIndex >= 0 && selectedSizeOutOfStock) {
+        setSelectedSizeIndex(firstInStockSizeIndex);
+      }
+    }
+  }, [selectedImage._id, availableSizes, selectedSizeOutOfStock]);
 
   return (
     <div className={styles.card}>
@@ -168,11 +214,15 @@ const Card: FC<Props> = ({ item }) => {
               colorName: selectedColor?.color || "",
             },
             selectedImageId: selectedImage._id,
-            cartImage: Array.isArray(selectedImage.url) ? selectedImage.url[0] : selectedImage.url
+            cartImage: Array.isArray(selectedImage.url) ? selectedImage.url[0] : selectedImage.url,
+            size: selectedSize.size,
+            quantity: 1
           })}
-          className={styles.addBtn}
+          className={`${styles.addBtn} ${selectedSizeOutOfStock ? 'opacity-50 cursor-not-allowed' : ''}`}
+          disabled={selectedSizeOutOfStock}
+          title={selectedSizeOutOfStock ? `Size ${selectedSize.size} đã hết hàng` : t("add_to_cart")}
         >
-          {t("add_to_cart")}
+          {selectedSizeOutOfStock ? t("out_of_stock") || "Hết hàng" : t("add_to_cart")}
         </button>
       </div>
 
@@ -191,17 +241,39 @@ const Card: FC<Props> = ({ item }) => {
           )}
         </div>
 
-        {/* Tags */}
-        {tags && tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-1">
-            {tags.map((tag) => (
-              <span
-                key={tag._id}
-                className="inline-block px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded"
-              >
-                {tag.name}
-              </span>
-            ))}
+        {/* Size information */}
+        {images.length > 0 && availableSizes.length > 0 && (
+          <div className="mt-2">
+            <div className="text-sm text-gray-600 mb-1">{t("size")}:</div>
+            <div className="flex flex-wrap gap-2">
+              {availableSizes.map((size, index) => {
+                const isOutOfStock = size.quantity <= 0;
+                return (
+                  <button
+                    key={size.size}
+                    type="button"
+                    className={`min-w-6 h-6 px-2 flex items-center justify-center border text-xs ${
+                      selectedSizeIndex === index && !isOutOfStock
+                        ? "ring-2 ring-offset-1 ring-gray-500 font-medium bg-gray-100"
+                        : isOutOfStock
+                        ? "bg-gray-200 text-gray-400 cursor-not-allowed border-gray-300 relative"
+                        : "bg-white"
+                    }`}
+                    onClick={() => !isOutOfStock && handleSizeSelect(index)}
+                    aria-label={`Select size ${size.size}${isOutOfStock ? ' (out of stock)' : ''}`}
+                    disabled={isOutOfStock}
+                    title={isOutOfStock ? `${size.size} - Hết hàng` : size.size}
+                  >
+                    {size.size}
+                    {isOutOfStock && (
+                      <span className="absolute inset-0 flex items-center justify-center">
+                        <span className="w-full h-0.5 bg-gray-400 absolute transform rotate-45"></span>
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
 
@@ -235,11 +307,15 @@ const Card: FC<Props> = ({ item }) => {
               colorName: selectedColor?.color || "",
             },
             selectedImageId: selectedImage._id,
-            cartImage: Array.isArray(selectedImage.url) ? selectedImage.url[0] : selectedImage.url
+            cartImage: Array.isArray(selectedImage.url) ? selectedImage.url[0] : selectedImage.url,
+            size: selectedSize.size,
+            quantity: 1
           })}
-          className="uppercase font-bold text-sm sm:hidden mt-2"
+          className={`uppercase font-bold text-sm sm:hidden mt-2 ${selectedSizeOutOfStock ? 'opacity-50 cursor-not-allowed text-gray-400' : ''}`}
+          disabled={selectedSizeOutOfStock}
+          title={selectedSizeOutOfStock ? `Size ${selectedSize.size} đã hết hàng` : t("add_to_cart")}
         >
-          {t("add_to_cart")}
+          {selectedSizeOutOfStock ? t("out_of_stock") || "Hết hàng" : t("add_to_cart")}
         </button>
       </div>
     </div>

@@ -43,7 +43,10 @@ export enum PaymentType {
 
 export enum DeliveryType {
   STORE_PICKUP = 'STORE_PICKUP',
+  YANGON = 'YANGON',
   OTHER = 'OTHER',
+  SHIP = 'SHIP',
+  FREE = 'FREE',
 }
 
 export enum PaymentStatus {
@@ -51,4 +54,12 @@ export enum PaymentStatus {
   PAID = 'paid',
   FAILED = 'failed',
   REFUNDED = 'refunded',
+}
+
+export enum OrderStatus {
+  PENDING = 'pending',
+  CONFIRMED = 'confirmed',
+  SHIPPING = 'shipping',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled',
 }

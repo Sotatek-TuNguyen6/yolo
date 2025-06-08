@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useState, useEffect, useRef } from "react";
 import { Menu as HMenu } from "@headlessui/react";
 import Link from "next/link";
 import Image from "next/image";
@@ -17,6 +17,22 @@ import FacebookLogo from "../../public/icons/FacebookLogo";
 import { useWishlist } from "../../context/wishlist/WishlistProvider";
 import { useAuth } from "../../context/AuthContext";
 
+// Add an interface for the search result products
+interface SearchProduct {
+  _id: string;
+  name: string;
+  slug: string;
+  price: number;
+  originalPrice?: number;
+  discountPercent?: number;
+  productId: string;
+  images: Array<{
+    url: string[];
+    color?: string;
+    colorCode?: string;
+  }>;
+}
+
 export default function Menu() {
   const t = useTranslations("Navigation");
   const router = useRouter();
@@ -24,7 +40,10 @@ export default function Menu() {
   const { wishlist } = useWishlist();
   const auth = useAuth();
   const [open, setOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchProduct[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Calculate Number of Wishlist
   let noOfWishlist = wishlist.length;
@@ -37,14 +56,46 @@ export default function Menu() {
     setOpen(true);
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setOpen(false);
-    router.push(`/search?q=${searchValue}`);
+  const fetchSearchResults = async (term: string) => {
+    if (!term || term.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/products/search/any/product?query=${term}`
+      );
+      const data = await res.json();
+      setSearchResults(data.data || []);
+    } catch (error) {
+      console.error("Search error:", error);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
-  const handleChange = (e: React.FormEvent<HTMLInputElement>) => {
-    setSearchValue((e.target as HTMLInputElement).value);
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (searchTerm) {
+        fetchSearchResults(searchTerm);
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
+      closeModal();
+    }
   };
 
   return (
@@ -109,7 +160,7 @@ export default function Menu() {
                 <div className="mb-10">
                   <div className="itemContainer px-6 w-full flex flex-col justify-around items-center">
                     <form
-                      className="flex w-full justify-between items-center mt-5 mb-5 border-gray300 border-b-2"
+                      className="flex w-full justify-between items-center mt-5 mb-1 border-gray300 border-b-2 relative"
                       onSubmit={handleSubmit}
                     >
                       <SearchIcon extraClass="text-gray300 w-6 h-6" />
@@ -118,8 +169,111 @@ export default function Menu() {
                         placeholder={t("search_anything")}
                         className="px-4 py-2 w-full focus:outline-none text-xl"
                         onChange={handleChange}
+                        value={searchTerm}
+                        ref={searchInputRef}
                       />
+                      {/* {searchTerm && (
+                        <button
+                          type="button"
+                          className="absolute right-0 mr-2 text-gray400"
+                          onClick={() => {
+                            setSearchTerm("");
+                            setSearchResults([]);
+                            if (searchInputRef.current) searchInputRef.current.focus();
+                          }}
+                        >
+                          ✕
+                        </button>
+                      )} */}
                     </form>
+                    {searchTerm && (
+                      <div className="w-full relative">
+                        <div className="absolute w-full bg-white shadow-lg rounded-b-md z-50 max-h-96 overflow-y-auto border border-gray200">
+                          {isSearching ? (
+                            <div className="p-4 text-center text-gray500">
+                              <div className="w-6 h-6 border-2 border-t-2 border-gray500 rounded-full animate-spin mx-auto mb-2"></div>
+                              {t("searching")}...
+                            </div>
+                          ) : searchResults.length > 0 ? (
+                            <>
+                              {searchResults.map((product) => (
+                                <Link
+                                  href={`/products/${product.productId}`}
+                                  key={product._id}
+                                >
+                                  <a
+                                    className="flex items-center p-3 border-b border-gray200 hover:bg-gray100"
+                                    onClick={closeModal}
+                                  >
+                                    {product.images && product.images[0] && (
+                                      <div className="w-12 h-12 mr-4 relative flex-shrink-0">
+                                        <Image
+                                          src={product.images[0].url[0]}
+                                          alt={product.name}
+                                          width={48}
+                                          height={48}
+                                          className="w-full h-full object-cover rounded"
+                                        />
+                                      </div>
+                                    )}
+                                    <div className="flex-1">
+                                      <h4 className="text-sm font-medium text-gray800 line-clamp-1">
+                                        {product.name}
+                                      </h4>
+                                      <div className="flex items-center mt-1">
+                                        <span className="text-sm font-medium text-gray500">
+                                          {locale === "vi"
+                                            ? `${new Intl.NumberFormat(
+                                                "vi-VN"
+                                              ).format(product.price)}\u00A0₫`
+                                            : `$\u00A0${product.price}`}
+                                        </span>
+                                        {product.discountPercent &&
+                                          product.discountPercent > 0 && (
+                                            <>
+                                              <span className="text-xs line-through text-gray400 ml-2">
+                                                {locale === "vi"
+                                                  ? `${new Intl.NumberFormat(
+                                                      "vi-VN"
+                                                    ).format(
+                                                      product.originalPrice || 0
+                                                    )}\u00A0₫`
+                                                  : `$\u00A0${
+                                                      product.originalPrice || 0
+                                                    }`}
+                                              </span>
+                                              <span className="ml-2 text-xs bg-red-500 text-white px-1 py-0.5 rounded">
+                                                -{product.discountPercent}%
+                                              </span>
+                                            </>
+                                          )}
+                                      </div>
+                                    </div>
+                                  </a>
+                                </Link>
+                              ))}
+                              <Link
+                                href={`/search?q=${encodeURIComponent(
+                                  searchTerm
+                                )}`}
+                              >
+                                <a
+                                  className="block p-3 text-center text-blue-600 hover:bg-gray100 font-medium"
+                                  onClick={closeModal}
+                                >
+                                  {t("view_all_results")} (
+                                  {searchResults.length})
+                                </a>
+                              </Link>
+                            </>
+                          ) : (
+                            <div className="p-4 text-center text-gray500">
+                              {t("no_results_found")}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                     <Link href="/product-category/men">
                       <a
                         className="w-full text-xl hover:bg-gray100 text-left py-2"
@@ -211,11 +365,11 @@ export default function Menu() {
                         href="#"
                         className="flex justify-center items-center py-2 px-4 text-center"
                       >
-                        {locale === "en" 
-                          ? t("english") 
-                          : locale === "vi" 
-                            ? t("vietnamese") || "Tiếng Việt"
-                            : t("myanmar")}{" "}
+                        {locale === "en"
+                          ? t("english")
+                          : locale === "vi"
+                          ? t("vietnamese") || "Tiếng Việt"
+                          : t("myanmar")}{" "}
                         <DownArrow />
                       </HMenu.Button>
                       <HMenu.Items

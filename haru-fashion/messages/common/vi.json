@@ -20,7 +20,7 @@
     "company": "Công ty",
     "help": "Trợ giúp",
     "store": "Cửa hàng",
-    "keep_in_touch": "Giữ liên lạc",
+    "keep_in_touch": "Liên hệ tôi",
     "about_us": "Về chúng tôi",
     "contact_us": "Liên hệ",
     "our_policy": "Chính sách",
@@ -47,7 +47,10 @@
     "no_result": "Không có kết quả",
     "sort_by_latest": "Sắp xếp theo mới nhất",
     "sort_by_price": "Sắp xếp theo giá: thấp đến cao",
-    "sort_by_price_desc": "Sắp xếp theo giá: cao đến thấp"
+    "sort_by_price_desc": "Sắp xếp theo giá: cao đến thấp",
+    "searching": "Đang tìm kiếm",
+    "no_results_found": "Không tìm thấy kết quả",
+    "view_all_results": "Xem tất cả kết quả"
   },
   "CartWishlist": {
     "wishlist": "Danh sách yêu thích",
@@ -135,7 +138,10 @@
     "order_status": "Trạng thái đơn hàng",
         "order_details": "Chi tiết đơn hàng",
     "size": "Kích thước",
-    "color": "Màu sắc"
+    "color": "Màu sắc",
+    "loading": "Đang tải...",
+    "optional": "Tùy chọn",
+    "email_required_for_order_details": "Nhập email để nhận chi tiết đơn hàng"
   },
   "Others": {
     "page_not_found": "Không tìm thấy trang!",
@@ -206,6 +212,9 @@
     "home": "Trang chủ",
     "search_results": "Kết quả tìm kiếm",
     "no_result": "Không có kết quả",
-    "showing_results": "Hiển thị {products} kết quả"
+    "showing_results": "Hiển thị {products} kết quả",
+    "searching": "Đang tìm kiếm",
+    "no_results_found": "Không tìm thấy kết quả",
+    "view_all_results": "Xem tất cả kết quả"
   }
 }

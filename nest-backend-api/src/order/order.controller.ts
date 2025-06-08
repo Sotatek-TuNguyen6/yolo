@@ -12,7 +12,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { OrderReportRequestDto } from './dto/order-report-request.dto';
 import { OrderReportResponse } from './dto/order-report.dto';
-import { PaymentStatus } from 'src/enum';
+import { OrderStatus, PaymentStatus } from 'src/enum';
 
 @ApiTags('Order')
 @Controller('orders')
@@ -38,10 +38,10 @@ export class OrderController {
 
   @ApiOperation({ summary: 'Track an order by order ID and email' })
   @Post('/tracking')
-  async orderTracking(@Body() body: { orderId: string; email: string }) {
+  async orderTracking(@Body() body: { orderId: string; search: string }) {
     const order = await this.orderService.orderTracking(
       body.orderId,
-      body.email,
+      body.search,
     );
     return order;
   }
@@ -101,6 +101,18 @@ export class OrderController {
     const order = await this.orderService.updatePaymentStatus(
       productId,
       updateOrderDto.paymentStatus,
+    );
+    return order;
+  }
+
+  @Patch(':orderId/order-status')
+  async updateOrderStatus(
+    @Param('orderId') orderId: string,
+    @Body() updateOrderDto: { orderStatus: OrderStatus },
+  ) {
+    const order = await this.orderService.updateOrderStatus(
+      orderId,
+      updateOrderDto.orderStatus,
     );
     return order;
   }

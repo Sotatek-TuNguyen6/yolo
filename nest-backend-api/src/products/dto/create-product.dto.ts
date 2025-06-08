@@ -12,9 +12,23 @@ import {
 import mongoose from 'mongoose';
 import { Type } from 'class-transformer';
 
+export class SizeQuantityDto {
+  @ApiProperty({ description: 'Size name' })
+  @IsString()
+  @IsNotEmpty()
+  size: string;
+
+  @ApiProperty({ description: 'Quantity available for this size' })
+  @IsNumber()
+  @IsNotEmpty()
+  @Min(0)
+  quantity: number;
+}
+
 export class ProductImageDto {
   @ApiProperty({ description: 'Image URL' })
-  @IsString()
+  @IsArray()
+  @IsString({ each: true })
   @IsNotEmpty()
   url: string[];
 
@@ -28,15 +42,15 @@ export class ProductImageDto {
   @IsNotEmpty()
   colorCode: string;
 
-  @ApiProperty({ description: 'Quantity' })
-  @IsNumber()
+  @ApiProperty({
+    description: 'Size and quantity mapping',
+    type: [SizeQuantityDto],
+  })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SizeQuantityDto)
   @IsNotEmpty()
-  quantity: number;
-
-  @ApiProperty({ description: 'Size' })
-  @IsString()
-  @IsNotEmpty()
-  size: string;
+  sizeQuantities: SizeQuantityDto[];
 }
 
 export class CreateProductDto {
@@ -99,6 +113,15 @@ export class CreateProductDto {
   @IsOptional()
   @IsString()
   detail?: string;
+
+  @ApiProperty({
+    description: 'Product URL slug',
+    required: false,
+    example: 'san-pham-abc-123',
+  })
+  @IsOptional()
+  @IsString()
+  slug?: string;
 
   @ApiProperty({
     description: 'Product stock quantity',

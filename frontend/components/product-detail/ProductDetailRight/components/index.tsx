@@ -1,5 +1,0 @@
-export * from '@/components/product-detail/ProductDetailRight/components/ProductDetailRightField'
-export * from '@/components/product-detail/ProductDetailRight/components/ProductChooseSize'
-export * from '@/components/product-detail/ProductDetailRight/components/ProductSubDescription'
-export { default as ProductComment } from '@/components/product-detail/ProductDetailRight/components/ProductComment'
-export { default as ProductLike } from '@/components/product-detail/ProductDetailRight/components/ProductLike'

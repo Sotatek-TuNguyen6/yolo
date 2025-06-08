@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { Disclosure } from "@headlessui/react";
+import { Disclosure, Dialog, Transition } from "@headlessui/react";
 import { useTranslations } from "next-intl";
 import axios from "axios";
 import ImageGallery from "react-image-gallery";
 import "react-image-gallery/styles/css/image-gallery.css";
 import { useRouter } from "next/router";
+import { Fragment } from "react";
 
 import Heart from "../../public/icons/Heart";
 import DownArrow from "../../public/icons/DownArrow";
@@ -32,8 +33,16 @@ import { itemType as WishlistItemType } from "../../context/wishlist/wishlist-ty
 import { useCart } from "../../context/cart/CartProvider";
 import HeartSolid from "../../public/icons/HeartSolid";
 
+import chonSize from "../../public/bg-img/huong_dan_chon_size.jpeg";
+
 // install Swiper modules
 SwiperCore.use([Pagination, Navigation]);
+
+// SizeQuantity interface - phù hợp với backend
+interface SizeQuantity {
+  size: string;
+  quantity: number;
+}
 
 type Props = {
   product: itemType;
@@ -43,10 +52,12 @@ type Props = {
 const Product: React.FC<Props> = ({ product, products }) => {
   const { addItem } = useCart();
   const { wishlist, addToWishlist, deleteWishlistItem } = useWishlist();
-  const [size, setSize] = useState("M");
+  const [size, setSize] = useState("");
   const [currentQty, setCurrentQty] = useState(1);
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [availableSizes, setAvailableSizes] = useState<SizeQuantity[]>([]);
+  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const t = useTranslations("Category");
   const router = useRouter();
   const { locale } = router;
@@ -55,9 +66,13 @@ const Product: React.FC<Props> = ({ product, products }) => {
     setSelectedColorIndex(0);
   }, [product]);
 
+  // Xử lý khi người dùng chọn kích thước
   const handleSize = (value: string) => {
     console.log(`Size selected: ${value}`);
     setSize(value);
+
+    // Reset số lượng khi chọn kích thước mới
+    setCurrentQty(1);
   };
 
   // Tạo mảng các màu sắc duy nhất từ images
@@ -70,6 +85,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
       color: img?.color || "",
     };
   });
+  console.log("uniqueColors", uniqueColors);
 
   // Lọc ảnh theo màu đã chọn
   const filteredImages = product.images.filter(
@@ -78,6 +94,37 @@ const Product: React.FC<Props> = ({ product, products }) => {
 
   // Lấy thông tin màu đã chọn
   const selectedColor = uniqueColors[selectedColorIndex];
+
+  // Lấy thông tin kích thước và số lượng từ màu đã chọn
+  useEffect(() => {
+    if (filteredImages.length > 0) {
+      // Lấy sizeQuantities từ hình ảnh đầu tiên của màu đã chọn
+      const sizeQtyArray = filteredImages[0].sizeQuantities || [];
+      setAvailableSizes(sizeQtyArray);
+
+      // Chọn size đầu tiên có sẵn nếu chưa chọn hoặc size đã chọn không có trong danh sách
+      if (!size || !sizeQtyArray.some((sq) => sq.size === size)) {
+        const firstAvailableSize =
+          sizeQtyArray.find((sq) => sq.quantity > 0)?.size ||
+          (sizeQtyArray.length > 0 ? sizeQtyArray[0].size : "");
+        setSize(firstAvailableSize);
+      }
+    } else {
+      setAvailableSizes([]);
+      setSize("");
+    }
+  }, [filteredImages, selectedColorIndex]);
+
+  // Kiểm tra số lượng tồn kho của kích thước đã chọn
+  const selectedSizeQuantity = availableSizes.find((sq) => sq.size === size);
+  const stockForSelectedSize = selectedSizeQuantity?.quantity || 0;
+
+  // Đảm bảo số lượng không vượt quá tồn kho
+  useEffect(() => {
+    if (currentQty > stockForSelectedSize) {
+      setCurrentQty(stockForSelectedSize > 0 ? stockForSelectedSize : 1);
+    }
+  }, [stockForSelectedSize, currentQty]);
 
   // Chuyển đổi item từ cart-types sang wishlist-types
   const wishlistItem: WishlistItemType = {
@@ -147,12 +194,6 @@ const Product: React.FC<Props> = ({ product, products }) => {
     }
   }, [selectedColorIndex, uniqueColors, product.images]);
 
-  // Tính tổng số lượng còn lại của màu đang chọn
-  const colorStock = filteredImages.reduce(
-    (sum, img) => sum + (img.quantity ?? 0), // hoặc img.stock, img.qty tùy backend
-    0
-  );
-
   const handleColorSelect = (index: number) => {
     setSelectedColorIndex(index);
   };
@@ -160,15 +201,22 @@ const Product: React.FC<Props> = ({ product, products }) => {
   // Hàm xử lý thêm vào giỏ hàng
   const handleAddToCart = () => {
     // Kiểm tra xem có còn hàng không
-    if (colorStock <= 0) {
-      alert("Sản phẩm đã hết hàng với màu sắc này!");
+    if (!selectedSizeQuantity || stockForSelectedSize <= 0) {
+      alert("Sản phẩm đã hết hàng với kích thước này!");
+      return;
+    }
+
+    // Kiểm tra số lượng mua không vượt quá tồn kho
+    if (currentQty > stockForSelectedSize) {
+      alert(`Chỉ còn ${stockForSelectedSize} sản phẩm với kích thước này!`);
+      setCurrentQty(stockForSelectedSize);
       return;
     }
 
     // Lấy thông tin hình ảnh của màu đã chọn
     const selectedImageInfo =
       filteredImages.length > 0 ? filteredImages[0] : product.images[0];
-    
+
     // Log thông tin sản phẩm được thêm vào giỏ hàng
     console.log("Adding to cart:", {
       productId: product.productId,
@@ -176,7 +224,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
       color: selectedColor?.color,
       colorCode: selectedColor?.colorCode,
       size: size,
-      quantity: currentQty
+      quantity: currentQty,
     });
 
     // Thêm sản phẩm vào giỏ hàng với thông tin màu sắc và kích thước đã chọn
@@ -268,6 +316,77 @@ const Product: React.FC<Props> = ({ product, products }) => {
       {/* ===== Head Section ===== */}
       <Header title={`${product.name} - Lumen Fashion`} />
 
+      {/* Size Guide Modal */}
+      <Transition appear show={isSizeGuideOpen} as={Fragment}>
+        <Dialog
+          as="div"
+          className="fixed inset-0 z-50 overflow-y-auto"
+          onClose={() => setIsSizeGuideOpen(false)}
+        >
+          <div className="min-h-screen px-4 text-center">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <Dialog.Overlay className="fixed inset-0 bg-black opacity-50" />
+            </Transition.Child>
+
+            {/* This element is to trick the browser into centering the modal contents. */}
+            <span
+              className="inline-block h-screen align-middle"
+              aria-hidden="true"
+            >
+              &#8203;
+            </span>
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
+            >
+              <div className="inline-block w-full max-w-4xl p-4 md:p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+                <div className="flex justify-between items-center">
+                  <Dialog.Title
+                    as="h3"
+                    className="text-lg font-medium leading-6 text-gray-900"
+                  >
+                    {locale === 'vi' ? 'Hướng dẫn chọn size' : 'Size Guide'}
+                  </Dialog.Title>
+                  <button
+                    type="button"
+                    className="text-gray500 hover:text-gray700 focus:outline-none"
+                    onClick={() => setIsSizeGuideOpen(false)}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="mt-4">
+                  <div className="relative w-full" style={{ height: "60vh" }}>
+                    <Image
+                      src={chonSize}
+                      alt="Size Guide"
+                      layout="fill"
+                      objectFit="contain"
+                      priority
+                    />
+                  </div>
+                </div>
+              </div>
+            </Transition.Child>
+          </div>
+        </Dialog>
+      </Transition>
+
       <main id="main-content">
         {/* ===== Breadcrumb Section ===== */}
         <div className="bg-lightgreen h-16 w-full flex items-center border-t-2 border-gray200">
@@ -290,7 +409,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
         <div className="itemSection app-max-width app-x-padding flex flex-col md:flex-row">
           <div className="imgSection w-full md:w-1/2 h-full">
             {/* Custom styles for ImageGallery */}
-            <style jsx global>{`
+            <style >{`
               .image-gallery-thumbnails-wrapper.left {
                 width: 80px;
               }
@@ -348,7 +467,8 @@ const Product: React.FC<Props> = ({ product, products }) => {
                 showBullets={true}
                 renderLeftNav={renderLeftNav}
                 renderRightNav={renderRightNav}
-                startIndex={0}
+                startIndex={currentImageIndex}
+                key={selectedColorIndex}
               />
             </div>
 
@@ -399,7 +519,10 @@ const Product: React.FC<Props> = ({ product, products }) => {
                   {formatPrice(product.price)}
                 </span>
                 <span className="text-2xl text-red-500">
-                  {formatPrice(product.price - (product.price * (product.discountPercent / 100)))}
+                  {formatPrice(
+                    product.price -
+                      product.price * (product.discountPercent / 100)
+                  )}
                 </span>
                 <span className="bg-red-500 text-white px-2 py-1 text-sm font-medium rounded">
                   -{product.discountPercent}%
@@ -411,17 +534,9 @@ const Product: React.FC<Props> = ({ product, products }) => {
               </span>
             )}
             <span className="mb-2 text-justify">{product.description}</span>
-            <span className="mb-2">
-              {t("availability")}:{" "}
-              {colorStock > 0 ? (
-                colorStock
-              ) : (
-                <span className="text-red-500">Hết hàng</span>
-              )}
-            </span>
 
             {/* Color options */}
-            {uniqueColors.length > 1 && (
+            {uniqueColors.length > 0 && (
               <div className="mb-4">
                 <span className="mb-2 block">
                   {t("color")}: {selectedColor?.color || ""}
@@ -446,53 +561,79 @@ const Product: React.FC<Props> = ({ product, products }) => {
                     />
                   ))}
                 </div>
-                {/* <div className="mb-2 text-sm text-gray-500">
-                  Số lượng còn lại: <span className="font-semibold">{colorStock}</span>
-                </div> */}
               </div>
             )}
 
-            <span className="mb-2">
-              {t("size")}: {size}
-            </span>
-            <div className="sizeContainer flex space-x-4 text-sm mb-4">
-              <div
-                onClick={() => handleSize("S")}
-                className={`w-8 h-8 flex items-center justify-center border ${
-                  size === "S"
-                    ? "border-gray500"
-                    : "border-gray300 text-gray400"
-                } cursor-pointer hover:bg-gray500 hover:text-gray100`}
-              >
-                S
+            {/* Size options */}
+            <div className="mb-4">
+              <div className="flex justify-between items-center mb-2">
+                <span className="font-medium">
+                  {t("size")}: {size || ""}
+                </span>
+                <button
+                  onClick={() => setIsSizeGuideOpen(true)}
+                  className="text-sm bg-gray100 hover:bg-gray200 text-gray600 hover:text-gray800 py-1 px-2 rounded flex items-center transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                  </svg>
+                  {locale === 'vi' ? 'Bảng size' : 'Size Guide'}
+                </button>
               </div>
-              <div
-                onClick={() => handleSize("M")}
-                className={`w-8 h-8 flex items-center justify-center border ${
-                  size === "M"
-                    ? "border-gray500"
-                    : "border-gray300 text-gray400"
-                } cursor-pointer hover:bg-gray500 hover:text-gray100`}
-              >
-                M
-              </div>
-              <div
-                onClick={() => handleSize("L")}
-                className={`w-8 h-8 flex items-center justify-center border ${
-                  size === "L"
-                    ? "border-gray500"
-                    : "border-gray300 text-gray400"
-                } cursor-pointer hover:bg-gray500 hover:text-gray100`}
-              >
-                L
+              <div className="sizeContainer flex flex-wrap gap-2 text-sm">
+                {availableSizes.map((sizeQty) => (
+                  <div
+                    key={sizeQty.size}
+                    onClick={() =>
+                      sizeQty.quantity > 0 ? handleSize(sizeQty.size) : null
+                    }
+                    className={`relative px-3 py-2 flex flex-col items-center justify-center border rounded ${
+                      size === sizeQty.size
+                        ? "border-gray500 bg-gray-50"
+                        : sizeQty.quantity > 0
+                        ? "border-gray300 text-gray400 hover:border-gray500"
+                        : "border-gray200 text-gray300 cursor-not-allowed bg-gray-50"
+                    } cursor-pointer`}
+                  >
+                    <span className="font-medium">{sizeQty.size}</span>
+                    <span
+                      className={`text-xs mt-1 ${
+                        sizeQty.quantity > 0 ? "text-green-600" : "text-red-500"
+                      }`}
+                    >
+                      {sizeQty.quantity > 0
+                        ? `Còn ${sizeQty.quantity}`
+                        : "Hết hàng"}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
+
+            {/* Availability */}
+            {size && (
+              <span className="mb-4 block">
+                {t("availability")}:{" "}
+                {stockForSelectedSize > 0 ? (
+                  <span className="text-green-600 font-medium">
+                    {stockForSelectedSize} sản phẩm
+                  </span>
+                ) : (
+                  <span className="text-red-500 font-medium">Hết hàng</span>
+                )}
+              </span>
+            )}
+
             <div className="addToCart flex flex-col sm:flex-row md:flex-col lg:flex-row space-y-4 sm:space-y-0 mb-4">
               <div className="plusOrMinus h-12 flex border justify-center border-gray300 divide-x-2 divide-gray300 mb-4 mr-0 sm:mr-4 md:mr-0 lg:mr-4">
                 <div
-                  onClick={() => setCurrentQty((prevState) => prevState - 1)}
+                  onClick={() =>
+                    setCurrentQty((prevState) => Math.max(1, prevState - 1))
+                  }
                   className={`${
-                    currentQty === 1 && "pointer-events-none"
+                    currentQty === 1 || stockForSelectedSize <= 0
+                      ? "pointer-events-none opacity-50"
+                      : ""
                   } h-full w-full sm:w-12 flex justify-center items-center cursor-pointer hover:bg-gray500 hover:text-gray100`}
                 >
                   -
@@ -501,8 +642,17 @@ const Product: React.FC<Props> = ({ product, products }) => {
                   {currentQty}
                 </div>
                 <div
-                  onClick={() => setCurrentQty((prevState) => prevState + 1)}
-                  className="h-full w-full sm:w-12 flex justify-center items-center cursor-pointer hover:bg-gray500 hover:text-gray100"
+                  onClick={() =>
+                    setCurrentQty((prevState) =>
+                      Math.min(stockForSelectedSize, prevState + 1)
+                    )
+                  }
+                  className={`${
+                    currentQty >= stockForSelectedSize ||
+                    stockForSelectedSize <= 0
+                      ? "pointer-events-none opacity-50"
+                      : ""
+                  } h-full w-full sm:w-12 flex justify-center items-center cursor-pointer hover:bg-gray500 hover:text-gray100`}
                 >
                   +
                 </div>
@@ -512,10 +662,12 @@ const Product: React.FC<Props> = ({ product, products }) => {
                   value={t("add_to_cart")}
                   size="lg"
                   extraClass={`flex-grow text-center whitespace-nowrap ${
-                    colorStock <= 0 ? "opacity-50 cursor-not-allowed" : ""
+                    stockForSelectedSize <= 0 || !size
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
                   }`}
                   onClick={handleAddToCart}
-                  disabled={colorStock <= 0}
+                  disabled={stockForSelectedSize <= 0 || !size}
                 />
                 <GhostButton onClick={handleWishlist}>
                   {alreadyWishlisted ? (

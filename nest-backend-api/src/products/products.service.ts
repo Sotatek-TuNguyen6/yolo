@@ -9,6 +9,8 @@ import {
   Product,
   ProductImage,
   ProductImageDocument,
+  SizeQuantity,
+  SizeQuantityDocument,
 } from './entities/product.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { UploadService } from 'src/upload/upload.service';
@@ -73,7 +75,12 @@ export class ProductsService {
 
       if (data?.images) {
         for (const image of data.images) {
-          stock += image.quantity;
+          // Sum quantities across all sizes for each image
+          const imageStock = image.sizeQuantities.reduce(
+            (sum, sizeQty) => sum + sizeQty.quantity,
+            0,
+          );
+          stock += imageStock;
         }
       }
 
@@ -437,15 +444,23 @@ export class ProductsService {
     };
   }
 
-  async updateSize(productId: string, imagesId: string, size: string[]) {
+  async updateSize(productId: string, imagesId: string, sizes: string[]) {
     const product = await this.productModel.findOne({ productId });
     if (!product) throw new NotFoundException('Không tìm thấy sản phẩm này');
-    console.log(product.images);
+
     const image = product.images.find(
       (image) => (image as ProductImageDocument)._id == imagesId,
     );
+
     if (!image) throw new NotFoundException('Không tìm thấy hình ảnh này');
-    image.size = size;
+
+    // Create SizeQuantity objects for each size with quantity 0
+    const sizeQuantities: SizeQuantity[] = sizes.map((size) => ({
+      size,
+      quantity: 0,
+    }));
+
+    image.sizeQuantities = sizeQuantities;
 
     await product.save();
     return product;
@@ -453,16 +468,42 @@ export class ProductsService {
 
   async updateVariants(
     productId: string,
-    updateVariantsDto: { quantity: number; imagesId: string },
+    updateVariantsDto: {
+      quantity: number;
+      imagesId: string;
+      sizeId: string;
+    },
   ) {
     const product = await this.productModel.findOne({ productId });
     if (!product) throw new NotFoundException('Không tìm thấy sản phẩm này');
+
     const image = product.images.find(
       (image) =>
         (image as ProductImageDocument)._id == updateVariantsDto.imagesId,
     );
+
     if (!image) throw new NotFoundException('Không tìm thấy hình ảnh này');
-    image.quantity = updateVariantsDto.quantity;
+
+    // Find the specific size to update
+    const sizeQuantity = image.sizeQuantities.find(
+      (sq) => (sq as SizeQuantityDocument)._id == updateVariantsDto.sizeId,
+    );
+    // console.log(image.sizeQuantities);
+
+    // console.log('sizeQuantity', sizeQuantity);
+    if (!sizeQuantity) {
+      throw new NotFoundException('Không tìm thấy kích thước này');
+    }
+    // Calculate the quantity difference to update total stock
+    const quantityDiff =
+      updateVariantsDto.quantity - (sizeQuantity?.quantity || 0);
+    product.stock += quantityDiff;
+
+    if (sizeQuantity) {
+      // Update the quantity for the specific size
+      sizeQuantity.quantity = updateVariantsDto.quantity;
+    }
+
     await product.save();
     return product;
   }
@@ -470,11 +511,20 @@ export class ProductsService {
   async deleteVariant(productId: string, imagesId: string) {
     const product = await this.productModel.findOne({ productId });
     if (!product) throw new NotFoundException('Không tìm thấy sản phẩm này');
+
     const image = product.images.find(
       (image) => (image as ProductImageDocument)._id == imagesId,
     );
+
     if (!image) throw new NotFoundException('Không tìm thấy hình ảnh này');
-    product.stock -= image.quantity;
+
+    // Calculate total quantity for this variant to reduce from stock
+    const variantQuantity = image.sizeQuantities.reduce(
+      (sum, sizeQty) => sum + sizeQty.quantity,
+      0,
+    );
+
+    product.stock -= variantQuantity;
     product.images = product.images.filter(
       (image) => (image as ProductImageDocument)._id != imagesId,
     );
@@ -488,20 +538,24 @@ export class ProductsService {
     variantData: {
       color: string;
       colorCode: string;
-      size: string[];
-      quantity: number;
+      sizeQuantities: { size: string; quantity: number }[];
       urls: string[];
     },
   ) {
     const product = await this.productModel.findOne({ productId });
     if (!product) throw new NotFoundException('Không tìm thấy sản phẩm này');
 
+    // Calculate total quantity for this variant
+    const variantQuantity = variantData.sizeQuantities.reduce(
+      (sum, sizeQty) => sum + sizeQty.quantity,
+      0,
+    );
+
     // Create new variant with image
     const newVariant: ProductImage = {
       color: variantData.color,
       colorCode: variantData.colorCode,
-      size: variantData.size,
-      quantity: variantData.quantity,
+      sizeQuantities: variantData.sizeQuantities,
       url: variantData.urls,
     };
 
@@ -509,7 +563,7 @@ export class ProductsService {
     product.images.push(newVariant);
 
     // Update total stock
-    product.stock += variantData.quantity;
+    product.stock += variantQuantity;
 
     await product.save();
     return product;
@@ -518,6 +572,7 @@ export class ProductsService {
   async decreaseProductStock(
     productId: string,
     imageId: string,
+    size: string,
     quantity: number,
   ) {
     const product = await this.productModel.findOne({ productId });
@@ -532,17 +587,28 @@ export class ProductsService {
         (image) => (image as ProductImageDocument)._id == imageId,
       );
 
+      console.log(image);
+
       if (!image)
         throw new NotFoundException(`Không tìm thấy variant với ID ${imageId}`);
 
-      if (image.quantity < quantity) {
-        throw new BadRequestException(
-          `Variant này chỉ còn ${image.quantity} sản phẩm, không đủ số lượng ${quantity}`,
+      // Find the specific size
+      const sizeQuantity = image.sizeQuantities.find((sq) => sq.size === size);
+
+      if (!sizeQuantity) {
+        throw new NotFoundException(
+          `Không tìm thấy kích thước ${size} cho variant này`,
         );
       }
 
-      // Decrease the variant quantity
-      image.quantity -= quantity;
+      if (sizeQuantity.quantity < quantity) {
+        throw new BadRequestException(
+          `Sản phẩm này chỉ còn ${sizeQuantity.quantity} kích thước ${size}, không đủ số lượng ${quantity}`,
+        );
+      }
+
+      // Decrease the variant quantity for this size
+      sizeQuantity.quantity -= quantity;
     }
 
     // Always decrease the total product stock
@@ -558,12 +624,50 @@ export class ProductsService {
     return product;
   }
 
-  async querySearch(query: { q: string }) {
+  async querySearch(query: { q?: string; query?: string }) {
+    console.log(query);
+    const searchTerm = query.q || query.query;
+    if (!searchTerm) {
+      return [];
+    }
+
     const products = await this.productModel
       .find({
-        name: { $regex: query.q, $options: 'i' },
+        name: { $regex: searchTerm, $options: 'i' },
       })
       .populate(populate);
     return products;
+  }
+
+  async addSizeToVariant(
+    productId: string,
+    imagesId: string,
+    size: string,
+    quantity: number,
+  ) {
+    const product = await this.productModel.findOne({ productId });
+    if (!product) throw new NotFoundException('Không tìm thấy sản phẩm này');
+
+    const image = product.images.find(
+      (image) => (image as ProductImageDocument)._id == imagesId,
+    );
+
+    if (!image) throw new NotFoundException('Không tìm thấy hình ảnh này');
+
+    // Check if size already exists
+    const existingSize = image.sizeQuantities.find((sq) => sq.size === size);
+
+    if (existingSize) {
+      throw new BadRequestException('Kích thước này đã tồn tại');
+    }
+
+    // Add new size with quantity 0
+    image.sizeQuantities.push({
+      size,
+      quantity: quantity,
+    });
+
+    await product.save();
+    return product;
   }
 }

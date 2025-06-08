@@ -26,7 +26,7 @@ export default function Footer() {
           <div>
             <h3 className={styles.footerHead}>{t("help")}</h3>
             <div className={styles.column}>
-              <a href="example">{t("order_tracking")}</a>
+              <a href="order-tracking">{t("order_tracking")}</a>
               <a href="example">{t("faqs")}</a>
               <a href="example">{t("privacy_policy")}</a>
               <a href="example">{t("terms_conditions")}</a>
@@ -83,7 +83,7 @@ export default function Footer() {
       </div> */}
       <div className={styles.bottomFooter}>
         <div className="app-max-width app-x-padding w-full flex justify-between">
-          <span className="">@2022 Lument. {t("all_rights_reserved")}</span>
+          <span className="">@2025 Lumen. {t("all_rights_reserved")}</span>
           <span className="flex items-center">
             <span className="hidden sm:block">
               {t("follow_us_on_social_media")}:

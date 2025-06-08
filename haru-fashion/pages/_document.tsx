@@ -2,8 +2,8 @@ import { Html, Head, Main, NextScript } from "next/document";
 
 const title = "Lumen Fashion";
 const desc =
-  "Lumen Fashion - cửa hàng thời trang trực tuyến được phát triển với Next.JS. Được lập trình với 🖤 bởi Sat Naing (satnaing.dev).";
-const keywords = "Lumen Fashion, Cửa hàng trực tuyến, Thương mại điện tử, Sat Naing, NextJS";
+  "Thời trang nam cao cấp | Thương hiệu quần áo nam cao cấp.";
+const keywords = "LUMEN – Thương hiệu quần áo dành cho nam giới hiện đại. Thiết kế tối giản, form chuẩn, chất liệu cao cấp.";
 const facebookUrl = "https://www.facebook.com/LumenFashion";
 
 export default function Document() {

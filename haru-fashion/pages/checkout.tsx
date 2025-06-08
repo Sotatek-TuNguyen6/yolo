@@ -4,6 +4,8 @@ import axios from "axios";
 import Image from "next/image";
 import { GetStaticProps } from "next";
 import { useRouter } from "next/router";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
@@ -16,7 +18,7 @@ import { useAuth } from "../context/AuthContext";
 
 // let w = window.innerWidth;
 type PaymentType = "CASH_ON_DELIVERY" | "BANK_TRANSFER";
-type DeliveryType = "STORE_PICKUP" | "YANGON" | "OTHERS";
+type DeliveryType = "STORE_PICKUP" | "FREE" | "SHIP";
 
 type Customer = {
   _id: string;
@@ -63,6 +65,7 @@ const ShoppingCart = () => {
 
   // Helper function to format price based on locale
   const formatPrice = (price: number | string) => {
+    console.log("price", price);
     // Đảm bảo price là số
     const numPrice = typeof price === "string" ? parseFloat(price) : price;
 
@@ -273,12 +276,15 @@ const ShoppingCart = () => {
     const makeOrder = async () => {
       try {
         console.log("products", products);
+        // If email is empty, force sendEmail to false
+        const shouldSendEmail = email ? sendEmail : false;
+        
         const res = await axios.post(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/orders`,
           {
             customerId: auth.user ? auth.user.id : 0, // Use 0 or null for guest users
             customerName: name,
-            customerEmail: email,
+            customerEmail: email, // This can be empty now
             customerPhone: phone,
             shippingAddress: shippingAddress ? shippingAddress : address,
             // Add structured address fields
@@ -290,11 +296,12 @@ const ShoppingCart = () => {
                 ? shippingSpecificAddress
                 : specificAddress,
             },
-            totalPrice: subtotal,
+            totalPrice: Number(subtotal) + Number(deliFee),
             deliveryDate: new Date().setDate(new Date().getDate() + 7),
             paymentType: paymentMethod,
             deliveryType: deli,
             products,
+            sendEmail: shouldSendEmail,
           }
         );
         if (res.data.success) {
@@ -302,16 +309,53 @@ const ShoppingCart = () => {
           clearCart!();
           setIsOrdering(false);
         } else {
-          setOrderError("error_occurs");
+          handleOrderError(res.data.error);
           setIsOrdering(false);
         }
       } catch (error) {
-        setOrderError("error_occurs");
+        console.error("Order error:", error);
+        if (axios.isAxiosError(error) && error.response) {
+          handleOrderError(error.response.data.error);
+        } else {
+          setOrderError("error_occurs");
+          toast.error(t("error_occurs") || "Đã xảy ra lỗi, vui lòng thử lại sau", {
+            position: "top-right",
+            autoClose: 5000,
+          });
+        }
         setIsOrdering(false);
       }
     };
     makeOrder();
   }, [isOrdering]);
+
+  // Helper function to handle different error types
+  const handleOrderError = (error: any) => {
+    setOrderError("error_occurs");
+    
+    if (error && error.message) {
+      // Check if the error is about stock quantity
+      if (error.message.includes("không đủ số lượng") || 
+          error.message.includes("chỉ còn") ||
+          error.message.toLowerCase().includes("stock")) {
+        toast.error(error.message, {
+          position: "top-right",
+          autoClose: false,
+          closeOnClick: true,
+        });
+      } else {
+        toast.error(error.message, {
+          position: "top-right",
+          autoClose: 5000,
+        });
+      }
+    } else {
+      toast.error(t("error_occurs") || "Đã xảy ra lỗi, vui lòng thử lại sau", {
+        position: "top-right",
+        autoClose: 5000,
+      });
+    }
+  };
 
   useEffect(() => {
     if (auth.user) {
@@ -327,12 +371,19 @@ const ShoppingCart = () => {
     }
   }, [auth.user]);
 
+  // Add this useEffect after the other useEffect blocks
+  useEffect(() => {
+    // If email is empty, make sure sendEmail is set to false
+    if (!email && sendEmail) {
+      setSendEmail(false);
+    }
+  }, [email]);
+
   let disableOrder = true;
 
   // Update the disableOrder logic to check for all required location fields
   disableOrder =
     name === "" ||
-    email === "" ||
     phone === "" ||
     city === "" ||
     district === "" ||
@@ -345,6 +396,7 @@ const ShoppingCart = () => {
         shippingSpecificAddress === ""));
 
   let subtotal: number | string = 0;
+  console.log("subtotal", subtotal);
 
   // Calculate discounted price if discount is available
   const getDiscountedPrice = (item: itemType): number => {
@@ -364,10 +416,10 @@ const ShoppingCart = () => {
   );
 
   let deliFee = 0;
-  if (deli === "YANGON") {
-    deliFee = 30000;
-  } else if (deli === "OTHERS") {
-    deliFee = 50000;
+  if (deli === "FREE") {
+    deliFee = 0;
+  } else if (deli === "SHIP") {
+    deliFee = 25000;
   }
 
   return (
@@ -375,9 +427,12 @@ const ShoppingCart = () => {
       {/* ===== Head Section ===== */}
       <Header title={`Thanh toán - Lumen Fashion`} />
 
+      {/* Toast container for notifications */}
+      <ToastContainer />
+
       <main id="main-content">
         {/* Custom styling for product images */}
-        <style jsx global>{`
+        <style>{`
           .product-image {
             object-fit: contain !important;
             width: auto !important;
@@ -390,6 +445,17 @@ const ShoppingCart = () => {
             justify-content: center;
           }
         `}</style>
+
+        {/* Loading overlay */}
+        {isOrdering && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+            <div className="bg-white p-8 rounded-lg flex flex-col items-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-gray500 mb-4"></div>
+              <h2 className="text-xl font-semibold mb-2">Đang xử lý đơn hàng</h2>
+              <p className="text-gray500">Vui lòng đợi trong giây lát...</p>
+            </div>
+          </div>
+        )}
 
         {/* ===== Heading & Continue Shopping */}
         <div className="app-max-width px-4 sm:px-8 md:px-20 w-full border-t-2 border-gray100">
@@ -432,6 +498,9 @@ const ShoppingCart = () => {
               <div className="my-4">
                 <label htmlFor="email" className="text-lg mb-1">
                   {t("email_address")}
+                  <span className="ml-1 text-gray-500 text-sm italic">
+                    ({t("optional") || "Tùy chọn"})
+                  </span>
                 </label>
                 <Input
                   name="email"
@@ -445,7 +514,6 @@ const ShoppingCart = () => {
                   onChange={(e) =>
                     setEmail((e.target as HTMLInputElement).value)
                   }
-                  required
                 />
               </div>
 
@@ -853,33 +921,33 @@ const ShoppingCart = () => {
                         <input
                           type="radio"
                           name="deli"
-                          value="YANGON"
+                          value="FREE"
                           id="ygn"
-                          checked={deli === "YANGON"}
-                          onChange={() => setDeli("YANGON")}
+                          checked={deli === "FREE"}
+                          onChange={() => setDeli("FREE")}
                           // defaultChecked
                         />{" "}
                         <label htmlFor="ygn" className="cursor-pointer">
-                          {t("within_yangon")}
+                          Miễn phí giao hàng
                         </label>
                       </div>
-                      <span>{formatPrice(70000)}</span>
+                      <span>Miễn Phí</span>
                     </div>
                     <div className="flex justify-between">
                       <div>
                         <input
                           type="radio"
                           name="deli"
-                          value="OTHERS"
+                          value="SHIP"
                           id="others"
-                          checked={deli === "OTHERS"}
-                          onChange={() => setDeli("OTHERS")}
+                          checked={deli === "SHIP"}
+                          onChange={() => setDeli("SHIP")}
                         />{" "}
                         <label htmlFor="others" className="cursor-pointer">
-                          {t("other_cities")}
+                          Ship nhanh
                         </label>
                       </div>
-                      <span>{formatPrice(50000)}</span>
+                      <span>{formatPrice(25000)}</span>
                     </div>
                   </div>
                 </div>
@@ -887,7 +955,7 @@ const ShoppingCart = () => {
                 <div>
                   <div className="flex justify-between py-3">
                     <span>{t("grand_total")}</span>
-                    <span>{formatPrice(subtotal + deliFee)}</span>
+                    <span>{formatPrice(Number(subtotal) + Number(deliFee))}</span>
                   </div>
 
                   <div className="grid gap-4 mt-2 mb-4">
@@ -980,18 +1048,25 @@ const ShoppingCart = () => {
                         id="send-email-toggle"
                         checked={sendEmail}
                         onChange={() => setSendEmail(!sendEmail)}
-                        className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-gray300 appearance-none cursor-pointer"
+                        disabled={!email}
+                        className={`toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 ${
+                          email ? 'border-gray300 cursor-pointer' : 'border-gray300 opacity-50 cursor-not-allowed'
+                        } appearance-none`}
                       />
                       <label
                         htmlFor="send-email-toggle"
-                        className="toggle-label block overflow-hidden h-6 rounded-full bg-gray300 cursor-pointer"
+                        className={`toggle-label block overflow-hidden h-6 rounded-full ${
+                          email ? 'bg-gray300 cursor-pointer' : 'bg-gray200 cursor-not-allowed'
+                        }`}
                       ></label>
                     </div>
                     <label
                       htmlFor="send-email-toggle"
-                      className="text-xs text-gray-700"
+                      className={`text-xs ${email ? 'text-gray-700' : 'text-gray-400'}`}
                     >
-                      {t("send_order_email")}
+                      {email 
+                        ? t("send_order_email") 
+                        : (t("email_required_for_order_details") || "Nhập email để nhận chi tiết đơn hàng")}
                     </label>
                   </div>
                 </div>
@@ -1002,6 +1077,7 @@ const ShoppingCart = () => {
                   extraClass={`w-full`}
                   onClick={() => setIsOrdering(true)}
                   disabled={disableOrder}
+                  loading={isOrdering}
                 />
               </div>
 

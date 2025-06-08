@@ -1,7 +1,11 @@
+export interface SizeQuantity {
+  size: string;
+  quantity: number;
+}
+
 export interface ImageMeta {
   fileNames: string[];
   color: string;
   colorCode: string;
-  quantity: number;
-  size: string;
+  sizeQuantities: SizeQuantity[];
 }

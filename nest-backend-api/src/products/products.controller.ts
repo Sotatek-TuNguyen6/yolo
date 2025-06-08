@@ -35,14 +35,13 @@ import { UsersService } from 'src/users/users.service';
 import { Roles } from 'src/decorator/roles.decorator';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { UploadService } from 'src/upload/upload.service';
-import { ImageMeta } from 'src/interface/imageMeta.interface';
+import { SizeQuantity, ImageMeta } from 'src/interface/imageMeta.interface';
 
 interface ImageWithColor {
   url: string[];
   color: string;
   colorCode: string;
-  quantity: number;
-  size: string;
+  sizeQuantities: SizeQuantity[];
 }
 
 @ApiTags('Products')
@@ -168,7 +167,7 @@ export class ProductsController {
     status: 200,
     description: 'The products has been successfully fetched.',
   })
-  async getAnyProduct(@Query() query: { q: string }) {
+  async getAnyProduct(@Query() query: { q?: string; query?: string }) {
     const products = await this.productsService.querySearch(query);
     return products;
   }
@@ -356,8 +355,7 @@ export class ProductsController {
           url: urls,
           color: meta.color,
           colorCode: meta.colorCode,
-          quantity: meta.quantity,
-          size: meta.size,
+          sizeQuantities: meta.sizeQuantities,
         });
       }
 
@@ -415,11 +413,17 @@ export class ProductsController {
     return product;
   }
 
-  @Patch(':productId/variants')
+  @Patch('/update-variants/:productId')
   async updateVariants(
     @Param('productId') productId: string,
-    @Body() updateVariantsDto: { quantity: number; imagesId: string },
+    @Body()
+    updateVariantsDto: {
+      quantity: number;
+      imagesId: string;
+      sizeId: string;
+    },
   ) {
+    // console.log('updateVariantsDto', updateVariantsDto);
     const product = await this.productsService.updateVariants(
       productId,
       updateVariantsDto,
@@ -427,7 +431,7 @@ export class ProductsController {
     return product;
   }
 
-  @Delete(':productId/variants')
+  @Patch('/delete-variant/:productId')
   async deleteVariant(
     @Param('productId') productId: string,
     @Body() body: { imagesId: string },
@@ -439,81 +443,93 @@ export class ProductsController {
     return product;
   }
 
-  @Post(':productId/variants')
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        color: { type: 'string' },
-        colorCode: { type: 'string' },
-        size: { type: 'array', items: { type: 'string' } },
-        quantity: { type: 'integer' },
-        files: {
-          type: 'array',
-          items: {
-            type: 'string',
-            format: 'binary',
-          },
-        },
-      },
-    },
-  })
-  @UseInterceptors(FilesInterceptor('files', 10))
+  @Post('/create-variant/:productId')
+  @UseInterceptors(FilesInterceptor('files'))
   async createVariant(
     @Param('productId') productId: string,
     @Body()
     body: {
       color: string;
       colorCode: string;
-      quantity: string;
-      size: string[];
+      sizeQuantities: string; // JSON string of SizeQuantity array
+      sizes?: string; // For backward compatibility
+      quantity?: string; // For backward compatibility
     },
     @UploadedFiles() files: Express.Multer.File[],
   ) {
     if (!files || files.length === 0) {
-      throw new InternalServerErrorException('No files uploaded');
+      throw new InternalServerErrorException('Không có file nào được tải lên');
     }
 
-    try {
-      // Upload all files to Cloudinary
-      const uploadedUrls: string[] = [];
-      const uploadedIds: string[] = [];
+    // Upload images
+    const uploadedFiles = await this.uploadService.uploadMultipleFiles(files);
 
-      for (const file of files) {
-        try {
-          const result = await this.uploadService.uploadFile(file);
-          uploadedUrls.push(result.url);
-          uploadedIds.push(result.public_id);
-        } catch (err) {
-          // Cleanup already uploaded files if there's an error
-          for (const id of uploadedIds) {
-            await this.uploadService.deleteFile(id);
-          }
-          throw new InternalServerErrorException(
-            `Failed to upload ${file.originalname}: ${err instanceof Error ? err.message : 'Unknown error'}`,
-          );
-        }
+    let sizeQuantitiesArray: SizeQuantity[] = [];
+
+    // Process size quantities from the request body
+    if (body.sizeQuantities) {
+      try {
+        sizeQuantitiesArray = JSON.parse(body.sizeQuantities) as SizeQuantity[];
+      } catch {
+        throw new InternalServerErrorException(
+          'Invalid sizeQuantities format. Must be a valid JSON array.',
+        );
       }
+    } else if (body.sizes && body.quantity) {
+      // Handle backward compatibility
+      // Convert old format to new format
+      try {
+        const sizes = JSON.parse(body.sizes) as string[];
+        const quantity = parseInt(body.quantity);
 
-      // Create new variant with uploaded image URLs
-      const product = await this.productsService.createVariant(productId, {
-        color: body.color,
-        colorCode: body.colorCode,
-        size: body.size,
-        quantity: parseInt(body.quantity, 10),
-        urls: uploadedUrls,
-      });
-
-      return {
-        product,
-        message: `Variant created successfully with ${files.length} images.`,
-      };
-    } catch (err) {
+        // Create a SizeQuantity for each size with equal distribution of the total quantity
+        const quantityPerSize = Math.floor(quantity / sizes.length) || 0;
+        sizeQuantitiesArray = sizes.map((size) => ({
+          size,
+          quantity: quantityPerSize,
+        }));
+      } catch {
+        throw new InternalServerErrorException(
+          'Invalid sizes format. Must be a valid JSON array.',
+        );
+      }
+    } else {
       throw new InternalServerErrorException(
-        'Error creating variant: ' +
-          (err instanceof Error ? err.message : 'Unknown error'),
+        'Either sizeQuantities or both sizes and quantity must be provided',
       );
     }
+
+    // Create the variant
+    const product = await this.productsService.createVariant(productId, {
+      color: body.color,
+      colorCode: body.colorCode,
+      sizeQuantities: sizeQuantitiesArray,
+      urls: uploadedFiles,
+    });
+
+    return product;
+  }
+
+  @Post('/add-size/:productId')
+  @ApiOperation({ summary: 'Add a new size to an existing variant' })
+  @ApiResponse({
+    status: 200,
+    description: 'Size added successfully to the variant',
+  })
+  async addSizeToVariant(
+    @Param('productId') productId: string,
+    @Body() body: { imagesId: string; size: string; quantity: number },
+  ) {
+    const product = await this.productsService.addSizeToVariant(
+      productId,
+      body.imagesId,
+      body.size,
+      body.quantity,
+    );
+    return {
+      success: true,
+      message: 'Đã thêm kích thước mới',
+      data: product,
+    };
   }
 }

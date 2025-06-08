@@ -154,7 +154,7 @@ export default function CartItem() {
                 </div>
 
                 <div className="h-full">
-                  <div className="itemContainer px-4 h-2/3 w-full flex-grow flex-shrink overflow-y-auto">
+                  <div className="itemContainer px-4 h-3/5 w-full flex-grow flex-shrink overflow-y-auto">
                     {cart.map((item) => {
                       const discountedPrice = getDiscountedPrice(item);
                       subtotal += discountedPrice * item.quantity!;

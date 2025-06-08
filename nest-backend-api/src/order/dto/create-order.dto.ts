@@ -51,6 +51,15 @@ export class ProductOrderDto {
   @IsString()
   @IsOptional()
   selectedImageId?: string;
+
+  @ApiProperty({
+    description: 'Selected Size',
+    example: 'M',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  size?: string;
 }
 
 export class CreateOrderDto {

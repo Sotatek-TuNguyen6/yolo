@@ -50,7 +50,6 @@ import { toast } from 'sonner';
 import { HexColorPicker } from 'react-colorful';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Label } from '@/components/ui/label';
-import MultipleSelector from '@/components/ui/multiple-selector';
 
 type ProductDetailData = CommonResponse<Product>;
 type CategoryListData = CommonResponse<Category[]>;
@@ -62,6 +61,13 @@ const productFormSchema = z.object({
   }),
   description: z.string().optional(),
   detail: z.string().optional(),
+  slug: z
+    .string()
+    .min(3, { message: 'Slug phải có ít nhất 3 ký tự' })
+    .regex(/^[a-z0-9\-]+$/, {
+      message: 'Slug chỉ được chứa chữ thường, số và dấu gạch ngang',
+    })
+    .optional(),
   category: z.string().min(1, {
     message: 'Vui lòng chọn danh mục',
   }),
@@ -83,9 +89,10 @@ type ProductFormValues = z.infer<typeof productFormSchema>;
 type VariantFormValues = {
   color: string;
   colorCode: string;
-  size: string[];
-  quantity: number;
+  size: string[]; // Used for UI selection tracking
+  quantity: number; // Legacy field, not used in API
   images: File[];
+  sizeQuantities: { size: string; quantity: number }[]; // Format expected by API
 };
 
 // Define the VariantGroup type
@@ -93,9 +100,10 @@ type VariantGroup = {
   color: string;
   colorCode: string;
   sizes: {
-    size: string[];
+    size: string[] | string; // Used for UI display
     quantity: number;
     images: string[];
+    imagesId: string;
     _id?: string;
   }[];
 };
@@ -125,8 +133,28 @@ export default function ProductDetailPage() {
     size: [],
     quantity: 0,
     images: [],
+    sizeQuantities: [],
   });
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+  const [newSizeQuantities, setNewSizeQuantities] = useState<{
+    [colorIndex: number]: { size: string; quantity: number };
+  }>({});
+
+  // Function to generate slug from product name
+  const generateSlug = (name: string): string => {
+    return (
+      name
+        .toLowerCase()
+        .normalize('NFD') // Decompose Vietnamese characters
+        .replace(/[\u0300-\u036f]/g, '') // Remove diacritics/accents
+        .replace(/[đĐ]/g, 'd') // Replace Vietnamese d/D with d
+        .replace(/[^a-z0-9\s]/g, '') // Remove non-alphanumeric characters except spaces
+        .trim()
+        .replace(/\s+/g, '-') +
+      '-' +
+      Date.now().toString().slice(-6)
+    ); // Add timestamp suffix for uniqueness
+  };
 
   // Define common size options
   const allSizeOptions = [
@@ -165,6 +193,7 @@ export default function ProductDetailPage() {
       name: '',
       description: '',
       detail: '',
+      slug: '',
       category: '',
       price: 0,
       stock: 0,
@@ -180,6 +209,7 @@ export default function ProductDetailPage() {
         name: product.name || '',
         description: product.description || '',
         detail: product.detail || '',
+        slug: product.slug || '',
         category:
           typeof product.category === 'object'
             ? product.category._id
@@ -199,40 +229,86 @@ export default function ProductDetailPage() {
       productData.data.images.forEach(image => {
         // Find if this color already exists in our groups
         const existingColorGroup = groups.find(group => group.color === image.color);
+        console.log('existingColorGroup', existingColorGroup);
 
         if (existingColorGroup) {
-          // Check if size exists in this color group
-          const existingSizeInGroup = existingColorGroup.sizes.find(s => s.size === image.size);
+          // Process all size-quantity pairs from the image
+          if (image.sizeQuantities && image.sizeQuantities.length > 0) {
+            image.sizeQuantities.forEach(sizeQty => {
+              // Check if size exists in this color group
+              const existingSizeInGroup = existingColorGroup.sizes.find(
+                s =>
+                  (Array.isArray(s.size) && s.size.includes(sizeQty.size)) ||
+                  s.size === sizeQty.size,
+              );
 
-          if (existingSizeInGroup) {
-            // Add images to existing size
-            existingSizeInGroup.images = [...existingSizeInGroup.images, ...image.url];
+              if (existingSizeInGroup) {
+                // Add images to existing size
+                existingSizeInGroup.images = [...existingSizeInGroup.images, ...image.url];
+                // Update quantity if needed
+                if (existingSizeInGroup.quantity !== sizeQty.quantity) {
+                  existingSizeInGroup.quantity = sizeQty.quantity;
+                }
+              } else {
+                // Add new size to existing color
+                existingColorGroup.sizes.push({
+                  size: sizeQty.size,
+                  quantity: sizeQty.quantity,
+                  images: image.url,
+                  imagesId: image._id || '',
+                  _id: sizeQty._id || '',
+                });
+              }
+            });
           } else {
-            // Add new size to existing color
+            // If no sizeQuantities found (should not happen with updated schema)
+            console.warn('Image missing sizeQuantities:', image);
+            // Add a default size entry to not break the UI
             existingColorGroup.sizes.push({
-              size: image.size,
-              quantity: image.quantity,
+              size: 'Default',
+              quantity: 0,
               images: image.url,
-              _id: image._id,
+              imagesId: image._id || '',
+              _id: '',
             });
           }
         } else {
+          console.log('image', image);
           // Add new color group
+          const sizes = [];
+
+          // Process all size-quantity pairs
+          if (image.sizeQuantities && image.sizeQuantities.length > 0) {
+            image.sizeQuantities.forEach(sizeQty => {
+              sizes.push({
+                size: sizeQty.size,
+                quantity: sizeQty.quantity,
+                images: image.url,
+                imagesId: image._id,
+                _id: sizeQty._id || '',
+              });
+            });
+          } else {
+            // If no sizeQuantities found (should not happen with updated schema)
+            console.warn('Image missing sizeQuantities:', image);
+            sizes.push({
+              size: 'Default',
+              quantity: 0,
+              images: image.url,
+              imagesId: image._id || '',
+              _id: '',
+            });
+          }
+
           groups.push({
             color: image.color,
             colorCode: image.colorCode,
-            sizes: [
-              {
-                size: image.size,
-                quantity: image.quantity,
-                images: image.url,
-                _id: image._id,
-              },
-            ],
+            sizes: sizes,
           });
         }
       });
 
+      console.log('groups', groups);
       setVariants(groups);
 
       // Initialize selectedSizes with current sizes
@@ -253,15 +329,6 @@ export default function ProductDetailPage() {
               }
             });
           }
-          // Handle string with commas - split and add all parts
-          // else if (typeof sizeValue === 'string' && sizeValue.includes(',')) {
-          //   sizeValue.split(',').forEach(s => {
-          //     const cleanSize = s.trim();
-          //     if (!sizes.includes(cleanSize)) {
-          //       sizes.push(cleanSize);
-          //     }
-          //   });
-          // }
           // Add single string
           else {
             const cleanSize = typeof sizeValue === 'string' ? sizeValue : String(sizeValue);
@@ -307,7 +374,7 @@ export default function ProductDetailPage() {
 
   // Add variant mutation
   const { mutate: addVariantMutation } = useMutationRequest<unknown, FormData>({
-    url: `/products/${productId}/variants`,
+    url: `/products/create-variant/${productId}`,
     method: 'post',
     successMessage: 'Thêm biến thể thành công',
     errorMessage: 'Thêm biến thể thất bại',
@@ -320,9 +387,18 @@ export default function ProductDetailPage() {
           size: [],
           quantity: 0,
           images: [],
+          sizeQuantities: [],
         });
         setImagePreviewUrls([]);
-        // window.location.reload();
+
+        // Refetch product data to show the new variant
+        // setTimeout(() => {
+        //   window.location.reload();
+        // }, 1000);
+      },
+      onError: error => {
+        console.error('API error:', error);
+        toast.error('Có lỗi xảy ra khi thêm biến thể');
       },
     },
   });
@@ -347,9 +423,9 @@ export default function ProductDetailPage() {
   // Update variant quantity mutation
   const { mutate: updateVariantQuantityMutation } = useMutationRequest<
     unknown,
-    { quantity: number; imagesId: string }
+    { quantity: number; imagesId: string; sizeId: string }
   >({
-    url: `/products/${productId}/variants`,
+    url: `/products/update-variants/${productId}`,
     method: 'patch',
     successMessage: 'Cập nhật số lượng thành công',
     errorMessage: 'Cập nhật số lượng thất bại',
@@ -370,8 +446,8 @@ export default function ProductDetailPage() {
 
   // Delete variant mutation
   const { mutate: deleteVariantMutation } = useMutationRequest<unknown, { imagesId: string }>({
-    url: `/products/${productId}/variants`,
-    method: 'delete',
+    url: `/products/delete-variant/${productId}`,
+    method: 'patch',
     successMessage: 'Xóa biến thể thành công',
     errorMessage: 'Xóa biến thể thất bại',
     queryKey: ['product', productId],
@@ -393,6 +469,24 @@ export default function ProductDetailPage() {
         }
       },
     },
+  });
+
+  // Thêm mutation hook để gọi API thêm size mới
+  const { mutate: addSizeToVariantMutation } = useMutationRequest<
+    unknown,
+    { imagesId: string; size: string; quantity: number }
+  >({
+    url: `/products/add-size/${productId}`,
+    method: 'post',
+    successMessage: 'Thêm kích thước mới thành công',
+    errorMessage: 'Thêm kích thước thất bại',
+    queryKey: ['product', productId],
+    // mutationOptions: {
+    //   onSuccess: () => {
+    //     // Reload the product data
+    //     window.location.reload();
+    //   },
+    // },
   });
 
   // Handle form submission
@@ -423,13 +517,17 @@ export default function ProductDetailPage() {
   };
 
   // Handler functions using mutations
-  const handleUpdateVariantQuantity = (variantId: string | undefined, newQuantity: number) => {
-    if (!variantId) {
+  const handleUpdateVariantQuantity = (
+    variantId: string | undefined,
+    newQuantity: number,
+    imagesId: string | undefined,
+  ) => {
+    if (!variantId || !imagesId) {
       toast.error('Không tìm thấy ID biến thể');
       return;
     }
 
-    updateVariantQuantityMutation({ quantity: newQuantity, imagesId: variantId });
+    updateVariantQuantityMutation({ quantity: newQuantity, sizeId: variantId, imagesId: imagesId });
   };
 
   const handleUpdateVariantSize = (variantId: string | undefined, newSize: string) => {
@@ -450,92 +548,91 @@ export default function ProductDetailPage() {
     deleteVariantMutation({ imagesId: variantId });
   };
 
+  // Add size to sizeQuantities in newVariant
+  const addSizeToVariant = (size: string) => {
+    // Check if size already exists
+    if (!newVariant.sizeQuantities.some(sq => sq.size === size)) {
+      setNewVariant(prev => ({
+        ...prev,
+        sizeQuantities: [...prev.sizeQuantities, { size, quantity: 1 }],
+        size: [...prev.size, size],
+      }));
+
+      toast.success(`Đã thêm kích thước ${size}`);
+    } else {
+      toast.warning(`Kích thước ${size} đã tồn tại!`);
+    }
+  };
+
+  // Remove size from sizeQuantities in newVariant
+  const removeSizeFromVariant = (sizeToRemove: string) => {
+    setNewVariant(prev => ({
+      ...prev,
+      sizeQuantities: prev.sizeQuantities.filter(sq => sq.size !== sizeToRemove),
+      size: prev.size.filter(s => s !== sizeToRemove),
+    }));
+  };
+
+  // Update quantity for a specific size in newVariant
+  const updateSizeQuantity = (size: string, quantity: number) => {
+    setNewVariant(prev => ({
+      ...prev,
+      sizeQuantities: prev.sizeQuantities.map(sq => (sq.size === size ? { ...sq, quantity } : sq)),
+    }));
+  };
+
   // Add new variant
   const addVariant = async () => {
-    if (
-      !newVariant.color ||
-      newVariant.size.length === 0 ||
-      newVariant.quantity <= 0 ||
-      newVariant.images.length === 0
-    ) {
-      toast.error('Vui lòng điền đầy đủ thông tin biến thể');
+    // Validation checks
+    if (!newVariant.color) {
+      toast.error('Vui lòng nhập tên màu sắc');
       return;
     }
 
-    // Create multiple variants, one for each selected size
-    const formData = new FormData();
-    formData.append('color', newVariant.color);
-    formData.append('colorCode', newVariant.colorCode);
-    formData.append('quantity', String(newVariant.quantity));
-    newVariant.images.forEach(file => {
-      formData.append('files', file);
-    });
-    newVariant.size.forEach(size => {
-      formData.append('size', size);
-    });
+    if (newVariant.sizeQuantities.length === 0) {
+      toast.error('Vui lòng thêm ít nhất một kích thước');
+      return;
+    }
 
-    addVariantMutation(formData);
+    if (newVariant.images.length === 0) {
+      toast.error('Vui lòng tải lên ít nhất một hình ảnh');
+      return;
+    }
 
-    // Wait for all variants to be added
-    // Reset form
+    try {
+      // Create FormData for the variant
+      const formData = new FormData();
+      formData.append('color', newVariant.color);
+      formData.append('colorCode', newVariant.colorCode);
 
-    // Update the variants state without reloading the page
-    // const response = await fetch(`/api/products/${productId}`);
-    // const newProductData = await response.json();
+      // Convert sizeQuantities array to JSON string for the API
+      // API expects: { size: string, quantity: number }[]
+      formData.append('sizeQuantities', JSON.stringify(newVariant.sizeQuantities));
 
-    // if (newProductData?.data?.images) {
-    //   // Process the new product data to update variants
-    //   const groups: VariantGroup[] = [];
+      // Add images
+      newVariant.images.forEach(file => {
+        formData.append('files', file);
+      });
 
-    //   // Define the type for image based on the Product interface
-    //   interface ProductImage {
-    //     _id: string;
-    //     color: string;
-    //     colorCode: string;
-    //     size: string[];
-    //     quantity: number;
-    //     url: string[];
-    //   }
+      // Send the data to the server
+      addVariantMutation(formData);
 
-    //   newProductData.data.images.forEach((image: ProductImage) => {
-    //     // Find if this color already exists in our groups
-    //     const existingColorGroup = groups.find(group => group.color === image.color);
+      // Reset form after submission
+      setNewVariant({
+        color: '',
+        colorCode: '#000000',
+        size: [],
+        quantity: 0,
+        images: [],
+        sizeQuantities: [],
+      });
+      setImagePreviewUrls([]);
 
-    //     if (existingColorGroup) {
-    //       // Check if size exists in this color group
-    //       const existingSizeInGroup = existingColorGroup.sizes.find(s => s.size === image.size);
-
-    //       if (existingSizeInGroup) {
-    //         // Add images to existing size
-    //         existingSizeInGroup.images = [...existingSizeInGroup.images, ...image.url];
-    //       } else {
-    //         // Add new size to existing color
-    //         existingColorGroup.sizes.push({
-    //           size: image.size,
-    //           quantity: image.quantity,
-    //           images: image.url,
-    //           _id: image._id,
-    //         });
-    //       }
-    //     } else {
-    //       // Add new color group
-    //       groups.push({
-    //         color: image.color,
-    //         colorCode: image.colorCode,
-    //         sizes: [
-    //           {
-    //             size: image.size,
-    //             quantity: image.quantity,
-    //             images: image.url,
-    //             _id: image._id,
-    //           },
-    //         ],
-    //       });
-    //     }
-    //   });
-
-    //   setVariants(groups);
-    // }
+      toast.success('Đang xử lý thêm biến thể, vui lòng đợi...');
+    } catch (error) {
+      console.error('Error adding variant:', error);
+      toast.error('Có lỗi xảy ra khi thêm biến thể');
+    }
   };
 
   // Save changes for the currently active color
@@ -618,6 +715,47 @@ export default function ProductDetailPage() {
       console.error('Error saving changes:', error);
       toast.error('Lưu thay đổi thất bại');
     }
+  };
+
+  const setNewSizeForGroup = (groupIndex: number, size: string) => {
+    setNewSizeQuantities(prev => ({
+      ...prev,
+      [groupIndex]: { ...prev[groupIndex], size },
+    }));
+  };
+
+  const updateNewSizeQuantity = (groupIndex: number, quantity: number) => {
+    setNewSizeQuantities(prev => ({
+      ...prev,
+      [groupIndex]: { ...prev[groupIndex], quantity },
+    }));
+  };
+
+  const handleAddSizeToVariant = (group: VariantGroup) => {
+    const groupIndex = variants.findIndex(g => g.color === group.color);
+    if (groupIndex === -1) return;
+
+    const newSize = newSizeQuantities[groupIndex]?.size;
+    const quantity = newSizeQuantities[groupIndex]?.quantity || 0;
+
+    if (!newSize) {
+      toast.error('Vui lòng chọn kích thước');
+      return;
+    }
+
+    // Lấy imagesId từ variant đầu tiên của nhóm màu
+    const imagesId = group.sizes[0]?.imagesId;
+    if (!imagesId) {
+      toast.error('Không tìm thấy ID biến thể');
+      return;
+    }
+
+    // Gọi API để thêm size
+    addSizeToVariantMutation({
+      imagesId,
+      size: newSize,
+      quantity,
+    });
   };
 
   if (isLoading) {
@@ -713,6 +851,40 @@ export default function ProductDetailPage() {
                                 <FormControl>
                                   <Input {...field} />
                                 </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="slug"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Slug URL</FormLabel>
+                                <div className="flex gap-2">
+                                  <FormControl>
+                                    <Input {...field} placeholder="ten-san-pham" />
+                                  </FormControl>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => {
+                                      const name = form.getValues('name');
+                                      if (name) {
+                                        const newSlug = generateSlug(name);
+                                        form.setValue('slug', newSlug);
+                                      }
+                                    }}
+                                    className="shrink-0"
+                                  >
+                                    Tạo lại
+                                  </Button>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                  Slug sẽ hiển thị trên URL (VD: /products/ten-san-pham). Slug phải
+                                  là duy nhất.
+                                </p>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -868,59 +1040,94 @@ export default function ProductDetailPage() {
                           </Popover>
                         </div>
 
-                        <Label htmlFor="size">Kích thước</Label>
+                        <Label htmlFor="size" className="block mb-2">
+                          Kích thước
+                        </Label>
                         <div className="w-full mb-4">
-                          <MultipleSelector
-                            defaultOptions={allSizeOptions}
-                            placeholder="Chọn kích thước..."
-                            value={newVariant.size.map(size => {
-                              // Ensure size is a string, not an array or joined string
-                              let finalSize = size;
-
-                              // Handle array case
-                              if (Array.isArray(size)) {
-                                finalSize = typeof size[0] === 'string' ? size[0] : String(size[0]);
-                              }
-                              // Handle string with commas
-                              else if (typeof size === 'string' && size.includes(',')) {
-                                finalSize = size.split(',')[0];
-                              }
-                              // Ensure it's a string
-                              else {
-                                finalSize = typeof size === 'string' ? size : String(size);
-                              }
-
-                              return {
-                                label: finalSize,
-                                value: finalSize,
-                              };
-                            })}
-                            onChange={options => {
-                              // Extract just the string values to avoid nested arrays
-                              const newSizes = options.map(option => option.value);
-                              setNewVariant({
-                                ...newVariant,
-                                size: newSizes,
-                              });
-                            }}
-                            emptyIndicator={
-                              <p className="text-center text-sm leading-10 text-gray-600 dark:text-gray-400">
-                                Không tìm thấy kích thước
-                              </p>
-                            }
-                          />
+                          <Select onValueChange={value => addSizeToVariant(value)}>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Thêm kích thước..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {allSizeOptions
+                                .filter(
+                                  option =>
+                                    !newVariant.sizeQuantities.some(sq => sq.size === option.value),
+                                )
+                                .map(size => (
+                                  <SelectItem key={size.value} value={size.value}>
+                                    {size.label}
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
                         </div>
 
-                        <Label htmlFor="quantity">Số lượng</Label>
-                        <Input
-                          id="quantity"
-                          type="number"
-                          value={newVariant.quantity}
-                          onChange={e =>
-                            setNewVariant({ ...newVariant, quantity: parseInt(e.target.value) })
-                          }
-                          min="0"
-                        />
+                        {/* Size quantities */}
+                        <div className="space-y-2 mb-4">
+                          {newVariant.sizeQuantities.length > 0 && (
+                            <div className="space-y-2">
+                              <Label>Kích thước và số lượng</Label>
+                              <div className="grid grid-cols-1 gap-2">
+                                {newVariant.sizeQuantities.map((sizeQty, index) => (
+                                  <div
+                                    key={index}
+                                    className="flex items-center gap-2 p-2 border rounded-md"
+                                  >
+                                    <div className="font-medium flex-grow">{sizeQty.size}</div>
+                                    <div className="flex items-center">
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-6 w-6 rounded-r-none"
+                                        onClick={() => {
+                                          const newQuantity = Math.max(1, sizeQty.quantity - 1);
+                                          updateSizeQuantity(sizeQty.size, newQuantity);
+                                        }}
+                                      >
+                                        -
+                                      </Button>
+                                      <Input
+                                        type="number"
+                                        min="1"
+                                        value={sizeQty.quantity}
+                                        onChange={e =>
+                                          updateSizeQuantity(
+                                            sizeQty.size,
+                                            parseInt(e.target.value) || 1,
+                                          )
+                                        }
+                                        className="h-6 w-16 text-center rounded-none border-x-0"
+                                      />
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-6 w-6 rounded-l-none"
+                                        onClick={() => {
+                                          const newQuantity = sizeQty.quantity + 1;
+                                          updateSizeQuantity(sizeQty.size, newQuantity);
+                                        }}
+                                      >
+                                        +
+                                      </Button>
+                                    </div>
+                                    <Button
+                                      type="button"
+                                      variant="destructive"
+                                      size="icon"
+                                      className="h-6 w-6"
+                                      onClick={() => removeSizeFromVariant(sizeQty.size)}
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                       <div>
@@ -975,8 +1182,7 @@ export default function ProductDetailPage() {
                       onClick={addVariant}
                       disabled={
                         !newVariant.color ||
-                        newVariant.size.length === 0 ||
-                        newVariant.quantity <= 0 ||
+                        newVariant.sizeQuantities.length === 0 ||
                         newVariant.images.length === 0
                       }
                     >
@@ -1046,6 +1252,69 @@ export default function ProductDetailPage() {
                             value={group.color}
                             className="space-y-6"
                           >
+                            <div className="border rounded-lg p-4 bg-slate-50 dark:bg-slate-900 mb-4">
+                              <h3 className="text-md font-semibold mb-3">Thêm kích thước mới</h3>
+                              <div className="flex items-end gap-3">
+                                <div className="flex-1">
+                                  <Label htmlFor={`new-size-${groupIndex}`} className="mb-2 block">
+                                    Kích thước
+                                  </Label>
+                                  <Select
+                                    onValueChange={value => setNewSizeForGroup(groupIndex, value)}
+                                  >
+                                    <SelectTrigger id={`new-size-${groupIndex}`}>
+                                      <SelectValue placeholder="Chọn kích thước..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {allSizeOptions
+                                        .filter(
+                                          option =>
+                                            !group.sizes.some(
+                                              s =>
+                                                (Array.isArray(s.size) &&
+                                                  s.size.includes(option.value)) ||
+                                                s.size === option.value,
+                                            ),
+                                        )
+                                        .map(size => (
+                                          <SelectItem key={size.value} value={size.value}>
+                                            {size.label}
+                                          </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div className="w-24">
+                                  <Label
+                                    htmlFor={`new-size-qty-${groupIndex}`}
+                                    className="mb-2 block"
+                                  >
+                                    Số lượng
+                                  </Label>
+                                  <Input
+                                    id={`new-size-qty-${groupIndex}`}
+                                    type="number"
+                                    min="0"
+                                    value={newSizeQuantities[groupIndex]?.quantity || 0}
+                                    onChange={e =>
+                                      updateNewSizeQuantity(
+                                        groupIndex,
+                                        parseInt(e.target.value) || 0,
+                                      )
+                                    }
+                                  />
+                                </div>
+                                <Button
+                                  className="mb-0"
+                                  onClick={() => handleAddSizeToVariant(group)}
+                                  disabled={!newSizeQuantities[groupIndex]?.size}
+                                >
+                                  <Plus className="h-4 w-4 mr-2" />
+                                  Thêm
+                                </Button>
+                              </div>
+                            </div>
+
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                               {group.sizes.map((sizeItem, sizeIndex) => (
                                 <div
@@ -1079,6 +1348,7 @@ export default function ProductDetailPage() {
                                               handleUpdateVariantSize(sizeItem._id, e.target.value);
                                             }
                                           }}
+                                          disabled={true}
                                         />
                                       </div>
                                     </div>
@@ -1090,7 +1360,11 @@ export default function ProductDetailPage() {
                                           className="h-6 w-6 rounded-r-none"
                                           onClick={() => {
                                             const newQuantity = Math.max(0, sizeItem.quantity - 1);
-                                            handleUpdateVariantQuantity(sizeItem._id, newQuantity);
+                                            handleUpdateVariantQuantity(
+                                              sizeItem._id,
+                                              newQuantity,
+                                              sizeItem.imagesId,
+                                            );
                                             // Update local state
                                             const newVariants = [...variants];
                                             newVariants[groupIndex].sizes[sizeIndex].quantity =
@@ -1115,6 +1389,7 @@ export default function ProductDetailPage() {
                                             handleUpdateVariantQuantity(
                                               sizeItem._id,
                                               sizeItem.quantity,
+                                              sizeItem.imagesId,
                                             );
                                           }}
                                           className="h-6 w-16 text-center rounded-none border-x-0"
@@ -1125,7 +1400,11 @@ export default function ProductDetailPage() {
                                           className="h-6 w-6 rounded-l-none"
                                           onClick={() => {
                                             const newQuantity = sizeItem.quantity + 1;
-                                            handleUpdateVariantQuantity(sizeItem._id, newQuantity);
+                                            handleUpdateVariantQuantity(
+                                              sizeItem._id,
+                                              newQuantity,
+                                              sizeItem.imagesId,
+                                            );
                                             // Update local state
                                             const newVariants = [...variants];
                                             newVariants[groupIndex].sizes[sizeIndex].quantity =
@@ -1236,8 +1515,8 @@ export default function ProductDetailPage() {
                     <div>
                       <p className="text-sm font-medium text-muted-foreground mb-1">Giảm giá</p>
                       <p className="flex items-center text-lg font-bold text-red-500">
+                        {product.discountPercent}
                         <Percent className="mr-1 h-4 w-4" />
-                        {product.discountPercent}%
                       </p>
                     </div>
                   )}
@@ -1312,6 +1591,61 @@ export default function ProductDetailPage() {
                       value={group.color}
                       className="space-y-6"
                     >
+                      <div className="border rounded-lg p-4 bg-slate-50 dark:bg-slate-900 mb-4">
+                        <h3 className="text-md font-semibold mb-3">Thêm kích thước mới</h3>
+                        <div className="flex items-end gap-3">
+                          <div className="flex-1">
+                            <Label htmlFor={`new-size-${groupIndex}`} className="mb-2 block">
+                              Kích thước
+                            </Label>
+                            <Select onValueChange={value => setNewSizeForGroup(groupIndex, value)}>
+                              <SelectTrigger id={`new-size-${groupIndex}`}>
+                                <SelectValue placeholder="Chọn kích thước..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {allSizeOptions
+                                  .filter(
+                                    option =>
+                                      !group.sizes.some(
+                                        s =>
+                                          (Array.isArray(s.size) &&
+                                            s.size.includes(option.value)) ||
+                                          s.size === option.value,
+                                      ),
+                                  )
+                                  .map(size => (
+                                    <SelectItem key={size.value} value={size.value}>
+                                      {size.label}
+                                    </SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="w-24">
+                            <Label htmlFor={`new-size-qty-${groupIndex}`} className="mb-2 block">
+                              Số lượng
+                            </Label>
+                            <Input
+                              id={`new-size-qty-${groupIndex}`}
+                              type="number"
+                              min="0"
+                              value={newSizeQuantities[groupIndex]?.quantity || 0}
+                              onChange={e =>
+                                updateNewSizeQuantity(groupIndex, parseInt(e.target.value) || 0)
+                              }
+                            />
+                          </div>
+                          <Button
+                            className="mb-0"
+                            onClick={() => handleAddSizeToVariant(group)}
+                            disabled={!newSizeQuantities[groupIndex]?.size}
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Thêm
+                          </Button>
+                        </div>
+                      </div>
+
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {group.sizes.map((sizeItem, sizeIndex) => (
                           <div
@@ -1356,7 +1690,11 @@ export default function ProductDetailPage() {
                                     className="h-6 w-6 rounded-r-none"
                                     onClick={() => {
                                       const newQuantity = Math.max(0, sizeItem.quantity - 1);
-                                      handleUpdateVariantQuantity(sizeItem._id, newQuantity);
+                                      handleUpdateVariantQuantity(
+                                        sizeItem._id,
+                                        newQuantity,
+                                        sizeItem.imagesId,
+                                      );
                                       // Update local state
                                       const newVariants = [...variants];
                                       newVariants[groupIndex].sizes[sizeIndex].quantity =
@@ -1378,7 +1716,11 @@ export default function ProductDetailPage() {
                                       setVariants(newVariants);
                                     }}
                                     onBlur={() => {
-                                      handleUpdateVariantQuantity(sizeItem._id, sizeItem.quantity);
+                                      handleUpdateVariantQuantity(
+                                        sizeItem._id,
+                                        sizeItem.quantity,
+                                        sizeItem.imagesId,
+                                      );
                                     }}
                                     className="h-6 w-16 text-center rounded-none border-x-0"
                                   />
@@ -1388,7 +1730,11 @@ export default function ProductDetailPage() {
                                     className="h-6 w-6 rounded-l-none"
                                     onClick={() => {
                                       const newQuantity = sizeItem.quantity + 1;
-                                      handleUpdateVariantQuantity(sizeItem._id, newQuantity);
+                                      handleUpdateVariantQuantity(
+                                        sizeItem._id,
+                                        newQuantity,
+                                        sizeItem.imagesId,
+                                      );
                                       // Update local state
                                       const newVariants = [...variants];
                                       newVariants[groupIndex].sizes[sizeIndex].quantity =

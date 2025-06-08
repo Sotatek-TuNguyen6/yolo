@@ -284,10 +284,10 @@ const ShoppingCart = () => {
                         // defaultChecked
                       />{" "}
                       <label htmlFor="ygn" className="cursor-pointer">
-                        {t("within_yangon")}
+                        Miễn phí giao hàng
                       </label>
                     </div>
-                    <span>{formatPrice(30000)}</span>
+                    <span>Miễn Phí</span>
                   </div>
                   <div className="flex justify-between">
                     <div>
@@ -300,10 +300,10 @@ const ShoppingCart = () => {
                         onChange={() => setDeli("Others")}
                       />{" "}
                       <label htmlFor="others" className="cursor-pointer">
-                        {t("other_cities")}
+                        Ship nhanh
                       </label>
                     </div>
-                    <span>{formatPrice(50000)}</span>
+                    <span>{formatPrice(25000)}</span>
                   </div>
                 </div>
               </div>

@@ -9,7 +9,7 @@ module.exports = withPWA({
   reactStrictMode: true,
   // swcMinify: true,
   compiler: {
-    removeConsole: true,
+    removeConsole: false,
   },
   images: {
     domains: ["robohash.org", "res.cloudinary.com"],

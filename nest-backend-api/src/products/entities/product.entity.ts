@@ -2,7 +2,19 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import mongoose, { Document, Types } from 'mongoose';
 
-export type ProductDocument = Product & Document;
+@Schema()
+export class SizeQuantity {
+  @ApiProperty({ description: 'Size name' })
+  @Prop({ required: true, type: String })
+  size: string;
+
+  @ApiProperty({ description: 'Quantity available for this size' })
+  @Prop({ required: true, type: Number, default: 0 })
+  quantity: number;
+}
+
+export type SizeQuantityDocument = SizeQuantity & Document;
+export const SizeQuantitySchema = SchemaFactory.createForClass(SizeQuantity);
 
 @Schema()
 export class ProductImage {
@@ -18,13 +30,9 @@ export class ProductImage {
   @Prop({ required: true, type: String })
   colorCode: string;
 
-  @ApiProperty({ description: 'Quantity' })
-  @Prop({ required: true, type: Number, default: 0 })
-  quantity: number;
-
-  @ApiProperty({ description: 'Size' })
-  @Prop({ required: true, type: [String] })
-  size: string[];
+  @ApiProperty({ description: 'Size and quantity mapping' })
+  @Prop({ type: [SizeQuantitySchema], default: [] })
+  sizeQuantities: SizeQuantity[];
 }
 
 export type ProductImageDocument = ProductImage & Document;
@@ -78,6 +86,12 @@ export class Product {
     default: [],
   })
   tags: Types.ObjectId[];
+
+  @ApiProperty({ description: 'Product slug' })
+  @Prop({ type: String })
+  slug: string;
 }
+
+export type ProductDocument = Product & Document;
 
 export const ProductSchema = SchemaFactory.createForClass(Product);

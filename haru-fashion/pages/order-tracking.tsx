@@ -34,7 +34,7 @@ const OrderTracking: React.FC = () => {
   const t = useTranslations("Navigation");
   const router = useRouter();
   const [orderId, setOrderId] = useState("");
-  const [email, setEmail] = useState("");
+  const [search, setSearch] = useState("");
   const [orderResult, setOrderResult] = useState<OrderExtended | null>(null);
   console.log("orderResult", orderResult);
   const [isLoading, setIsLoading] = useState(false);
@@ -74,7 +74,7 @@ const OrderTracking: React.FC = () => {
     setOrderResult(null);
     setError("");
 
-    if (!orderId.trim() || !email.trim()) {
+    if (!orderId.trim() || !search.trim()) {
       setError("Vui lòng điền đầy đủ thông tin");
       return;
     }
@@ -87,7 +87,7 @@ const OrderTracking: React.FC = () => {
         `${process.env.NEXT_PUBLIC_PROD_BACKEND_URL}/api/v1/orders/tracking`,
         {
           orderId: orderId.trim(),
-          email: email.trim(),
+          search: search.trim(),
         }
       );
 
@@ -198,10 +198,10 @@ const OrderTracking: React.FC = () => {
                 Email <span className="text-red-500">*</span>
               </label>
               <input
-                type="email"
+                type="text"
                 id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
                 className="w-full px-4 py-3 border border-gray300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray400"
                 placeholder="Email bạn đã sử dụng khi đặt hàng"
                 required

@@ -6,6 +6,7 @@ type Props = {
   size?: "sm" | "lg" | "xl";
   value: string;
   disabled?: boolean;
+  loading?: boolean;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
 };
 
@@ -17,6 +18,7 @@ const Button: FC<Props> = ({
   children,
   type = "button",
   disabled = false,
+  loading = false,
 }) => {
   let btnSize = "";
   if (size === "sm") {
@@ -30,14 +32,23 @@ const Button: FC<Props> = ({
     <button
       type={type}
       onClick={onClick}
-      disabled={disabled}
+      disabled={disabled || loading}
       className={`text-xl sm:text-base ${btnSize} border border-gray500 ${
-        disabled
+        disabled || loading
           ? "bg-gray400 text-gray300 cursor-not-allowed"
           : "bg-gray500 text-gray100 hover:text-gray300"
-      } ${extraClass}`}
+      } ${extraClass} relative`}
     >
-      {value} <span className="ml-1">{children}</span>
+      {loading ? (
+        <div className="flex items-center justify-center">
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+          <span>Đang xử lý...</span>
+        </div>
+      ) : (
+        <>
+          {value} <span className="ml-1">{children}</span>
+        </>
+      )}
     </button>
   );
 };

@@ -16,6 +16,17 @@ export class UploadService {
     return upload;
   }
 
+  async uploadMultipleFiles(files: Express.Multer.File[]): Promise<string[]> {
+    const uploadedUrls: string[] = [];
+
+    for (const file of files) {
+      const upload = await this.uploadFile(file);
+      uploadedUrls.push(upload.url);
+    }
+
+    return uploadedUrls;
+  }
+
   async deleteFile(public_id: string) {
     await cloudinary.uploader.destroy(public_id);
     await this.uploadModel.deleteOne({ public_id: public_id });

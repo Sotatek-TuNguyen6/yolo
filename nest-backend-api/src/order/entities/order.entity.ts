@@ -1,6 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document, Types } from 'mongoose';
-import { DeliveryType, PaymentStatus, PaymentType } from 'src/enum';
+import {
+  DeliveryType,
+  OrderStatus,
+  PaymentStatus,
+  PaymentType,
+} from 'src/enum';
 export type OrderDocument = Order & Document;
 
 @Schema({ timestamps: true })
@@ -23,6 +28,9 @@ export class OrderDetail {
 
   @Prop({ required: false, type: String })
   imageId?: string;
+
+  @Prop({ required: false, type: String })
+  size?: string;
 }
 
 export const OrderDetailSchema = SchemaFactory.createForClass(OrderDetail);
@@ -151,6 +159,13 @@ export class Order {
     default: PaymentStatus.PENDING,
   })
   paymentStatus: PaymentStatus;
+
+  @Prop({
+    type: String,
+    enum: OrderStatus,
+    default: OrderStatus.PENDING,
+  })
+  orderStatus: OrderStatus;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

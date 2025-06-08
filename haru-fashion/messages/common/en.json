@@ -196,6 +196,9 @@
     "home": "Home",
     "search_results": "Search results",
     "no_result": "No Result",
-    "showing_results": "Showing {products} result(s)"
+    "showing_results": "Showing {products} result(s)",
+    "searching": "Searching",
+    "no_results_found": "No results found",
+    "view_all_results": "View all results"
   }
 }

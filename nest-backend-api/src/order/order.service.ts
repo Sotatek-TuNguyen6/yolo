@@ -17,7 +17,17 @@ import {
   DailyStats,
   ProductSale,
 } from './dto/order-report.dto';
-import { PaymentStatus } from 'src/enum';
+import {
+  OrderStatus,
+  PaymentStatus,
+  PaymentType,
+  DeliveryType,
+} from 'src/enum';
+import { MailService } from 'src/mail/mail.service';
+import {
+  ProductDocument,
+  ProductImageDocument,
+} from 'src/products/entities/product.entity';
 
 const populate = [
   'orderDetails',
@@ -31,10 +41,12 @@ export class OrderService {
     @InjectModel(Order.name) private orderModel: Model<Order>,
     private readonly productsService: ProductsService,
     private readonly counterService: CounterService,
+    private readonly mailService: MailService,
   ) {}
 
   async create(createOrderDto: CreateOrderDto) {
     try {
+      // console.log(createOrderDto);
       const orderId = await this.counterService.getNextSequence('order');
 
       // Create customer info from DTO
@@ -47,15 +59,17 @@ export class OrderService {
       // Create order details from products array
       const orderDetails: OrderDetail[] = [];
 
+      const listProduct: ProductDocument[] = [];
       for (const item of createOrderDto.products) {
         const product = await this.productsService.findByProductId(
           String(item.id),
         );
-        console.log(product);
+        // console.log(product);
         if (!product) {
           throw new NotFoundException(`Product with ID ${item.id} not found`);
         }
 
+        listProduct.push(product);
         const orderDetailId =
           await this.counterService.getNextSequence('orderDetail');
 
@@ -65,12 +79,14 @@ export class OrderService {
           quantity: item.quantity,
           price: product.price,
           imageId: item.selectedImageId,
+          size: item.size,
         });
 
         // Decrease product stock for this item
         await this.productsService.decreaseProductStock(
           String(item.id),
           item.selectedImageId || '',
+          item.size || '',
           item.quantity,
         );
       }
@@ -100,6 +116,107 @@ export class OrderService {
 
       const savedOrder = await order.save();
 
+      if (createOrderDto.sendEmail && createOrderDto.customerEmail) {
+        // Create HTML email template in Vietnamese with order details
+        const paymentTypeText =
+          createOrderDto.paymentType === PaymentType.CASH_ON_DELIVERY
+            ? 'Thanh toán khi nhận hàng'
+            : 'Chuyển khoản ngân hàng';
+
+        let deliveryTypeText = 'Giao hàng khác';
+        if (createOrderDto.deliveryType === DeliveryType.STORE_PICKUP) {
+          deliveryTypeText = 'Nhận tại cửa hàng';
+        } else if (createOrderDto.deliveryType === DeliveryType.YANGON) {
+          deliveryTypeText = 'Giao hàng nội thành';
+        }
+
+        let productsHtml = '';
+        let totalPrice = 0;
+        for (const [index, item] of listProduct.entries()) {
+          const color = item.images.find(
+            (image) =>
+              (image as ProductImageDocument)._id ==
+              createOrderDto.products[index].selectedImageId,
+          );
+          totalPrice += item.price * createOrderDto.products[index].quantity;
+          // console.log(color);
+          productsHtml += `
+            <tr>
+              <td style="padding: 10px; border-bottom: 1px solid #ddd;">${item.name}</td>
+              <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">${createOrderDto.products[index].quantity}</td>
+              <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">${createOrderDto.products[index].size}</td>
+              <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">${color?.color}</td>
+              <td style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">${item.price.toLocaleString('vi-VN')} đ</td>
+            </tr>
+          `;
+        }
+
+        const htmlContent = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; padding: 20px; border-radius: 5px;">
+            <div style="text-align: center; margin-bottom: 20px;">
+              <h1 style="color: #333;">Xác Nhận Đơn Hàng</h1>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+              <p>Kính gửi <strong>${createOrderDto.customerName}</strong>,</p>
+              <p>Cảm ơn bạn đã đặt hàng tại cửa hàng của chúng tôi. Đơn hàng của bạn đã được xác nhận thành công.</p>
+            </div>
+            
+            <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+              <h2 style="color: #333; font-size: 18px; margin-top: 0;">Thông Tin Đơn Hàng</h2>
+              <p><strong>Mã đơn hàng:</strong> #${orderId}</p>
+              <p><strong>Ngày đặt hàng:</strong> ${new Date().toLocaleDateString('vi-VN')}</p>
+              <p><strong>Phương thức thanh toán:</strong> ${paymentTypeText}</p>
+              <p><strong>Phương thức vận chuyển:</strong> ${deliveryTypeText}</p>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+              <h2 style="color: #333; font-size: 18px;">Chi Tiết Sản Phẩm</h2>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr style="background-color: #f2f2f2;">
+                  <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Sản phẩm</th>
+                  <th style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">Số lượng</th>
+                  <th style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">Size</th>
+                  <th style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">Màu</th>
+                  <th style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">Giá</th>
+                </tr>
+                ${productsHtml}
+                <tr>
+                  <td colspan="4" style="padding: 10px; text-align: right; font-weight: bold;">Tổng tiền:</td>
+                  <td style="padding: 10px; text-align: right; font-weight: bold;">${totalPrice.toLocaleString('vi-VN')} đ</td>
+                </tr>
+                <tr>
+                  <td colspan="4" style="padding: 10px; text-align: right; font-weight: bold;">Tổng tiền sau ship:</td>
+                  <td style="padding: 10px; text-align: right; font-weight: bold;">${(parseFloat(createOrderDto.totalPrice) + 100000).toLocaleString('vi-VN')} đ</td>
+                </tr>
+              </table>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+              <h2 style="color: #333; font-size: 18px;">Địa Chỉ Giao Hàng</h2>
+              <p>${createOrderDto.customerName}</p>
+              <p>${createOrderDto.customerPhone}</p>
+              <p>${createOrderDto.shippingAddress}</p>
+              <p>${createOrderDto.addressDetails.district}, ${createOrderDto.addressDetails.city}, ${createOrderDto.addressDetails.ward}</p>
+            </div>
+            
+            <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+              <p>Nếu bạn có bất kỳ câu hỏi nào về đơn hàng, vui lòng liên hệ với chúng tôi qua email hoặc số điện thoại cửa hàng.</p>
+              <p>Cảm ơn bạn đã mua sắm cùng chúng tôi!</p>
+            </div>
+            
+            <div style="text-align: center; font-size: 12px; color: #777;">
+              <p>© ${new Date().getFullYear()} - Cửa hàng gốm sứ. Tất cả các quyền được bảo lưu.</p>
+            </div>
+          </div>
+        `;
+
+        await this.mailService.sendMail(
+          createOrderDto.customerEmail,
+          'Xác Nhận Đơn Hàng #' + orderId,
+          htmlContent,
+        );
+      }
       // Fetch the order with populated fields to return
       return savedOrder;
     } catch (error) {
@@ -165,12 +282,17 @@ export class OrderService {
 
   async orderTracking(
     orderId: string,
-    email?: string,
+    search?: string,
   ): Promise<OrderTrackingResponse> {
     const order = await this.orderModel
       .findOne({
         orderId,
-        ...(email && { 'customerInfo.email': email }),
+        ...(search && {
+          $or: [
+            { 'customerInfo.email': search },
+            { 'customerInfo.phone': search },
+          ],
+        }),
       })
       .populate(populate);
 
@@ -328,6 +450,16 @@ export class OrderService {
     const order = await this.orderModel.findOneAndUpdate(
       { orderId },
       { paymentStatus },
+      { new: true },
+    );
+    if (!order) throw new NotFoundException('Không tìm thấy order này');
+    return order;
+  }
+
+  async updateOrderStatus(orderId: string, orderStatus: OrderStatus) {
+    const order = await this.orderModel.findOneAndUpdate(
+      { orderId },
+      { orderStatus },
       { new: true },
     );
     if (!order) throw new NotFoundException('Không tìm thấy order này');

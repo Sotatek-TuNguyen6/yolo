@@ -36,7 +36,7 @@ const addItemToCart = (
       ) {
         let itemQty = 0;
           item.quantity || add_one
-          ? (itemQty = cartItem.quantity! + 1)
+          ? (itemQty = cartItem.quantity! + item.quantity!)
           : (itemQty = item.quantity!);
         console.log("Updating quantity for existing item:", {
           name: cartItem.name,
