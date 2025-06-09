@@ -32,6 +32,7 @@ export type commonType = {
     createdAt?: string;
     updatedAt?: string | null;
   };
+  slug?: string;
 };
 
 export type imagesType = {

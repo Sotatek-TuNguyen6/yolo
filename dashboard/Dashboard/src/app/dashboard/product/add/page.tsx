@@ -108,8 +108,6 @@ export default function AddProductPage() {
     },
   ]);
 
-  console.log(imageGroups);
-
   // Form setup
   const form = useForm({
     resolver: zodResolver(productFormSchema),

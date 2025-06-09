@@ -117,13 +117,11 @@ export class ProductsService {
       filter.stock = { $lte: Number(query.stock) };
     }
 
-    console.log(query.category);
     if (query.category) {
       // Find category by name first
       const category = await this.categoryModel.findOne({
         name: { $regex: query.category, $options: 'i' },
       });
-      console.log(category);
 
       if (category) {
         filter.category = category._id;
@@ -246,9 +244,16 @@ export class ProductsService {
   }
 
   async findByProductId(productId: string) {
-    const product = await this.productModel
-      .findOne({ productId })
-      .populate(populate);
+    // Check if the input is a numeric product ID or a string slug
+    const isNumeric = /^\d+$/.test(productId);
+
+    // Build the query based on input type
+    const query = isNumeric
+      ? { $or: [{ productId: Number(productId) }, { slug: productId }] }
+      : { slug: productId }; // If not numeric, only search by slug
+
+    const product = await this.productModel.findOne(query).populate(populate);
+
     if (!product) throw new NotFoundException('Không tìm thấy sản phẩm này');
     return product;
   }
@@ -587,7 +592,6 @@ export class ProductsService {
         (image) => (image as ProductImageDocument)._id == imageId,
       );
 
-      console.log(image);
 
       if (!image)
         throw new NotFoundException(`Không tìm thấy variant với ID ${imageId}`);
@@ -617,7 +621,6 @@ export class ProductsService {
         `Sản phẩm này chỉ còn ${product.stock}, không đủ số lượng ${quantity}`,
       );
     }
-
     product.stock -= quantity;
 
     await product.save();
@@ -625,7 +628,6 @@ export class ProductsService {
   }
 
   async querySearch(query: { q?: string; query?: string }) {
-    console.log(query);
     const searchTerm = query.q || query.query;
     if (!searchTerm) {
       return [];

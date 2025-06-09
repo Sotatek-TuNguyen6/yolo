@@ -97,7 +97,10 @@ export default function OrderDetailPage() {
     queryKey: ['order', id],
   });
   // Update payment status mutation
-  const { mutate: updatePaymentStatus } = useMutationRequest<Order, { paymentStatus: PaymentStatus }>({
+  const { mutate: updatePaymentStatus } = useMutationRequest<
+    Order,
+    { paymentStatus: PaymentStatus }
+  >({
     url: `/orders/${id}/payment-status`,
     method: 'patch',
     successMessage: 'Cập nhật trạng thái thanh toán thành công',
@@ -122,7 +125,6 @@ export default function OrderDetailPage() {
       },
     },
   });
-
 
   if (isLoading) {
     return (
@@ -182,10 +184,16 @@ export default function OrderDetailPage() {
               {statusText[order.orderStatus]}
             </Badge>
           )}
-          <Badge className={getPaymentStatusColor(order.paymentStatus as PaymentStatus)} variant="outline">
+          <Badge
+            className={getPaymentStatusColor(order.paymentStatus as PaymentStatus)}
+            variant="outline"
+          >
             {statusText[order.paymentStatus as PaymentStatus]}
           </Badge>
-          <Badge className={getPaymentStatusBadge(order.paymentStatus as PaymentStatus)} variant="outline">
+          <Badge
+            className={getPaymentStatusBadge(order.paymentStatus as PaymentStatus)}
+            variant="outline"
+          >
             {order.isPayment ? 'Đã thanh toán' : 'Chưa thanh toán'}
           </Badge>
         </div>
@@ -334,6 +342,7 @@ export default function OrderDetailPage() {
                 <TableHead>Màu sắc</TableHead>
                 <TableHead className="text-right">Đơn giá</TableHead>
                 <TableHead className="text-center">Số lượng</TableHead>
+                <TableHead className="text-center">Giảm giá</TableHead>
                 <TableHead className="text-right">Thành tiền</TableHead>
               </TableRow>
             </TableHeader>
@@ -347,16 +356,17 @@ export default function OrderDetailPage() {
 
                 const productImage =
                   typeof detail.product === 'string' ? '' : detail.product.images[0].url[0];
-                  
 
                 return (
                   <TableRow key={index}>
                     <TableCell>{index + 1}</TableCell>
                     <TableCell>
-                      <Button 
-                        variant="link" 
+                      <Button
+                        variant="link"
                         className="p-0 h-auto font-mono text-xs"
-                        onClick={() => router.push(`/dashboard/product/${detail?.product.productId}`)}
+                        onClick={() =>
+                          router.push(`/dashboard/product/${detail?.product.productId}`)
+                        }
                       >
                         {detail?.product.productId}
                       </Button>
@@ -381,7 +391,11 @@ export default function OrderDetailPage() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="text-xs" style={{ backgroundColor: detail.product.images[0].colorCode }}>
+                      <Badge
+                        variant="outline"
+                        className="text-xs"
+                        style={{ backgroundColor: detail.product.images[0].colorCode }}
+                      >
                         {detail.product.images[0].color}
                       </Badge>
                     </TableCell>
@@ -389,8 +403,13 @@ export default function OrderDetailPage() {
                       {detail.price.toLocaleString('vi-VN')} VND
                     </TableCell>
                     <TableCell className="text-center">{detail.quantity}</TableCell>
+                    <TableCell className="text-center">{detail.discountPercent}%</TableCell>
                     <TableCell className="text-right">
-                      {(detail.price * detail.quantity).toLocaleString('vi-VN')} VND
+                      {(
+                        detail.price * detail.quantity -
+                        (detail.price * detail.quantity * (detail?.discountPercent || 0)) / 100
+                      ).toLocaleString('vi-VN')}{' '}
+                      VND
                     </TableCell>
                   </TableRow>
                 );
@@ -402,11 +421,18 @@ export default function OrderDetailPage() {
           <div className="space-y-2 w-[300px]">
             <div className="flex justify-between">
               <span>Tổng tiền hàng:</span>
-              <span className="font-medium">{order.totalPrice.toLocaleString('vi-VN')} VND</span>
+              <span className="font-medium">
+                {(order.totalPrice - (order.deliveryType === 'SHIP' ? 25000 : 0)).toLocaleString(
+                  'vi-VN',
+                )}{' '}
+                VND
+              </span>
             </div>
             <div className="flex justify-between">
               <span>Phí vận chuyển:</span>
-              <span className="font-medium">0 VND</span>
+              <span className="font-medium">
+                {order.deliveryType === 'SHIP' ? '25.000 VND' : '0 VND'}
+              </span>
             </div>
             <Separator />
             <div className="flex justify-between text-lg font-bold">

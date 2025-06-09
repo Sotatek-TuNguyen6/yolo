@@ -31,6 +31,12 @@ export class OrderDetail {
 
   @Prop({ required: false, type: String })
   size?: string;
+
+  @Prop({ required: false, type: String })
+  productName?: string;
+
+  @Prop({ required: false, type: Number })
+  discountPercent?: number;
 }
 
 export const OrderDetailSchema = SchemaFactory.createForClass(OrderDetail);

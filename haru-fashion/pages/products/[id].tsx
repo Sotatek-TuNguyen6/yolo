@@ -87,11 +87,16 @@ const Product: React.FC<Props> = ({ product, products }) => {
   });
   console.log("uniqueColors", uniqueColors);
 
-  // Lọc ảnh theo màu đã chọn
+  // Lọc ảnh theo màu đã chọn và đảm bảo không bao giờ là rỗng
   const filteredImages = product.images.filter(
     (img) => img.colorCode === uniqueColors[selectedColorIndex]?.colorCode
   );
 
+  // Dự phòng nếu filteredImages rỗng
+  const displayImages =
+    filteredImages.length > 0 ? filteredImages : [product.images[0]];
+
+  console.log("filteredImages", filteredImages);
   // Lấy thông tin màu đã chọn
   const selectedColor = uniqueColors[selectedColorIndex];
 
@@ -189,12 +194,15 @@ const Product: React.FC<Props> = ({ product, products }) => {
 
       // Nếu tìm thấy, cập nhật startIndex cho ImageGallery
       if (firstImageIndex !== -1) {
-        setCurrentImageIndex(firstImageIndex);
+        setCurrentImageIndex(0); // Reset to first image of the new color
       }
     }
   }, [selectedColorIndex, uniqueColors, product.images]);
 
   const handleColorSelect = (index: number) => {
+    console.log("handleColorSelect", index);
+    // Reset currentImageIndex when changing colors
+    setCurrentImageIndex(0);
     setSelectedColorIndex(index);
   };
 
@@ -247,7 +255,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
   };
 
   // Chuẩn bị dữ liệu cho ImageGallery
-  const galleryImages = filteredImages
+  const galleryImages = displayImages
     .map((image) =>
       Array.isArray(image.url)
         ? image.url.map((url: string) => ({
@@ -266,6 +274,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
           ]
     )
     .flat();
+  console.log("galleryImages", galleryImages);
 
   // Custom navigation buttons
   const renderLeftNav = (
@@ -358,15 +367,26 @@ const Product: React.FC<Props> = ({ product, products }) => {
                     as="h3"
                     className="text-lg font-medium leading-6 text-gray-900"
                   >
-                    {locale === 'vi' ? 'Hướng dẫn chọn size' : 'Size Guide'}
+                    {locale === "vi" ? "Hướng dẫn chọn size" : "Size Guide"}
                   </Dialog.Title>
                   <button
                     type="button"
                     className="text-gray500 hover:text-gray700 focus:outline-none"
                     onClick={() => setIsSizeGuideOpen(false)}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -406,10 +426,10 @@ const Product: React.FC<Props> = ({ product, products }) => {
           </div>
         </div>
         {/* ===== Main Content Section ===== */}
-        <div className="itemSection app-max-width app-x-padding flex flex-col md:flex-row">
+        <div className="itemSection app-max-width app-x-padding flex flex-col md:flex-row mt-5">
           <div className="imgSection w-full md:w-1/2 h-full">
             {/* Custom styles for ImageGallery */}
-            <style >{`
+            <style>{`
               .image-gallery-thumbnails-wrapper.left {
                 width: 80px;
               }
@@ -468,7 +488,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
                 renderLeftNav={renderLeftNav}
                 renderRightNav={renderRightNav}
                 startIndex={currentImageIndex}
-                key={selectedColorIndex}
+                key={`color-${selectedColorIndex}-images-${galleryImages.length}`}
               />
             </div>
 
@@ -482,8 +502,9 @@ const Product: React.FC<Props> = ({ product, products }) => {
                   clickable: true,
                 }}
                 className="mySwiper"
+                key={`swiper-color-${selectedColorIndex}-images-${displayImages.length}`}
               >
-                {filteredImages.map((image, index) =>
+                {displayImages.map((image, index) =>
                   Array.isArray(image.url) ? (
                     image.url.map((url: string, idx: number) => (
                       <SwiperSlide key={image._id + "-" + idx}>
@@ -574,10 +595,21 @@ const Product: React.FC<Props> = ({ product, products }) => {
                   onClick={() => setIsSizeGuideOpen(true)}
                   className="text-sm bg-gray100 hover:bg-gray200 text-gray600 hover:text-gray800 py-1 px-2 rounded flex items-center transition-colors"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 mr-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                    />
                   </svg>
-                  {locale === 'vi' ? 'Bảng size' : 'Size Guide'}
+                  {locale === "vi" ? "Bảng size" : "Size Guide"}
                 </button>
               </div>
               <div className="sizeContainer flex flex-wrap gap-2 text-sm">
@@ -596,7 +628,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
                     } cursor-pointer`}
                   >
                     <span className="font-medium">{sizeQty.size}</span>
-                    <span
+                    {/* <span
                       className={`text-xs mt-1 ${
                         sizeQty.quantity > 0 ? "text-green-600" : "text-red-500"
                       }`}
@@ -604,7 +636,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
                       {sizeQty.quantity > 0
                         ? `Còn ${sizeQty.quantity}`
                         : "Hết hàng"}
-                    </span>
+                    </span> */}
                   </div>
                 ))}
               </div>
@@ -760,8 +792,6 @@ export const getServerSideProps: GetServerSideProps = async ({
       notFound: true,
     };
   }
-
-  console.log(fetchedProduct);
   if (!fetchedProduct.category) {
     return {
       notFound: true,
@@ -801,6 +831,7 @@ export const getServerSideProps: GetServerSideProps = async ({
       images: randomProduct.images,
       tags: randomProduct.tags,
       discountPercent: randomProduct.discountPercent,
+      slug: randomProduct.slug ,
     });
   });
 

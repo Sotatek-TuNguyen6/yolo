@@ -123,7 +123,6 @@ export default function ProductDetailPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('info');
   const [variants, setVariants] = useState<VariantGroup[]>([]);
-  console.log(variants);
   const [selectedSizes, setSelectedSizes] = useState<{ [colorIndex: number]: string[] }>({});
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [activeColorIndex, setActiveColorIndex] = useState<number | null>(null);
@@ -229,7 +228,6 @@ export default function ProductDetailPage() {
       productData.data.images.forEach(image => {
         // Find if this color already exists in our groups
         const existingColorGroup = groups.find(group => group.color === image.color);
-        console.log('existingColorGroup', existingColorGroup);
 
         if (existingColorGroup) {
           // Process all size-quantity pairs from the image
@@ -273,7 +271,6 @@ export default function ProductDetailPage() {
             });
           }
         } else {
-          console.log('image', image);
           // Add new color group
           const sizes = [];
 
@@ -308,7 +305,6 @@ export default function ProductDetailPage() {
         }
       });
 
-      console.log('groups', groups);
       setVariants(groups);
 
       // Initialize selectedSizes with current sizes
@@ -339,7 +335,6 @@ export default function ProductDetailPage() {
         });
 
         initialSizes[index] = sizes;
-        console.log(`Initial sizes for color ${group.color}:`, initialSizes[index]);
       });
       setSelectedSizes(initialSizes);
 
@@ -643,7 +638,6 @@ export default function ProductDetailPage() {
         return;
       }
 
-      console.log('Saving changes for color index:', activeColorIndex);
 
       const colorGroup = variants[activeColorIndex];
       if (!colorGroup) {
@@ -660,15 +654,6 @@ export default function ProductDetailPage() {
 
       // Get the new sizes for this color
       const newSizes = selectedSizes[activeColorIndex] || [];
-      console.log('New sizes for color:', colorGroup.color, newSizes);
-      console.log(
-        'Types of sizes:',
-        newSizes.map(size => ({
-          size,
-          type: typeof size,
-          isArray: Array.isArray(size),
-        })),
-      );
 
       // Process all sizes to ensure they are valid strings
       const processedSizes: string[] = [];
@@ -700,8 +685,6 @@ export default function ProductDetailPage() {
           }
         }
       });
-
-      console.log('Processed sizes to send:', processedSizes);
 
       // Call the update mutation with the correct payload structure
       await updateVariantMutation({
@@ -955,7 +938,7 @@ export default function ProductDetailPage() {
                               <FormItem>
                                 <FormLabel>Số lượng</FormLabel>
                                 <FormControl>
-                                  <Input type="number" {...field} />
+                                  <Input type="number" {...field} disabled={true} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -1220,7 +1203,6 @@ export default function ProductDetailPage() {
                         // Find the index of the color that matches the selected tab value
                         const index = variants.findIndex(group => group.color === value);
                         if (index !== -1) {
-                          console.log('Tab changed to:', value, 'index:', index);
                           setActiveColorIndex(index);
                         }
                       }}
@@ -1560,7 +1542,6 @@ export default function ProductDetailPage() {
                     // Find the index of the color that matches the selected tab value
                     const index = variants.findIndex(group => group.color === value);
                     if (index !== -1) {
-                      console.log('Tab changed to:', value, 'index:', index);
                       setActiveColorIndex(index);
                     }
                   }}

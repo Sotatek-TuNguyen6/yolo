@@ -42,7 +42,13 @@ export function DataTableToolbar<TData>({
         <Input
           placeholder={searchPlaceholder}
           value={(table.getColumn(searchColumn)?.getFilterValue() as string) ?? ''}
-          onChange={event => table.getColumn(searchColumn)?.setFilterValue(event.target.value)}
+          onChange={event => {
+            const value = event.target.value;
+            console.log('value', typeof value);
+            // Convert the value for filtering if needed
+            // This ensures that even if DB value is a number, string search will work
+            table.getColumn(searchColumn)?.setFilterValue(value);
+          }}
           className="h-8 w-[150px] lg:w-[250px]"
         />
 
@@ -74,4 +80,10 @@ export function DataTableToolbar<TData>({
       <DataTableViewOptions table={table} />
     </div>
   );
+}
+
+export interface Order {
+  _id?: string;
+  orderId: number;  // This is already defined as a number
+  // ...other properties
 }

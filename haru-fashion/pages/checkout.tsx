@@ -4,8 +4,8 @@ import axios from "axios";
 import Image from "next/image";
 import { GetStaticProps } from "next";
 import { useRouter } from "next/router";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
@@ -19,6 +19,34 @@ import { useAuth } from "../context/AuthContext";
 // let w = window.innerWidth;
 type PaymentType = "CASH_ON_DELIVERY" | "BANK_TRANSFER";
 type DeliveryType = "STORE_PICKUP" | "FREE" | "SHIP";
+
+// Payment method mapping for display
+const paymentMethodMapping: Record<PaymentType, { en: string; vi: string }> = {
+  CASH_ON_DELIVERY: {
+    en: "Cash on Delivery",
+    vi: "Thanh toán khi nhận hàng",
+  },
+  BANK_TRANSFER: {
+    en: "Bank Transfer",
+    vi: "Chuyển khoản ngân hàng",
+  },
+};
+
+// Delivery type mapping for display
+const deliveryTypeMapping: Record<DeliveryType, { en: string; vi: string }> = {
+  STORE_PICKUP: {
+    en: "Store Pickup",
+    vi: "Nhận tại cửa hàng",
+  },
+  FREE: {
+    en: "Free Delivery",
+    vi: "Miễn phí giao hàng",
+  },
+  SHIP: {
+    en: "Express Shipping",
+    vi: "Ship nhanh",
+  },
+};
 
 type Customer = {
   _id: string;
@@ -34,6 +62,14 @@ export type OrderItem = {
   orderDetailId: number;
   quantity: number;
   product: apiProductsType;
+  imageId?: string;
+  size?: string;
+  selectedColor?: {
+    colorName: string;
+    colorCode: string;
+  };
+  productName?: string;
+  discountPercent?: number;
 };
 
 export type Order = {
@@ -115,8 +151,23 @@ const ShoppingCart = () => {
   const [isOrdering, setIsOrdering] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
+  console.log("completedOrder", completedOrder);
   const [orderError, setOrderError] = useState("");
   const [sendEmail, setSendEmail] = useState(false);
+
+  // Helper function to get localized payment method name
+  const getPaymentMethodName = (type: PaymentType): string => {
+    return locale === "vi"
+      ? paymentMethodMapping[type].vi
+      : paymentMethodMapping[type].en;
+  };
+
+  // Helper function to get localized delivery type name
+  const getDeliveryTypeName = (type: DeliveryType): string => {
+    return locale === "vi"
+      ? deliveryTypeMapping[type].vi
+      : deliveryTypeMapping[type].en;
+  };
 
   // Fetch provinces on component mount
   useEffect(() => {
@@ -278,7 +329,7 @@ const ShoppingCart = () => {
         console.log("products", products);
         // If email is empty, force sendEmail to false
         const shouldSendEmail = email ? sendEmail : false;
-        
+
         const res = await axios.post(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/orders`,
           {
@@ -318,10 +369,13 @@ const ShoppingCart = () => {
           handleOrderError(error.response.data.error);
         } else {
           setOrderError("error_occurs");
-          toast.error(t("error_occurs") || "Đã xảy ra lỗi, vui lòng thử lại sau", {
-            position: "top-right",
-            autoClose: 5000,
-          });
+          toast.error(
+            t("error_occurs") || "Đã xảy ra lỗi, vui lòng thử lại sau",
+            {
+              position: "top-right",
+              autoClose: 5000,
+            }
+          );
         }
         setIsOrdering(false);
       }
@@ -332,12 +386,14 @@ const ShoppingCart = () => {
   // Helper function to handle different error types
   const handleOrderError = (error: any) => {
     setOrderError("error_occurs");
-    
+
     if (error && error.message) {
       // Check if the error is about stock quantity
-      if (error.message.includes("không đủ số lượng") || 
-          error.message.includes("chỉ còn") ||
-          error.message.toLowerCase().includes("stock")) {
+      if (
+        error.message.includes("không đủ số lượng") ||
+        error.message.includes("chỉ còn") ||
+        error.message.toLowerCase().includes("stock")
+      ) {
         toast.error(error.message, {
           position: "top-right",
           autoClose: false,
@@ -451,7 +507,9 @@ const ShoppingCart = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
             <div className="bg-white p-8 rounded-lg flex flex-col items-center">
               <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-gray500 mb-4"></div>
-              <h2 className="text-xl font-semibold mb-2">Đang xử lý đơn hàng</h2>
+              <h2 className="text-xl font-semibold mb-2">
+                Đang xử lý đơn hàng
+              </h2>
               <p className="text-gray500">Vui lòng đợi trong giây lát...</p>
             </div>
           </div>
@@ -911,7 +969,7 @@ const ShoppingCart = () => {
                           onChange={() => setDeli("STORE_PICKUP")}
                         />{" "}
                         <label htmlFor="pickup" className="cursor-pointer">
-                          {t("store_pickup")}
+                          {getDeliveryTypeName("STORE_PICKUP")}
                         </label>
                       </div>
                       <span>Miễn phí</span>
@@ -928,7 +986,7 @@ const ShoppingCart = () => {
                           // defaultChecked
                         />{" "}
                         <label htmlFor="ygn" className="cursor-pointer">
-                          Miễn phí giao hàng
+                          {getDeliveryTypeName("FREE")}
                         </label>
                       </div>
                       <span>Miễn Phí</span>
@@ -944,7 +1002,7 @@ const ShoppingCart = () => {
                           onChange={() => setDeli("SHIP")}
                         />{" "}
                         <label htmlFor="others" className="cursor-pointer">
-                          Ship nhanh
+                          {getDeliveryTypeName("SHIP")}
                         </label>
                       </div>
                       <span>{formatPrice(25000)}</span>
@@ -955,7 +1013,9 @@ const ShoppingCart = () => {
                 <div>
                   <div className="flex justify-between py-3">
                     <span>{t("grand_total")}</span>
-                    <span>{formatPrice(Number(subtotal) + Number(deliFee))}</span>
+                    <span>
+                      {formatPrice(Number(subtotal) + Number(deliFee))}
+                    </span>
                   </div>
 
                   <div className="grid gap-4 mt-2 mb-4">
@@ -964,7 +1024,7 @@ const ShoppingCart = () => {
                       className="relative flex flex-col bg-white p-5 rounded-lg shadow-md border border-gray300 cursor-pointer"
                     >
                       <span className="font-semibold text-gray-500 text-base leading-tight capitalize">
-                        {t("cash_on_delivery")}
+                        {getPaymentMethodName("CASH_ON_DELIVERY")}
                       </span>
                       <input
                         type="radio"
@@ -1003,7 +1063,7 @@ const ShoppingCart = () => {
                       className="relative flex flex-col bg-white p-5 rounded-lg shadow-md border border-gray300 cursor-pointer"
                     >
                       <span className="font-semibold text-gray-500 leading-tight capitalize">
-                        {t("bank_transfer")}
+                        {getPaymentMethodName("BANK_TRANSFER")}
                       </span>
                       <span className="text-gray400 text-sm mt-1">
                         {t("bank_transfer_desc")}
@@ -1050,23 +1110,30 @@ const ShoppingCart = () => {
                         onChange={() => setSendEmail(!sendEmail)}
                         disabled={!email}
                         className={`toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 ${
-                          email ? 'border-gray300 cursor-pointer' : 'border-gray300 opacity-50 cursor-not-allowed'
+                          email
+                            ? "border-gray300 cursor-pointer"
+                            : "border-gray300 opacity-50 cursor-not-allowed"
                         } appearance-none`}
                       />
                       <label
                         htmlFor="send-email-toggle"
                         className={`toggle-label block overflow-hidden h-6 rounded-full ${
-                          email ? 'bg-gray300 cursor-pointer' : 'bg-gray200 cursor-not-allowed'
+                          email
+                            ? "bg-gray300 cursor-pointer"
+                            : "bg-gray200 cursor-not-allowed"
                         }`}
                       ></label>
                     </div>
                     <label
                       htmlFor="send-email-toggle"
-                      className={`text-xs ${email ? 'text-gray-700' : 'text-gray-400'}`}
+                      className={`text-xs ${
+                        email ? "text-gray-700" : "text-gray-400"
+                      }`}
                     >
-                      {email 
-                        ? t("send_order_email") 
-                        : (t("email_required_for_order_details") || "Nhập email để nhận chi tiết đơn hàng")}
+                      {email
+                        ? t("send_order_email")
+                        : t("email_required_for_order_details") ||
+                          "Nhập email để nhận chi tiết đơn hàng"}
                     </label>
                   </div>
                 </div>
@@ -1131,11 +1198,15 @@ const ShoppingCart = () => {
                   <div className="py-3">
                     <div className="flex justify-between mb-2">
                       <span className="">{t("payment_method")}</span>
-                      <span>{completedOrder.paymentType}</span>
+                      <span>
+                        {getPaymentMethodName(completedOrder.paymentType)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="">{t("delivery_method")}</span>
-                      <span>{completedOrder.deliveryType}</span>
+                      <span>
+                        {getDeliveryTypeName(completedOrder.deliveryType)}
+                      </span>
                     </div>
                   </div>
 
@@ -1147,17 +1218,16 @@ const ShoppingCart = () => {
                           key={item.orderDetailId}
                         >
                           <span className="text-base">
-                            {item.name} x {item.quantity}
-                            {item.product &&
-                              item.product.discountPercent &&
-                              item.product.discountPercent > 0 && (
-                                <span className="ml-2 text-xs bg-red-500 text-white px-1 py-0.5 rounded">
-                                  -{item.product.discountPercent}%
+                            {item.productName} x {item.quantity}
+                            {item.discountPercent &&
+                              item.discountPercent > 0 && (
+                                <span className="ml-2 text-xs bg-red-500 px-1 py-0.5 rounded">
+                                  -{item.discountPercent}%
                                 </span>
                               )}
                           </span>
                           <span className="text-base">
-                            {formatPrice(item.price * item.quantity)}
+                            + {formatPrice(item.price * item.quantity)}
                           </span>
                         </div>
                       ))}
@@ -1166,29 +1236,21 @@ const ShoppingCart = () => {
                   {/* Show total savings if any */}
                   {completedOrder.orderDetails &&
                     completedOrder.orderDetails.some(
-                      (item) =>
-                        item.product &&
-                        item.product.discountPercent &&
-                        item.product.discountPercent > 0
+                      (item) => item.discountPercent && item.discountPercent > 0
                     ) && (
                       <div className="flex justify-between py-2 text-red-500">
                         <span>{t("discount") || "Tiết kiệm"}</span>
                         <span>
-                          {formatPrice(
+                          - {formatPrice(
                             completedOrder.orderDetails.reduce(
                               (total, item) => {
                                 if (
-                                  item.product &&
-                                  item.product.discountPercent &&
-                                  item.product.discountPercent > 0
+                                  item.discountPercent &&
+                                  item.discountPercent > 0
                                 ) {
-                                  const regularPrice =
-                                    item.product.price * item.quantity;
                                   const discountedPrice =
-                                    item.price * item.quantity;
-                                  return (
-                                    total + (regularPrice - discountedPrice)
-                                  );
+                                    item.price * item.discountPercent / 100;
+                                  return total + discountedPrice;
                                 }
                                 return total;
                               },
@@ -1198,6 +1260,16 @@ const ShoppingCart = () => {
                         </span>
                       </div>
                     )}
+                  {completedOrder.deliveryType && (
+                    <div className="flex justify-between py-2 text-red-500">
+                      <span>Phí ship</span>
+                      <span>
+                        {completedOrder.deliveryType === "SHIP"
+                          ? "+ " + formatPrice(25000)
+                          : "Miễn phí"}
+                      </span>
+                    </div>
+                  )}
 
                   <div className="pt-2 flex justify-between mb-2">
                     <span className="text-base uppercase">{t("total")}</span>
@@ -1213,7 +1285,7 @@ const ShoppingCart = () => {
                   {t("your_order_received")}
                   {completedOrder.paymentType === "BANK_TRANSFER" &&
                     t("bank_transfer_note")}
-                    
+
                   {completedOrder.paymentType === "CASH_ON_DELIVERY" &&
                     completedOrder.deliveryType !== "STORE_PICKUP" &&
                     t("cash_delivery_note")}
@@ -1222,7 +1294,14 @@ const ShoppingCart = () => {
                   {t("thank_you_for_purchasing")}
                 </div>
                 <div>
-                  Fanpage: <a href="https://www.facebook.com/lumenvn/" target="_blank" rel="noopener noreferrer">Lumen Fashion</a>
+                  Fanpage:{" "}
+                  <a
+                    href="https://www.facebook.com/lumenvn/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Lumen Fashion
+                  </a>
                 </div>
 
                 {completedOrder.paymentType === "BANK_TRANSFER" ? (

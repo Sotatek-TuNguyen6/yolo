@@ -286,7 +286,6 @@ export class ProductsController {
       let imagesMetaArray: ImageMeta[] = [];
       try {
         const parsed: unknown = imagesMetaRaw ? JSON.parse(imagesMetaRaw) : [];
-        console.log('parsed', parsed);
         if (
           Array.isArray(parsed) &&
           parsed.every(

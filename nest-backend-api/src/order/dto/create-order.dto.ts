@@ -60,6 +60,16 @@ export class ProductOrderDto {
   @IsString()
   @IsOptional()
   size?: string;
+
+  @ApiProperty({ description: 'Product name', example: 'Product Name' })
+  @IsString()
+  @IsOptional()
+  productName?: string;
+
+  @ApiProperty({ description: 'Discount percent', example: 10 })
+  @IsNumber()
+  @IsOptional()
+  discountPercent?: number;
 }
 
 export class CreateOrderDto {

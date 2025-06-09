@@ -16,6 +16,8 @@ import {
   useReactTable,
   getExpandedRowModel,
   Row,
+  FilterFn,
+  FilterFnOption,
 } from '@tanstack/react-table';
 
 import {
@@ -38,6 +40,37 @@ interface DataTableProps<TData, TValue> {
   searchPlaceholder?: string;
   renderSubComponent?: (props: { row: Row<TData> }) => React.ReactElement;
 }
+
+// Custom filter function that handles type conversion between string and number
+const fuzzyFilter: FilterFn<unknown> = (row, columnId, filterValue) => {
+  const rowValue = row.getValue(columnId);
+  
+  // If filter value is empty, show all rows
+  if (!filterValue || filterValue === '') return true;
+  
+  // If both are strings or both are numbers, do direct comparison
+  if (typeof rowValue === typeof filterValue) {
+    // For strings, do case-insensitive includes
+    if (typeof rowValue === 'string') {
+      return rowValue.toLowerCase().includes(String(filterValue).toLowerCase());
+    }
+    // For numbers, check equality
+    return rowValue === filterValue;
+  }
+  
+  // If rowValue is number and filterValue is string
+  if (typeof rowValue === 'number' && typeof filterValue === 'string') {
+    // Convert both to strings for comparison
+    return String(rowValue).toLowerCase().includes(filterValue.toLowerCase());
+  }
+  
+  // If rowValue is string and filterValue is number
+  if (typeof rowValue === 'string' && typeof filterValue === 'number') {
+    return rowValue.toLowerCase().includes(String(filterValue).toLowerCase());
+  }
+  
+  return false;
+};
 
 export function DataTable<TData, TValue>({
   columns,
@@ -62,6 +95,12 @@ export function DataTable<TData, TValue>({
       rowSelection,
       columnFilters,
       expanded,
+    },
+    filterFns: {
+      fuzzy: fuzzyFilter,
+    },
+    defaultColumn: {
+      filterFn: 'fuzzy' as FilterFnOption<TData>,
     },
     enableRowSelection: true,
     enableExpanding: !!renderSubComponent,

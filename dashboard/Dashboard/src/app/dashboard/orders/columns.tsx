@@ -173,6 +173,9 @@ export const columns: ColumnDef<Order>[] = [
         </div>
       );
     },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id));
+    },
   },
   {
     accessorKey: 'createdAt',
@@ -206,7 +209,6 @@ export const columns: ColumnDef<Order>[] = [
     ),
     cell: ({ row }) => {
       const method = row.getValue('paymentType') as PaymentMethod;
-      console.log(method);
       const methodText: Record<PaymentMethod, string> = {
         CASH_ON_DELIVERY: 'Tiền mặt khi nhận hàng',
         BANK_TRANSFER: 'Chuyển khoản',
@@ -223,7 +225,6 @@ export const columns: ColumnDef<Order>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="Trạng thái thanh toán" />,
     cell: ({ row }) => {
       const isPayment = row.getValue('paymentStatus') as PaymentStatus;
-      console.log(isPayment);
       const paymentStatusText: Record<PaymentStatus, string> = {
         pending: 'Chờ thanh toán',
         paid: 'Đã thanh toán',

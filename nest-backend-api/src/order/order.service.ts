@@ -33,6 +33,7 @@ const populate = [
   'orderDetails',
   'orderDetails.product',
   'orderDetails.product.category',
+  'orderDetails.product.images',
 ];
 
 @Injectable()
@@ -80,6 +81,8 @@ export class OrderService {
           price: product.price,
           imageId: item.selectedImageId,
           size: item.size,
+          productName: product.name,
+          discountPercent: product.discountPercent,
         });
 
         // Decrease product stock for this item
@@ -138,7 +141,12 @@ export class OrderService {
               (image as ProductImageDocument)._id ==
               createOrderDto.products[index].selectedImageId,
           );
-          totalPrice += item.price * createOrderDto.products[index].quantity;
+          totalPrice +=
+            item.price * createOrderDto.products[index].quantity -
+            (item.price *
+              createOrderDto.products[index].quantity *
+              item.discountPercent) /
+              100;
           // console.log(color);
           productsHtml += `
             <tr>
@@ -146,6 +154,7 @@ export class OrderService {
               <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">${createOrderDto.products[index].quantity}</td>
               <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">${createOrderDto.products[index].size}</td>
               <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">${color?.color}</td>
+              <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">${item.discountPercent}%</td>
               <td style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">${item.price.toLocaleString('vi-VN')} đ</td>
             </tr>
           `;
@@ -178,16 +187,21 @@ export class OrderService {
                   <th style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">Số lượng</th>
                   <th style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">Size</th>
                   <th style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">Màu</th>
+                  <th style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">Giảm giá</th>
                   <th style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">Giá</th>
                 </tr>
                 ${productsHtml}
                 <tr>
-                  <td colspan="4" style="padding: 10px; text-align: right; font-weight: bold;">Tổng tiền:</td>
-                  <td style="padding: 10px; text-align: right; font-weight: bold;">${totalPrice.toLocaleString('vi-VN')} đ</td>
-                </tr>
+                  <td colspan="5" style="padding: 10px; text-align: right; font-weight: bold;">Tổng tiền:</td>
+                  <td style="padding: 10px; text-align: right; font-weight: bold;">${(totalPrice - (createOrderDto.deliveryType === DeliveryType.SHIP ? 25000 : 0)).toLocaleString('vi-VN')} đ</td>
+                </tr> 
+                 <tr>
+                  <td colspan="5" style="padding: 10px; text-align: right; font-weight: bold;">Phí vận chuyển:</td>
+                  <td style="padding: 10px; text-align: right; font-weight: bold;">${(createOrderDto.deliveryType === DeliveryType.SHIP ? 25000 : 0).toLocaleString('vi-VN')} đ</td>
+                </tr>   
                 <tr>
-                  <td colspan="4" style="padding: 10px; text-align: right; font-weight: bold;">Tổng tiền sau ship:</td>
-                  <td style="padding: 10px; text-align: right; font-weight: bold;">${(parseFloat(createOrderDto.totalPrice) + 100000).toLocaleString('vi-VN')} đ</td>
+                  <td colspan="5" style="padding: 10px; text-align: right; font-weight: bold;">Tổng tiền sau ship:</td>
+                  <td style="padding: 10px; text-align: right; font-weight: bold;">${parseFloat(createOrderDto.totalPrice).toLocaleString('vi-VN')} đ</td>
                 </tr>
               </table>
             </div>
@@ -206,7 +220,7 @@ export class OrderService {
             </div>
             
             <div style="text-align: center; font-size: 12px; color: #777;">
-              <p>© ${new Date().getFullYear()} - Cửa hàng gốm sứ. Tất cả các quyền được bảo lưu.</p>
+              <p>© ${new Date().getFullYear()} - LUMEN – Thương hiệu quần áo dành cho nam giới hiện đại. Tất cả các quyền được bảo lưu.</p>
             </div>
           </div>
         `;
@@ -217,8 +231,13 @@ export class OrderService {
           htmlContent,
         );
       }
-      // Fetch the order with populated fields to return
-      return savedOrder;
+
+      // Fetch the saved order with all populated fields including product images
+      const populatedOrder = await this.orderModel
+        .findById(savedOrder._id)
+        .populate(populate);
+
+      return populatedOrder;
     } catch (error) {
       throw new BadRequestException(error);
     }

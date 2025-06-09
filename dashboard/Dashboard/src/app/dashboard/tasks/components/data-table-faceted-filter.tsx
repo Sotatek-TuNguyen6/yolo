@@ -33,7 +33,6 @@ export function DataTableFacetedFilter<TData, TValue>({
   options,
 }: DataTableFacetedFilterProps<TData, TValue>) {
   const facets = column?.getFacetedUniqueValues();
-  console.log(facets);
   const selectedValues = new Set(column?.getFilterValue() as (string | boolean | number)[]);
 
   // Function to check if a value is in the selectedValues set
@@ -132,8 +131,6 @@ export function DataTableFacetedFilter<TData, TValue>({
               {options.map(option => {
                 const isSelected = isValueSelected(option.value);
                 const count = getOptionCount(option.value);
-                console.log('option', option);
-
                 return (
                   <CommandItem
                     key={String(option.value)}

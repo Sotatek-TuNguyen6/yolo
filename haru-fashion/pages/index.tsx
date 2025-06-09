@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { GetStaticProps } from "next";
+import { GetServerSideProps, GetStaticProps } from "next";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import axios from "axios";
@@ -173,13 +173,13 @@ const Home: React.FC<Props> = ({ products }) => {
   );
 };
 
-export const getStaticProps: GetStaticProps = async ({ locale }) => {
+export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
   let products: itemType[] = [];
   const res = await axios.get(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/products?order_by=createdAt.desc&limit=10`
   );
-  console.log("🔥 Fetching products in getStaticProps...");
-  console.log("🛒 res.data:", JSON.stringify(res.data, null, 2));
+  // console.log("🔥 Fetching products in getStaticProps...");
+  // console.log("🛒 res.data:", JSON.stringify(res.data, null, 2));
   const fetchedProducts = res.data;
   console.log(
     "Fetched raw data:",
@@ -197,6 +197,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
         images: product.images,
         tags: product.tags,
         discountPercent: product.discountPercent,
+        slug: product?.slug || "",
       },
     ];
   });

@@ -31,7 +31,7 @@ export enum EDeliveryType {
   HOME_DELIVERY = 'HOME_DELIVERY',
 }
 
-export type DeliveryType = 'STORE_PICKUP' | 'HOME_DELIVERY';
+export type DeliveryType = 'STORE_PICKUP' | 'HOME_DELIVERY' | 'SHIP' | 'FREE';
 
 export interface IAddress {
   ward: {
@@ -84,6 +84,7 @@ export interface OrderDetail {
   price: number;
   imageId?: string;
   size?: string;
+  discountPercent?: number;
 }
 
 // Interface chính cho Order

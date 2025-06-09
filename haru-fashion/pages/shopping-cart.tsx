@@ -28,9 +28,9 @@ const ShoppingCart = () => {
 
   let deliFee = 0;
   if (deli === "Yangon") {
-    deliFee = 30000;
+    deliFee = 0;
   } else if (deli === "Others") {
-    deliFee = 50000;
+    deliFee = 25000;
   }
 
   // Helper function to format price based on locale
@@ -74,7 +74,7 @@ const ShoppingCart = () => {
 
       <main id="main-content">
         {/* Custom styling for product images */}
-        <style jsx global>{`
+        <style>{`
           .product-image {
             object-fit: contain !important;
             max-height: 128px;
