@@ -7,7 +7,7 @@ import { useRouter } from "next/router";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
 import Button from "../components/Buttons/Button";
-import { Order, OrderItem } from "./checkout";
+import { Order, OrderItem, OrderStatus } from "./checkout";
 import Image from "next/image";
 
 export enum PaymentStatus {
@@ -96,7 +96,7 @@ const OrderTracking: React.FC = () => {
           setOrderResult(response.data.data);
         } catch (parseError) {
           console.error("Error parsing order data:", parseError);
-          router.push("/404");
+          setError("Có lỗi xảy ra khi xử lý dữ liệu đơn hàng.");
         }
       } else {
         setError(
@@ -107,7 +107,7 @@ const OrderTracking: React.FC = () => {
     } catch (err: any) {
       console.error("Error tracking order:", err);
       if (err.response?.status === 404) {
-        router.push("/404");
+        setError("Không tìm thấy đơn hàng. Vui lòng kiểm tra lại mã đơn hàng và thông tin liên hệ.");
         return;
       }
       setError(
@@ -119,16 +119,37 @@ const OrderTracking: React.FC = () => {
     }
   };
 
-  const mappingStatus = (status: string) => {
+  const statusText = {
+    pending: 'Đang chờ xử lý',
+    processing: 'Đang xử lý',
+    shipping: 'Đang giao hàng',
+    delivered: 'Đã giao hàng',
+    cancelled: 'Đã hủy',
+    refunded: 'Đã hoàn tiền',
+    paid: 'Đã thanh toán',
+    failed: 'Thất bại',
+  };
+
+  const mappingStatus = (status: OrderStatus) => {
     switch (status) {
-      case PaymentStatus.PENDING:
-        return "Chờ xử lý";
-      case PaymentStatus.SUCCESS:
-        return "Đã thanh toán";
-      case PaymentStatus.FAILED:
-        return "Đã hủy";
+      case OrderStatus.PENDING:
+        return statusText.pending;
+      case OrderStatus.CONFIRMED:
+        return statusText.processing;
+      case OrderStatus.SHIPPING:
+        return statusText.shipping;
+      case OrderStatus.COMPLETED:
+        return statusText.delivered;
+      case OrderStatus.CANCELLED:
+        return statusText.cancelled;
+      case OrderStatus.REFUNDED:
+        return statusText.refunded;
+      case OrderStatus.DELIVERED:
+        return statusText.delivered;
+      case OrderStatus.PROCESSING:
+        return statusText.processing;
       default:
-        return "Chờ xử lý";
+        return statusText.pending;
     }
   };
 
@@ -195,7 +216,7 @@ const OrderTracking: React.FC = () => {
 
             <div>
               <label htmlFor="email" className="block mb-2 font-medium">
-                Email <span className="text-red-500">*</span>
+                Email hoặc Số điện thoại<span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -239,7 +260,7 @@ const OrderTracking: React.FC = () => {
                 <div>
                   <p className="text-gray500">Trạng thái:</p>
                   <p className="font-medium text-green-600">
-                    {mappingStatus(orderResult.paymentStatus)}
+                    {mappingStatus(orderResult.orderStatus)}
                   </p>
                 </div>
                 <div>

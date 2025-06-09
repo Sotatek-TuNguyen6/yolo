@@ -18,6 +18,7 @@ type Props = {
 };
 
 const Search: React.FC<Props> = ({ items, searchWord }) => {
+  console.log(items);
   const t = useTranslations("Search");
 
   return (
@@ -83,11 +84,12 @@ export const getServerSideProps: GetServerSideProps = async ({
   const res = await axios.get(
     `${process.env.NEXT_PUBLIC_PROD_BACKEND_URL}/api/v1/products/search/any/product?q=${q}`
   );
+  console.log(res.data.data);
   const fetchedProducts: apiProductsType[] = res.data.data.map(
     (product: apiProductsType) => ({
       ...product,
-      img1: product.images?.[0],
-      img2: product.images?.[1],
+      img1: product.images?.[0] || null,
+      img2: product.images?.[1] || null,
     })
   );
 

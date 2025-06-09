@@ -53,7 +53,7 @@ export class OrderService {
       // Create customer info from DTO
       const customerInfo: CustomerInfo = {
         name: createOrderDto.customerName,
-        email: createOrderDto.customerEmail,
+        email: createOrderDto.customerEmail || '',
         phone: createOrderDto.customerPhone,
       };
 
@@ -126,11 +126,11 @@ export class OrderService {
             ? 'Thanh toán khi nhận hàng'
             : 'Chuyển khoản ngân hàng';
 
-        let deliveryTypeText = 'Giao hàng khác';
+        let deliveryTypeText = 'Giao hàng miễn phí';
         if (createOrderDto.deliveryType === DeliveryType.STORE_PICKUP) {
           deliveryTypeText = 'Nhận tại cửa hàng';
-        } else if (createOrderDto.deliveryType === DeliveryType.YANGON) {
-          deliveryTypeText = 'Giao hàng nội thành';
+        } else if (createOrderDto.deliveryType === DeliveryType.SHIP) {
+          deliveryTypeText = 'Giao hàng nhanh';
         }
 
         let productsHtml = '';

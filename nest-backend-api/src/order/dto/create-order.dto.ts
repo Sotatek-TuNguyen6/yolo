@@ -87,7 +87,7 @@ export class CreateOrderDto {
     example: 'nguyendinhtu11022002@gmail.com',
   })
   @IsEmail()
-  @IsNotEmpty()
+  @IsOptional()
   customerEmail: string;
 
   @ApiProperty({ description: 'Customer phone number', example: '0988597401' })

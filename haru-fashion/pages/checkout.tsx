@@ -55,6 +55,18 @@ type Customer = {
   phone: string;
 };
 
+export enum OrderStatus {
+  PENDING = 'pending',
+  CONFIRMED = 'confirmed',
+  SHIPPING = 'shipping',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled',
+  PROCESSING = 'processing',
+  DELIVERED = 'delivered',
+  REFUNDED = 'refunded',
+}
+
+
 export type OrderItem = {
   _id: string;
   name: string;
@@ -87,6 +99,7 @@ export type Order = {
   deliveryDate: string;
   paymentStatus: string;
   orderDetails: OrderItem[];
+  orderStatus: OrderStatus;
 };
 
 const ShoppingCart = () => {
@@ -432,6 +445,10 @@ const ShoppingCart = () => {
     // If email is empty, make sure sendEmail is set to false
     if (!email && sendEmail) {
       setSendEmail(false);
+    }
+    // If email is provided, automatically enable sendEmail
+    else if (email && !sendEmail) {
+      setSendEmail(true);
     }
   }, [email]);
 
@@ -1340,7 +1357,7 @@ const ShoppingCart = () => {
                       />
                     </div>
                     <a
-                      href="https://www.facebook.com/LumenFashion"
+                      href="https://www.facebook.com/lumenvn/"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:text-blue-800 flex items-center"
