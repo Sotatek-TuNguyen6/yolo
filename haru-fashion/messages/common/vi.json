@@ -141,7 +141,8 @@
     "color": "Màu sắc",
     "loading": "Đang tải...",
     "optional": "Tùy chọn",
-    "email_required_for_order_details": "Nhập email để nhận chi tiết đơn hàng"
+    "email_required_for_order_details": "Nhập email để nhận chi tiết đơn hàng",
+    "out_of_stock": "Hết hàng"
   },
   "Others": {
     "page_not_found": "Không tìm thấy trang!",

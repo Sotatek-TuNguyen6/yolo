@@ -81,30 +81,45 @@ export const getServerSideProps: GetServerSideProps = async ({
   locale,
   query: { q = "" },
 }) => {
-  const res = await axios.get(
-    `${process.env.NEXT_PUBLIC_PROD_BACKEND_URL}/api/v1/products/search/any/product?q=${q}`
-  );
-  console.log(res.data.data);
-  const fetchedProducts: apiProductsType[] = res.data.data.map(
-    (product: apiProductsType) => ({
-      ...product,
-      img1: product.images?.[0] || null,
-      img2: product.images?.[1] || null,
-    })
-  );
+  try {
+    // Encode query parameter to handle Vietnamese characters properly
+    const encodedQuery = encodeURIComponent(q as string);
+    
+    const res = await axios.get(
+      `${process.env.NEXT_PUBLIC_PROD_BACKEND_URL}/api/v1/products/search/any/product?q=${encodedQuery}`
+    );
+    console.log(res.data.data);
+    // console.log(res.data.data);
+    const fetchedProducts: apiProductsType[] = res.data.data.map(
+      (product: apiProductsType) => ({
+        ...product,
+        img1: product.images?.[0] || null,
+        img2: product.images?.[1] || null,
+      })
+    );
 
-  let items: apiProductsType[] = [];
-  fetchedProducts.forEach((product: apiProductsType) => {
-    items.push(product);
-  });
+    let items: apiProductsType[] = [];
+    fetchedProducts.forEach((product: apiProductsType) => {
+      items.push(product);
+    });
 
-  return {
-    props: {
-      messages: (await import(`../messages/common/${locale}.json`)).default,
-      items,
-      searchWord: q,
-    },
-  };
+    return {
+      props: {
+        messages: (await import(`../messages/common/${locale}.json`)).default,
+        items,
+        searchWord: q,
+      },
+    };
+  } catch (error) {
+    console.log("error", error);
+    return {
+      props: {
+        messages: (await import(`../messages/common/${locale}.json`)).default,
+        items: [],
+        searchWord: q,
+      },
+    };
+  }
 };
 
 export default Search;
