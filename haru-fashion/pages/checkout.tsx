@@ -56,16 +56,15 @@ type Customer = {
 };
 
 export enum OrderStatus {
-  PENDING = 'pending',
-  CONFIRMED = 'confirmed',
-  SHIPPING = 'shipping',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled',
-  PROCESSING = 'processing',
-  DELIVERED = 'delivered',
-  REFUNDED = 'refunded',
+  PENDING = "pending",
+  CONFIRMED = "confirmed",
+  SHIPPING = "shipping",
+  COMPLETED = "completed",
+  CANCELLED = "cancelled",
+  PROCESSING = "processing",
+  DELIVERED = "delivered",
+  REFUNDED = "refunded",
 }
-
 
 export type OrderItem = {
   _id: string;
@@ -1250,6 +1249,34 @@ const ShoppingCart = () => {
                       ))}
                   </div>
 
+                  {completedOrder.orderDetails &&
+                    completedOrder.orderDetails.some(
+                      (item) => item.discountPercent && item.discountPercent > 0
+                    ) && (
+                      <div className="flex justify-between py-2 text-red-500">
+                        <span>Giá gốc</span>
+                        <span>
+                          {" "}
+                          {formatPrice(
+                            completedOrder.orderDetails.reduce(
+                              (total, item) => {
+                                if (
+                                  item.discountPercent &&
+                                  item.discountPercent > 0
+                                ) {
+                                  const regularPrice =
+                                    item.price * item.quantity;
+                                  return total + regularPrice;
+                                }
+                                return total;
+                              },
+                              0
+                            )
+                          )}
+                        </span>
+                      </div>
+                    )}
+
                   {/* Show total savings if any */}
                   {completedOrder.orderDetails &&
                     completedOrder.orderDetails.some(
@@ -1258,15 +1285,18 @@ const ShoppingCart = () => {
                       <div className="flex justify-between py-2 text-red-500">
                         <span>{t("discount") || "Tiết kiệm"}</span>
                         <span>
-                          - {formatPrice(
+                          -{" "}
+                          {formatPrice(
                             completedOrder.orderDetails.reduce(
                               (total, item) => {
                                 if (
                                   item.discountPercent &&
                                   item.discountPercent > 0
                                 ) {
+                                  const regularPrice =
+                                    item.price * item.quantity;
                                   const discountedPrice =
-                                    item.price * item.discountPercent / 100;
+                                    regularPrice * (item.discountPercent / 100);
                                   return total + discountedPrice;
                                 }
                                 return total;
@@ -1277,6 +1307,7 @@ const ShoppingCart = () => {
                         </span>
                       </div>
                     )}
+
                   {completedOrder.deliveryType && (
                     <div className="flex justify-between py-2 text-red-500">
                       <span>Phí ship</span>

@@ -16,6 +16,11 @@
 # next.js
 /.next/
 /out/
+# Loại bỏ tất cả các file cache của Next.js
+.next/cache
+.next/cache/
+**/.next/cache/
+**/.next/cache/**
 
 # production
 /build

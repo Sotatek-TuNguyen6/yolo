@@ -198,7 +198,9 @@ export default function Menu() {
                             <>
                               {searchResults.map((product) => (
                                 <Link
-                                  href={`/products/${product.productId}`}
+                                  href={`/products/${
+                                    product.slug || product.productId
+                                  }`}
                                   key={product._id}
                                 >
                                   <a

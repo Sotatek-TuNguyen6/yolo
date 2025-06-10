@@ -147,79 +147,107 @@ export class OrderService {
               createOrderDto.products[index].quantity *
               item.discountPercent) /
               100;
-          // console.log(color);
+
+          const productTotalPrice =
+            item.price *
+            createOrderDto.products[index].quantity *
+            (1 - item.discountPercent / 100);
+
           productsHtml += `
             <tr>
-              <td style="padding: 10px; border-bottom: 1px solid #ddd;">${item.name}</td>
-              <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">${createOrderDto.products[index].quantity}</td>
-              <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">${createOrderDto.products[index].size}</td>
-              <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">${color?.color}</td>
-              <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">${item.discountPercent}%</td>
-              <td style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">${item.price.toLocaleString('vi-VN')} đ</td>
+              <td style="padding: 10px; border-bottom: 1px solid #eee;">
+                ${item.name} - ${color?.color || 'Màu mặc định'} - Size: ${createOrderDto.products[index].size}
+              </td>
+              <td style="padding: 10px; text-align: center; border-bottom: 1px solid #eee;">${item.price.toLocaleString('vi-VN')} đ</td>
+              <td style="padding: 10px; text-align: center; border-bottom: 1px solid #eee;">${createOrderDto.products[index].quantity}</td>
+              <td style="padding: 10px; text-align: center; border-bottom: 1px solid #eee;">${item.discountPercent}%</td>
+              <td style="padding: 10px; text-align: right; border-bottom: 1px solid #eee;">${productTotalPrice.toLocaleString('vi-VN')} đ</td>
             </tr>
           `;
         }
 
+        const shippingFee =
+          createOrderDto.deliveryType === DeliveryType.SHIP ? 25000 : 0;
+        const subtotal = totalPrice;
+        const total = parseFloat(createOrderDto.totalPrice);
+
         const htmlContent = `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; padding: 20px; border-radius: 5px;">
-            <div style="text-align: center; margin-bottom: 20px;">
-              <h1 style="color: #333;">Xác Nhận Đơn Hàng</h1>
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; padding: 20px; border-radius: 5px; background-color: #fff;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #333; margin: 0;">Xác Nhận Đơn Hàng</h1>
+              <p style="color: #666; margin-top: 5px;">Cảm ơn bạn đã mua sắm cùng chúng tôi!</p>
             </div>
             
-            <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 25px;">
               <p>Kính gửi <strong>${createOrderDto.customerName}</strong>,</p>
               <p>Cảm ơn bạn đã đặt hàng tại cửa hàng của chúng tôi. Đơn hàng của bạn đã được xác nhận thành công.</p>
             </div>
             
-            <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
-              <h2 style="color: #333; font-size: 18px; margin-top: 0;">Thông Tin Đơn Hàng</h2>
-              <p><strong>Mã đơn hàng:</strong> #${orderId}</p>
-              <p><strong>Ngày đặt hàng:</strong> ${new Date().toLocaleDateString('vi-VN')}</p>
-              <p><strong>Phương thức thanh toán:</strong> ${paymentTypeText}</p>
-              <p><strong>Phương thức vận chuyển:</strong> ${deliveryTypeText}</p>
+            <div style="background-color: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
+              <h2 style="color: #333; font-size: 18px; margin-top: 0; margin-bottom: 15px;">Thông Tin Đơn Hàng</h2>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <div style="flex: 1;"><strong>Mã đơn hàng:</strong></div>
+                <div style="flex: 1;">#${orderId}</div>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <div style="flex: 1;"><strong>Ngày đặt hàng:</strong></div>
+                <div style="flex: 1;">${new Date().toLocaleDateString('vi-VN')}</div>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <div style="flex: 1;"><strong>Phương thức thanh toán:</strong></div>
+                <div style="flex: 1;">${paymentTypeText}</div>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <div style="flex: 1;"><strong>Phương thức vận chuyển:</strong></div>
+                <div style="flex: 1;">${deliveryTypeText}</div>
+              </div>
             </div>
             
-            <div style="margin-bottom: 20px;">
-              <h2 style="color: #333; font-size: 18px;">Chi Tiết Sản Phẩm</h2>
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr style="background-color: #f2f2f2;">
-                  <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Sản phẩm</th>
-                  <th style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">Số lượng</th>
-                  <th style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">Size</th>
-                  <th style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">Màu</th>
-                  <th style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">Giảm giá</th>
-                  <th style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">Giá</th>
+            <div style="margin-bottom: 25px;">
+              <h2 style="color: #333; font-size: 18px; margin-bottom: 15px;">Danh sách sản phẩm trong đơn hàng</h2>
+              <table style="width: 100%; border-collapse: collapse; border-radius: 8px; overflow: hidden;">
+                <tr style="background-color: #f5f5f5;">
+                  <th style="padding: 12px 10px; text-align: left; font-weight: 600; color: #333; border-bottom: 2px solid #eee;">Sản phẩm</th>
+                  <th style="padding: 12px 10px; text-align: center; font-weight: 600; color: #333; border-bottom: 2px solid #eee;">Đơn giá</th>
+                  <th style="padding: 12px 10px; text-align: center; font-weight: 600; color: #333; border-bottom: 2px solid #eee;">Số lượng</th>
+                  <th style="padding: 12px 10px; text-align: center; font-weight: 600; color: #333; border-bottom: 2px solid #eee;">Giảm giá</th>
+                  <th style="padding: 12px 10px; text-align: right; font-weight: 600; color: #333; border-bottom: 2px solid #eee;">Thành tiền</th>
                 </tr>
                 ${productsHtml}
-                <tr>
-                  <td colspan="5" style="padding: 10px; text-align: right; font-weight: bold;">Tổng tiền:</td>
-                  <td style="padding: 10px; text-align: right; font-weight: bold;">${(totalPrice - (createOrderDto.deliveryType === DeliveryType.SHIP ? 25000 : 0)).toLocaleString('vi-VN')} đ</td>
-                </tr> 
-                 <tr>
-                  <td colspan="5" style="padding: 10px; text-align: right; font-weight: bold;">Phí vận chuyển:</td>
-                  <td style="padding: 10px; text-align: right; font-weight: bold;">${(createOrderDto.deliveryType === DeliveryType.SHIP ? 25000 : 0).toLocaleString('vi-VN')} đ</td>
-                </tr>   
-                <tr>
-                  <td colspan="5" style="padding: 10px; text-align: right; font-weight: bold;">Tổng tiền sau ship:</td>
-                  <td style="padding: 10px; text-align: right; font-weight: bold;">${parseFloat(createOrderDto.totalPrice).toLocaleString('vi-VN')} đ</td>
-                </tr>
               </table>
             </div>
             
-            <div style="margin-bottom: 20px;">
-              <h2 style="color: #333; font-size: 18px;">Địa Chỉ Giao Hàng</h2>
-              <p>${createOrderDto.customerName}</p>
-              <p>${createOrderDto.customerPhone}</p>
-              <p>${createOrderDto.shippingAddress}</p>
-              <p>${createOrderDto.addressDetails.district}, ${createOrderDto.addressDetails.city}, ${createOrderDto.addressDetails.ward}</p>
+            <div style="margin-bottom: 25px; border: 1px solid #eee; border-radius: 8px; padding: 15px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <div style="color: #555;">Tổng tiền hàng:</div>
+                <div style="font-weight: 600;">${subtotal.toLocaleString('vi-VN')} VND</div>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <div style="color: #555;">Phí vận chuyển:</div>
+                <div style="font-weight: 600;">${shippingFee.toLocaleString('vi-VN')} VND</div>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid #eee;">
+                <div style="font-weight: 700; font-size: 16px;">Tổng thanh toán:</div>
+                <div style="font-weight: 700; font-size: 16px; color: #d23f57;">${total.toLocaleString('vi-VN')} VND</div>
+              </div>
             </div>
             
-            <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
-              <p>Nếu bạn có bất kỳ câu hỏi nào về đơn hàng, vui lòng liên hệ với chúng tôi qua email hoặc số điện thoại cửa hàng.</p>
-              <p>Cảm ơn bạn đã mua sắm cùng chúng tôi!</p>
+            <div style="margin-bottom: 25px;">
+              <h2 style="color: #333; font-size: 18px; margin-bottom: 15px;">Địa Chỉ Giao Hàng</h2>
+              <div style="background-color: #f9f9f9; padding: 15px; border-radius: 8px;">
+                <p style="margin: 0 0 5px 0;"><strong>${createOrderDto.customerName}</strong></p>
+                <p style="margin: 0 0 5px 0;">${createOrderDto.customerPhone}</p>
+                <p style="margin: 0 0 5px 0;">${createOrderDto.shippingAddress}</p>
+                <p style="margin: 0;">${createOrderDto.addressDetails.district}, ${createOrderDto.addressDetails.city}, ${createOrderDto.addressDetails.ward}</p>
+              </div>
             </div>
             
-            <div style="text-align: center; font-size: 12px; color: #777;">
+            <div style="background-color: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+              <p style="margin-top: 0;">Nếu bạn có bất kỳ câu hỏi nào về đơn hàng, vui lòng liên hệ với chúng tôi qua email hoặc số điện thoại cửa hàng.</p>
+              <p style="margin-bottom: 0;">Cảm ơn bạn đã mua sắm cùng chúng tôi!</p>
+            </div>
+            
+            <div style="text-align: center; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 15px;">
               <p>© ${new Date().getFullYear()} - LUMEN – Thương hiệu quần áo dành cho nam giới hiện đại. Tất cả các quyền được bảo lưu.</p>
             </div>
           </div>

@@ -30,10 +30,10 @@ const Wishlist = () => {
   // Helper function to format price based on locale
   const formatPrice = (price: number | string) => {
     // Đảm bảo price là số
-    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-    
+    const numPrice = typeof price === "string" ? parseFloat(price) : price;
+
     if (locale === "vi") {
-      return `${new Intl.NumberFormat('vi-VN').format(numPrice)}\u00A0₫`;
+      return `${new Intl.NumberFormat("vi-VN").format(numPrice)}\u00A0₫`;
     } else {
       return `$\u00A0${numPrice}`;
     }
@@ -50,7 +50,7 @@ const Wishlist = () => {
       images: item.images || [],
       selectedColor: item.selectedColor,
       size: item.size,
-      cartImage: item.cartImage
+      cartImage: item.cartImage,
     };
   };
 
@@ -60,21 +60,27 @@ const Wishlist = () => {
     if (item.cartImage) {
       return item.cartImage;
     }
-    
+
     // Nếu có selectedColor, tìm hình ảnh phù hợp với màu đó
     if (item.selectedColor && item.images) {
-      const colorImage = item.images.find(img => img.colorCode === item.selectedColor?.colorCode);
+      const colorImage = item.images.find(
+        (img) => img.colorCode === item.selectedColor?.colorCode
+      );
       if (colorImage) {
-        return Array.isArray(colorImage.url) ? colorImage.url[0] : colorImage.url as string;
+        return Array.isArray(colorImage.url)
+          ? colorImage.url[0]
+          : (colorImage.url as string);
       }
     }
-    
+
     // Mặc định, sử dụng hình ảnh đầu tiên
     const firstImage = item.images?.[0];
     if (firstImage) {
-      return Array.isArray(firstImage.url) ? firstImage.url[0] : firstImage.url as string;
+      return Array.isArray(firstImage.url)
+        ? firstImage.url[0]
+        : (firstImage.url as string);
     }
-    
+
     // Fallback nếu không có hình ảnh nào
     return "/placeholder-image.jpg";
   };
@@ -168,16 +174,23 @@ const Wishlist = () => {
                               <div className="text-sm text-gray-500 mt-1">
                                 {item.selectedColor && (
                                   <div className="flex items-center justify-center">
-                                    <span>Màu: {item.selectedColor.colorName}</span>
+                                    <span>
+                                      Màu: {item.selectedColor.colorName}
+                                    </span>
                                     {item.selectedColor.colorCode && (
-                                      <div 
-                                        className="ml-2 w-4 h-4 rounded-full border border-gray-300" 
-                                        style={{ backgroundColor: item.selectedColor.colorCode }}
+                                      <div
+                                        className="ml-2 w-4 h-4 rounded-full border border-gray-300"
+                                        style={{
+                                          backgroundColor:
+                                            item.selectedColor.colorCode,
+                                        }}
                                       ></div>
                                     )}
                                   </div>
                                 )}
-                                {item.size && <div>Kích thước: {item.size}</div>}
+                                {item.size && (
+                                  <div>Kích thước: {item.size}</div>
+                                )}
                               </div>
                             )}
                           </div>

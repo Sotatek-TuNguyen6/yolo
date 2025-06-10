@@ -56,21 +56,27 @@ export default function CartItem() {
     if (item.cartImage) {
       return item.cartImage;
     } else if (item.selectedImageId) {
-      const selectedImage = item.images.find(img => img._id === item.selectedImageId);
+      const selectedImage = item.images.find(
+        (img) => img._id === item.selectedImageId
+      );
       if (selectedImage) {
-        return Array.isArray(selectedImage.url) ? selectedImage.url[0] : selectedImage.url;
+        return Array.isArray(selectedImage.url)
+          ? selectedImage.url[0]
+          : selectedImage.url;
       }
     }
     // Fallback to first image
-    return Array.isArray(item.images[0].url) ? item.images[0].url[0] : item.images[0].url;
+    return Array.isArray(item.images[0].url)
+      ? item.images[0].url[0]
+      : item.images[0].url;
   };
 
   const formatPrice = (price: number | string) => {
     // Đảm bảo price là số
-    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-    
+    const numPrice = typeof price === "string" ? parseFloat(price) : price;
+
     if (router.locale === "vi") {
-      return `${new Intl.NumberFormat('vi-VN').format(numPrice)}\u00A0₫`;
+      return `${new Intl.NumberFormat("vi-VN").format(numPrice)}\u00A0₫`;
     } else {
       return `$\u00A0${numPrice}`;
     }
@@ -79,7 +85,9 @@ export default function CartItem() {
   // Calculate discounted price if discount is available
   const getDiscountedPrice = (item: itemType): number => {
     if (item.discountPercent && item.discountPercent > 0) {
-      return parseFloat(roundDecimal(item.price - (item.price * (item.discountPercent / 100))));
+      return parseFloat(
+        roundDecimal(item.price - item.price * (item.discountPercent / 100))
+      );
     }
     return parseFloat(roundDecimal(item.price));
   };
@@ -159,12 +167,20 @@ export default function CartItem() {
                       const discountedPrice = getDiscountedPrice(item);
                       subtotal += discountedPrice * item.quantity!;
                       return (
-                        <div 
+                        <div
                           className="w-full min-h-40 flex flex-col sm:flex-row justify-between items-center px-2 my-2 border-b-2 border-gray100 pb-2"
-                          key={item.productId + (item.selectedColor?.colorCode || '') + (item.size || '')}
+                          key={
+                            item.productId +
+                            (item.selectedColor?.colorCode || "") +
+                            (item.size || "")
+                          }
                         >
                           <div className="flex flex-col sm:flex-row items-center">
-                            <Link href={`/products/${encodeURIComponent(item.productId)}`}>
+                            <Link
+                              href={`/products/${encodeURIComponent(
+                                item.slug || item.productId
+                              )}`}
+                            >
                               <a>
                                 <Image
                                   src={getProductImage(item)}
@@ -176,20 +192,33 @@ export default function CartItem() {
                               </a>
                             </Link>
                             <div className="flex flex-col items-start ml-2">
-                              <Link href={`/products/${encodeURIComponent(item.productId)}`}>
-                                <a className="text-gray400 text-xl font-bold">{item.name}</a>
+                              <Link
+                                href={`/products/${encodeURIComponent(
+                                  item.slug || item.productId
+                                )}`}
+                              >
+                                <a className="text-gray400 text-xl font-bold">
+                                  {item.name}
+                                </a>
                               </Link>
                               <div className="text-gray400 text-base">
-                                {item.discountPercent && item.discountPercent > 0 ? (
+                                {item.discountPercent &&
+                                item.discountPercent > 0 ? (
                                   <div className="flex items-center">
-                                    <span className="line-through mr-2">{formatPrice(item.price)}</span>
-                                    <span className="text-red-500">{formatPrice(discountedPrice)}</span>
+                                    <span className="line-through mr-2">
+                                      {formatPrice(item.price)}
+                                    </span>
+                                    <span className="text-red-500">
+                                      {formatPrice(discountedPrice)}
+                                    </span>
                                     <span className="ml-2 text-xs bg-red-500 text-white px-1 py-0.5 rounded">
                                       -{item.discountPercent}%
                                     </span>
                                   </div>
                                 ) : (
-                                  <>{t("price")}: {formatPrice(item.price)}</>
+                                  <>
+                                    {t("price")}: {formatPrice(item.price)}
+                                  </>
                                 )}
                               </div>
                               {/* Hiển thị thông tin màu sắc đã chọn */}
@@ -201,7 +230,10 @@ export default function CartItem() {
                                   {item.selectedColor.colorCode && (
                                     <div
                                       className="ml-2 w-4 h-4 rounded-full border border-gray-300"
-                                      style={{ backgroundColor: item.selectedColor.colorCode }}
+                                      style={{
+                                        backgroundColor:
+                                          item.selectedColor.colorCode,
+                                      }}
                                     ></div>
                                   )}
                                 </div>
@@ -213,7 +245,10 @@ export default function CartItem() {
                                 </div>
                               )}
                               {/* Lưu selectedImageId để gửi xuống backend */}
-                              <input type="hidden" value={item.selectedImageId || ''} />
+                              <input
+                                type="hidden"
+                                value={item.selectedImageId || ""}
+                              />
                             </div>
                           </div>
                           <div className="flex flex-col items-center">
@@ -246,7 +281,11 @@ export default function CartItem() {
                                 {t("subtotal")}:
                               </div>
                               <div className="text-gray400 font-bold">
-                                {formatPrice(roundDecimal(discountedPrice * item!.quantity!))}
+                                {formatPrice(
+                                  roundDecimal(
+                                    discountedPrice * item!.quantity!
+                                  )
+                                )}
                               </div>
                             </div>
                             <button

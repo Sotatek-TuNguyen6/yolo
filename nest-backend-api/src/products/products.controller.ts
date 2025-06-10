@@ -433,11 +433,12 @@ export class ProductsController {
   @Patch('/delete-variant/:productId')
   async deleteVariant(
     @Param('productId') productId: string,
-    @Body() body: { imagesId: string },
+    @Body() body: { imagesId: string; sizeId: string },
   ) {
     const product = await this.productsService.deleteVariant(
       productId,
       body.imagesId,
+      body.sizeId,
     );
     return product;
   }

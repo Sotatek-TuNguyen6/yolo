@@ -36,10 +36,10 @@ const ShoppingCart = () => {
   // Helper function to format price based on locale
   const formatPrice = (price: number | string) => {
     // Đảm bảo price là số
-    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-    
+    const numPrice = typeof price === "string" ? parseFloat(price) : price;
+
     if (locale === "vi") {
-      return `${new Intl.NumberFormat('vi-VN').format(numPrice)}\u00A0₫`;
+      return `${new Intl.NumberFormat("vi-VN").format(numPrice)}\u00A0₫`;
     } else {
       return `$\u00A0${numPrice}`;
     }
@@ -50,19 +50,27 @@ const ShoppingCart = () => {
     if (item.cartImage) {
       return item.cartImage;
     } else if (item.selectedImageId) {
-      const selectedImage = item.images.find(img => img._id === item.selectedImageId);
+      const selectedImage = item.images.find(
+        (img) => img._id === item.selectedImageId
+      );
       if (selectedImage) {
-        return Array.isArray(selectedImage.url) ? selectedImage.url[0] : selectedImage.url;
+        return Array.isArray(selectedImage.url)
+          ? selectedImage.url[0]
+          : selectedImage.url;
       }
     }
     // Fallback to first image
-    return Array.isArray(item.images[0].url) ? item.images[0].url[0] : item.images[0].url;
+    return Array.isArray(item.images[0].url)
+      ? item.images[0].url[0]
+      : item.images[0].url;
   };
 
   // Calculate discounted price if discount is available
   const getDiscountedPrice = (item: itemType): number => {
     if (item.discountPercent && item.discountPercent > 0) {
-      return parseFloat(roundDecimal(item.price - (item.price * (item.discountPercent / 100))));
+      return parseFloat(
+        roundDecimal(item.price - item.price * (item.discountPercent / 100))
+      );
     }
     return parseFloat(roundDecimal(item.price));
   };
@@ -89,7 +97,7 @@ const ShoppingCart = () => {
             height: 128px;
           }
         `}</style>
-        
+
         {/* ===== Heading & Continue Shopping */}
         <div className="app-max-width px-4 sm:px-8 md:px-20 w-full border-t-2 border-gray100">
           <h1 className="text-2xl sm:text-4xl text-center sm:text-left mt-6 mb-2 animatee__animated animate__bounce">
@@ -139,10 +147,19 @@ const ShoppingCart = () => {
                     const discountedPrice = getDiscountedPrice(item);
                     subtotal += discountedPrice * item.quantity!;
                     return (
-                      <tr className="border-b-2 border-gray200" key={item.productId + (item.selectedColor?.colorCode || '') + (item.size || '')}>
+                      <tr
+                        className="border-b-2 border-gray200"
+                        key={
+                          item.productId +
+                          (item.selectedColor?.colorCode || "") +
+                          (item.size || "")
+                        }
+                      >
                         <td className="my-3 flex flex-col xl:flex-row items-start sm:items-center xl:space-x-2 text-center xl:text-left">
                           <Link
-                            href={`/products/${encodeURIComponent(item.productId)}`}
+                            href={`/products/${encodeURIComponent(
+                              item.slug || item.productId
+                            )}`}
                           >
                             <a className="product-image-container">
                               <Image
@@ -162,16 +179,23 @@ const ShoppingCart = () => {
                               <div className="text-sm text-gray-500 mt-1">
                                 {item.selectedColor && (
                                   <div className="flex items-center">
-                                    <span>Màu: {item.selectedColor.colorName}</span>
+                                    <span>
+                                      Màu: {item.selectedColor.colorName}
+                                    </span>
                                     {item.selectedColor.colorCode && (
-                                      <div 
-                                        className="ml-2 w-4 h-4 rounded-full border border-gray-300" 
-                                        style={{ backgroundColor: item.selectedColor.colorCode }}
+                                      <div
+                                        className="ml-2 w-4 h-4 rounded-full border border-gray-300"
+                                        style={{
+                                          backgroundColor:
+                                            item.selectedColor.colorCode,
+                                        }}
                                       ></div>
                                     )}
                                   </div>
                                 )}
-                                {item.size && <div>Kích thước: {item.size}</div>}
+                                {item.size && (
+                                  <div>Kích thước: {item.size}</div>
+                                )}
                               </div>
                             )}
                           </div>
@@ -215,7 +239,9 @@ const ShoppingCart = () => {
                           </div>
                         </td>
                         <td className="text-right text-gray400">
-                          {formatPrice(roundDecimal(discountedPrice * item.quantity!))}
+                          {formatPrice(
+                            roundDecimal(discountedPrice * item.quantity!)
+                          )}
                           <br />
                           <span className="text-xs">
                             ({formatPrice(roundDecimal(discountedPrice))})

@@ -513,7 +513,7 @@ export class ProductsService {
     return product;
   }
 
-  async deleteVariant(productId: string, imagesId: string) {
+  async deleteVariant(productId: string, imagesId: string, sizeId: string) {
     const product = await this.productModel.findOne({ productId });
     if (!product) throw new NotFoundException('Không tìm thấy sản phẩm này');
 
@@ -523,15 +523,23 @@ export class ProductsService {
 
     if (!image) throw new NotFoundException('Không tìm thấy hình ảnh này');
 
-    // Calculate total quantity for this variant to reduce from stock
-    const variantQuantity = image.sizeQuantities.reduce(
-      (sum, sizeQty) => sum + sizeQty.quantity,
-      0,
-    );
+    // Find the size to be deleted
+    const sizeToDelete = image.sizeQuantities.find(
+      (size) => (size as SizeQuantityDocument)._id == sizeId,
+    ) as SizeQuantityDocument;
 
-    product.stock -= variantQuantity;
-    product.images = product.images.filter(
-      (image) => (image as ProductImageDocument)._id != imagesId,
+    if (!sizeToDelete)
+      throw new NotFoundException('Không tìm thấy kích thước này');
+
+    // Calculate the quantity of this specific size to reduce from stock
+    const quantityToReduce = sizeToDelete.quantity;
+
+    // Update the total product stock
+    product.stock -= quantityToReduce;
+
+    // Remove only the specific size from the image's sizeQuantities array
+    image.sizeQuantities = image.sizeQuantities.filter(
+      (size) => (size as SizeQuantityDocument)._id != sizeId,
     );
 
     await product.save();
@@ -591,7 +599,6 @@ export class ProductsService {
       const image = product.images.find(
         (image) => (image as ProductImageDocument)._id == imageId,
       );
-
 
       if (!image)
         throw new NotFoundException(`Không tìm thấy variant với ID ${imageId}`);

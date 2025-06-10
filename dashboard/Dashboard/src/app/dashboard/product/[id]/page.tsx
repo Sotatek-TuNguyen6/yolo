@@ -440,7 +440,10 @@ export default function ProductDetailPage() {
   });
 
   // Delete variant mutation
-  const { mutate: deleteVariantMutation } = useMutationRequest<unknown, { imagesId: string }>({
+  const { mutate: deleteVariantMutation } = useMutationRequest<
+    unknown,
+    { imagesId: string; sizeId: string }
+  >({
     url: `/products/delete-variant/${productId}`,
     method: 'patch',
     successMessage: 'Xóa biến thể thành công',
@@ -534,13 +537,13 @@ export default function ProductDetailPage() {
     updateVariantSizeMutation({ size: newSize, imagesId: variantId });
   };
 
-  const handleDeleteVariant = (variantId: string | undefined) => {
-    if (!variantId) {
+  const handleDeleteVariant = (variantId: string | undefined, sizeId: string | undefined) => {
+    if (!variantId || !sizeId) {
       toast.error('Không tìm thấy ID biến thể');
       return;
     }
 
-    deleteVariantMutation({ imagesId: variantId });
+    deleteVariantMutation({ imagesId: variantId, sizeId: sizeId });
   };
 
   // Add size to sizeQuantities in newVariant
@@ -637,7 +640,6 @@ export default function ProductDetailPage() {
         toast.error('Vui lòng chọn một màu sắc trước');
         return;
       }
-
 
       const colorGroup = variants[activeColorIndex];
       if (!colorGroup) {
@@ -1401,7 +1403,9 @@ export default function ProductDetailPage() {
                                         variant="destructive"
                                         size="icon"
                                         className="h-6 w-6"
-                                        onClick={() => handleDeleteVariant(sizeItem._id)}
+                                        onClick={() =>
+                                          handleDeleteVariant(sizeItem.imagesId, sizeItem._id)
+                                        }
                                       >
                                         <Trash2 className="h-3 w-3" />
                                       </Button>
@@ -1730,7 +1734,9 @@ export default function ProductDetailPage() {
                                   variant="destructive"
                                   size="icon"
                                   className="h-6 w-6"
-                                  onClick={() => handleDeleteVariant(sizeItem._id)}
+                                  onClick={() =>
+                                    handleDeleteVariant(sizeItem.imagesId, sizeItem._id)
+                                  }
                                 >
                                   <Trash2 className="h-3 w-3" />
                                 </Button>
