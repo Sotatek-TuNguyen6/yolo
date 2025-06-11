@@ -55,8 +55,8 @@ const Slideshow = () => {
           navigation={true}
           pagination={{
             clickable: true,
-            type: "fraction",
-            dynamicBullets: true,
+            // type: "fraction",
+            // dynamicBullets: true,
           }}
           className="mySwiper"
         >
@@ -89,7 +89,7 @@ const Slideshow = () => {
                   alt={"some name"}
                 />
               </div>
-              <div
+              {/* <div
                 className={
                   slider.rightText
                     ? styles.rightTextSection
@@ -106,7 +106,7 @@ const Slideshow = () => {
                   {slider.titleDown}
                 </span>
                 {slider.isBuyNow && <TextButton value={t("shop_now")} />}
-              </div>
+              </div> */}
             </SwiperSlide>
           ))}
         </Swiper>
