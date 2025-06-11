@@ -144,6 +144,8 @@ export class ProductsService {
       sortOption = { createdAt: -1 }; // default: newest first
     }
 
+    filter.isDeleted = { $ne: true };
+
     const products = await this.productModel
       .find(filter)
       .skip(Number(offset))
@@ -154,13 +156,11 @@ export class ProductsService {
     return products;
   }
 
-  async findOne(id: string, includeDeleted = false) {
+  async findOne(id: string) {
     let query = this.productModel.findById(id);
 
     // Only include non-deleted products unless explicitly requested
-    if (!includeDeleted) {
-      query = query.where({ isDeleted: { $ne: true } });
-    }
+    query = query.where({ isDeleted: { $ne: true } });
 
     query = query.populate(populate);
 
@@ -188,6 +188,7 @@ export class ProductsService {
 
   async update(productId: string, updateProductDto: UpdateProductDto) {
     try {
+      // console.log(updateProductDto);
       const product = await this.productModel
         .findOneAndUpdate({ productId }, updateProductDto, {
           new: true,
@@ -252,7 +253,9 @@ export class ProductsService {
       ? { $or: [{ productId: Number(productId) }, { slug: productId }] }
       : { slug: productId }; // If not numeric, only search by slug
 
-    const product = await this.productModel.findOne(query).populate(populate);
+    const product = await this.productModel
+      .findOne({ ...query, isDeleted: { $ne: true } })
+      .populate(populate);
 
     if (!product) throw new NotFoundException('Không tìm thấy sản phẩm này');
     return product;
@@ -304,6 +307,7 @@ export class ProductsService {
     if (categoryName) {
       const category = await this.categoryModel.findOne({
         name: { $regex: categoryName, $options: 'i' },
+        isDeleted: { $ne: true },
       });
 
       if (category) {
@@ -677,6 +681,22 @@ export class ProductsService {
     });
 
     await product.save();
+    return product;
+  }
+
+  async getAllProduct() {
+    const products = await this.productModel
+      .find()
+      .populate(populate)
+      .sort({ createdAt: -1 });
+    return products;
+  }
+
+  async getDetailProduct(productId: string) {
+    const product = await this.productModel
+      .findOne({ productId })
+      .populate(populate);
+    if (!product) throw new NotFoundException('Không tìm thấy sản phẩm này');
     return product;
   }
 }

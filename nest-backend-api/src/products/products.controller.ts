@@ -532,4 +532,16 @@ export class ProductsController {
       data: product,
     };
   }
+
+  @Get('/get-all-product/byAdmin')
+  async getAllProductByAdmin() {
+    const products = await this.productsService.getAllProduct();
+    return products;
+  }
+
+  @Get('/get-detail-product/:productId')
+  async getDetailProduct(@Param('productId') productId: string) {
+    const product = await this.productsService.getDetailProduct(productId);
+    return product;
+  }
 }

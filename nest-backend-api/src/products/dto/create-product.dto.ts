@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsArray,
+  IsBoolean,
   IsMongoId,
   IsNotEmpty,
   IsNumber,
@@ -151,4 +152,12 @@ export class CreateProductDto {
   @IsArray()
   @IsMongoId({ each: true })
   tags?: mongoose.Types.ObjectId[];
+
+  @ApiProperty({
+    description: 'Product is deleted',
+    default: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  isDeleted?: boolean;
 }

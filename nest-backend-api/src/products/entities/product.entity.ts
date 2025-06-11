@@ -90,6 +90,10 @@ export class Product {
   @ApiProperty({ description: 'Product slug' })
   @Prop({ type: String })
   slug: string;
+
+  @ApiProperty({ description: 'Product is deleted' })
+  @Prop({ type: Boolean, default: false })
+  isDeleted: boolean;
 }
 
 export type ProductDocument = Product & Document;
