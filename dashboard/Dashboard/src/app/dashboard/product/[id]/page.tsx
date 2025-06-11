@@ -80,6 +80,7 @@ const productFormSchema = z.object({
   discountPercent: z.coerce.number().min(0).max(100, {
     message: 'Giảm giá phải từ 0 đến 100%',
   }),
+  isDeleted: z.boolean().optional(),
 });
 
 // Define form type
@@ -174,7 +175,7 @@ export default function ProductDetailPage() {
 
   // Fetch product details
   const { data: productData, isLoading } = useQueryRequest<ProductDetailData>({
-    url: `/products/${productId}`,
+    url: `/products/get-detail-product/${productId}`,
     queryKey: ['product', productId],
   });
 
@@ -197,6 +198,7 @@ export default function ProductDetailPage() {
       price: 0,
       stock: 0,
       discountPercent: 0,
+      isDeleted: false,
     },
   });
 
@@ -216,6 +218,7 @@ export default function ProductDetailPage() {
         price: product.price || 0,
         stock: product.stock || 0,
         discountPercent: product.discountPercent || 0,
+        isDeleted: product.isDeleted || false,
       });
     }
   }, [productData, form]);
@@ -960,6 +963,31 @@ export default function ProductDetailPage() {
                               </FormItem>
                             )}
                           />
+
+                          <FormField
+                            control={form.control}
+                            name="isDeleted"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Trạng thái</FormLabel>
+                                <Select
+                                  onValueChange={value => field.onChange(value === 'true')}
+                                  defaultValue={field.value ? 'true' : 'false'}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger className="w-full">
+                                      <SelectValue placeholder="Chọn trạng thái" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="false">Hiển thị</SelectItem>
+                                    <SelectItem value="true">Tạm ẩn</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                         </div>
                       </div>
 
@@ -1515,6 +1543,12 @@ export default function ProductDetailPage() {
                     <p className="text-lg font-bold">
                       {typeof product.category === 'object' ? product.category.name : 'Không có'}
                     </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Trạng thái</p>
+                    <Badge className={product.isDeleted ? 'bg-red-500' : 'bg-green-500'}>
+                      {product.isDeleted ? 'Tạm ẩn' : 'Hiển thị'}
+                    </Badge>
                   </div>
                 </div>
 

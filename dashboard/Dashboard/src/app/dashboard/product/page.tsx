@@ -19,7 +19,7 @@ export default function ProductPage() {
 
   // Product list data
   const { data: products, isLoading } = useQueryRequest<ProductListData>({
-    url: '/products',
+    url: '/products/get-all-product/byAdmin',
     queryKey: ['products'],
   });
 

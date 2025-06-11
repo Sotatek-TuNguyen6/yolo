@@ -325,6 +325,18 @@ export const columns: ColumnDef<Product>[] = [
     },
   },
   {
+    accessorKey: 'isDeleted',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Trạng thái" />,
+    cell: ({ row }) => {
+      const isDeleted = row.getValue('isDeleted') as boolean;
+      return (
+        <Badge className={isDeleted ? 'bg-red-500' : 'bg-green-500'}>
+          {isDeleted ? 'Tạm ẩn' : 'Hiển thị'}
+        </Badge>
+      );
+    },
+  },
+  {
     id: 'Hành động',
     cell: ({ row }) => <ActionCell row={row} />,
   },
