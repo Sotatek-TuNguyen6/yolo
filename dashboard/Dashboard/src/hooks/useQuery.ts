@@ -7,6 +7,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 type HttpMethod = 'post' | 'put' | 'delete' | 'patch';
 
@@ -24,7 +25,6 @@ interface QueryRequestConfig<TData> {
   successMessage?: string;
   errorMessage?: string;
   queryOptions?: Omit<UseQueryOptions<TData, ApiError, TData, QueryKey>, 'queryKey' | 'queryFn'>;
-  
 }
 
 export interface MutationRequestConfig<TData, TVariables> {
@@ -44,6 +44,8 @@ export function useQueryRequest<TData>({
   errorMessage = 'Có lỗi xảy ra!',
   queryOptions,
 }: QueryRequestConfig<TData>) {
+  const router = useRouter();
+
   const result = useQuery<TData, ApiError>({
     queryKey: queryKey || [url],
     queryFn: async () => {
@@ -52,6 +54,12 @@ export function useQueryRequest<TData>({
 
         if (!res.ok) {
           const errorData = await res.json();
+
+          // Handle 401 Unauthorized - redirect to login
+          if (res.status === 401 && errorData.redirectTo) {
+            router.push(errorData.redirectTo);
+          }
+
           throw { response: { data: errorData } };
         }
 
@@ -81,6 +89,7 @@ export function useMutationRequest<TData, TVariables>({
   queryKey,
 }: MutationRequestConfig<TData, TVariables>) {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   return useMutation<TData, ApiError, TVariables>({
     ...mutationOptions,
@@ -89,16 +98,18 @@ export function useMutationRequest<TData, TVariables>({
 
       // Kiểm tra nếu variables là FormData thì không set Content-Type và không stringify body
       const isFormData = variables instanceof FormData;
-      
+
       const res = await fetch(endpoint, {
         method: method.toUpperCase(),
-        headers: isFormData 
+        headers: isFormData
           ? {} // Không set header cho FormData, browser sẽ tự set với boundary
           : { 'Content-Type': 'application/json' },
-        body: isFormData 
-          ? variables as FormData 
-          : JSON.stringify(variables),
+        body: isFormData ? (variables as FormData) : JSON.stringify(variables),
       });
+
+      if (res.status === 401) {
+        router.push('/login');
+      }
 
       if (!res.ok) {
         const errorData = await res.json();
@@ -110,7 +121,9 @@ export function useMutationRequest<TData, TVariables>({
     onSuccess: (data, variables, context) => {
       toast.success(successMessage);
       if (queryKey) {
-        queryClient.invalidateQueries({ queryKey: Array.isArray(queryKey) ? queryKey : [queryKey] });
+        queryClient.invalidateQueries({
+          queryKey: Array.isArray(queryKey) ? queryKey : [queryKey],
+        });
       }
       mutationOptions?.onSuccess?.(data, variables, context);
     },

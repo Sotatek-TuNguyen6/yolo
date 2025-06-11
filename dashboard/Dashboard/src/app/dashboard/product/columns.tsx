@@ -215,7 +215,14 @@ export const columns: ColumnDef<Product>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="ID" />,
     cell: ({ row }) => {
       const productId = row.getValue('productId') as string;
-      return <div className="w-[80px]">SP-{productId ?? 0}</div>;
+      return (
+        <Link
+          href={`/dashboard/product/${productId}`}
+          className="w-[80px] hover:underline text-blue-500"
+        >
+          {productId ?? ''}
+        </Link>
+      );
     },
     enableSorting: false,
     enableHiding: false,
@@ -231,9 +238,12 @@ export const columns: ColumnDef<Product>[] = [
     accessorKey: 'name',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Sản phẩm" />,
     cell: ({ row }) => {
+      const name = row.getValue('name') as string;
       return (
         <div className="flex space-x-2">
-          <span className="max-w-[200px] truncate font-medium">{row.getValue('name')}</span>
+          <span className="max-w-[200px] truncate font-medium cursor-default" title={name}>
+            {name}
+          </span>
         </div>
       );
     },
@@ -348,7 +358,9 @@ export function ProductImagesExpanded({ product }: { product: Product }) {
                   Size: {imageObj.sizeQuantities.map(sq => sq.size).join(', ') || 'N/A'}
                 </Badge>
 
-                <Badge variant="secondary">SL: {imageObj.sizeQuantities.map(sq => sq.quantity).join(', ') || 0}</Badge>
+                <Badge variant="secondary">
+                  SL: {imageObj.sizeQuantities.map(sq => sq.quantity).join(', ') || 0}
+                </Badge>
               </div>
 
               <div className="flex flex-wrap gap-2 mt-3">
@@ -387,7 +399,9 @@ export function ProductImagesExpanded({ product }: { product: Product }) {
                             <Badge variant="outline" className="bg-white/20">
                               Size: {imageObj.sizeQuantities.map(sq => sq.size).join(', ') || 'N/A'}
                             </Badge>
-                            <Badge variant="secondary">SL: {imageObj.sizeQuantities.map(sq => sq.quantity).join(', ') || 0}</Badge>
+                            <Badge variant="secondary">
+                              SL: {imageObj.sizeQuantities.map(sq => sq.quantity).join(', ') || 0}
+                            </Badge>
                           </div>
                         </div>
                       </div>

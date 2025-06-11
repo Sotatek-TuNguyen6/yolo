@@ -34,6 +34,7 @@ const populate = [
   'orderDetails.product',
   'orderDetails.product.category',
   'orderDetails.product.images',
+  'userUpdate',
 ];
 
 @Injectable()
@@ -238,7 +239,6 @@ export class OrderService {
                 <p style="margin: 0 0 5px 0;"><strong>${createOrderDto.customerName}</strong></p>
                 <p style="margin: 0 0 5px 0;">${createOrderDto.customerPhone}</p>
                 <p style="margin: 0 0 5px 0;">${createOrderDto.shippingAddress}</p>
-                <p style="margin: 0;">${createOrderDto.addressDetails.district}, ${createOrderDto.addressDetails.city}, ${createOrderDto.addressDetails.ward}</p>
               </div>
             </div>
             
@@ -493,20 +493,28 @@ export class OrderService {
     };
   }
 
-  async updatePaymentStatus(orderId: string, paymentStatus: PaymentStatus) {
+  async updatePaymentStatus(
+    orderId: string,
+    paymentStatus: PaymentStatus,
+    userUpdate: string,
+  ) {
     const order = await this.orderModel.findOneAndUpdate(
       { orderId },
-      { paymentStatus },
+      { paymentStatus, userUpdate },
       { new: true },
     );
     if (!order) throw new NotFoundException('Không tìm thấy order này');
     return order;
   }
 
-  async updateOrderStatus(orderId: string, orderStatus: OrderStatus) {
+  async updateOrderStatus(
+    orderId: string,
+    orderStatus: OrderStatus,
+    userUpdate: string,
+  ) {
     const order = await this.orderModel.findOneAndUpdate(
       { orderId },
-      { orderStatus },
+      { orderStatus, userUpdate },
       { new: true },
     );
     if (!order) throw new NotFoundException('Không tìm thấy order này');

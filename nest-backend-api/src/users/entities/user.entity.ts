@@ -37,7 +37,7 @@ export class User extends Document {
   @ApiProperty({
     description: 'ShippingAddress',
   })
-  @Prop({ required: true, type: String })
+  @Prop({ required: false, type: String })
   shippingAddress: string;
 
   @ApiProperty({

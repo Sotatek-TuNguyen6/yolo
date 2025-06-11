@@ -136,7 +136,7 @@
 
     "price": "Giá",
     "order_status": "Trạng thái đơn hàng",
-        "order_details": "Chi tiết đơn hàng",
+    "order_details": "Chi tiết đơn hàng",
     "size": "Kích thước",
     "color": "Màu sắc",
     "loading": "Đang tải...",

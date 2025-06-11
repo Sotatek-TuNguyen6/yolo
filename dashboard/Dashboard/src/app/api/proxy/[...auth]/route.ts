@@ -47,11 +47,11 @@ async function proxyRequest(req: NextRequest, path: string[], method: string) {
     return NextResponse.json({ error: 'Path is required' }, { status: 400 });
   }
   const fullUrl = `${API_BASE_URL}/${path.join('/')}`;
-  
+
   // Kiểm tra Content-Type
   const contentType = req.headers.get('Content-Type') || '';
   const isFormData = contentType.includes('multipart/form-data');
-  
+
   // Xử lý body request
   let body: string | FormData | undefined;
   if (method !== 'GET') {
@@ -68,7 +68,7 @@ async function proxyRequest(req: NextRequest, path: string[], method: string) {
   const headers: HeadersInit = {
     Authorization: `Bearer ${token}`,
   };
-  
+
   // Chỉ thêm Content-Type khi không phải FormData
   if (!isFormData) {
     headers['Content-Type'] = 'application/json';
@@ -81,7 +81,21 @@ async function proxyRequest(req: NextRequest, path: string[], method: string) {
   });
 
   const responseData = await res.json();
-    
+
+  // Handle 401 Unauthorized response - clear token cookie
+  if (res.status === 401) {
+    // Create a response with cleared cookie
+    const response = NextResponse.json(
+      { error: 'Unauthorized', redirectTo: '/login' },
+      { status: 401, headers: { 'Content-Type': 'application/json' } },
+    );
+
+    // Delete the token cookie
+    response.cookies.delete('token');
+
+    return response;
+  }
+
   // Return the entire response structure to preserve pagination and metadata
   return NextResponse.json(responseData, {
     status: res.status,

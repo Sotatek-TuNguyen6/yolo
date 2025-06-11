@@ -831,7 +831,7 @@ export const getServerSideProps: GetServerSideProps = async ({
       images: randomProduct.images,
       tags: randomProduct.tags,
       discountPercent: randomProduct.discountPercent,
-      slug: randomProduct.slug ,
+      slug: randomProduct.slug,
     });
   });
 

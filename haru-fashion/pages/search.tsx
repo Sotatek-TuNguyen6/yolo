@@ -24,7 +24,9 @@ const Search: React.FC<Props> = ({ items, searchWord }) => {
   return (
     <div>
       {/* ===== Head Section ===== */}
-      <Header title={`Lumen Fashion`} />
+      <Header
+        title={`Thời trang nam cao cấp | Thương hiệu quần áo nam Lumen`}
+      />
 
       <main id="main-content">
         {/* ===== Breadcrumb Section ===== */}
@@ -84,7 +86,7 @@ export const getServerSideProps: GetServerSideProps = async ({
   try {
     // Encode query parameter to handle Vietnamese characters properly
     const encodedQuery = encodeURIComponent(q as string);
-    
+
     const res = await axios.get(
       `${process.env.NEXT_PUBLIC_PROD_BACKEND_URL}/api/v1/products/search/any/product?q=${encodedQuery}`
     );

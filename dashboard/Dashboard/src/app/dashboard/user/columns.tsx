@@ -24,18 +24,18 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 // Hàm tạo màu cho status badge
-function getUserStatusColor(status: UserStatus) {
-  switch (status) {
-    case 'active':
-      return 'bg-green-100 text-green-800 hover:bg-green-100/80';
-    case 'inactive':
-      return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80';
-    case 'banned':
-      return 'bg-red-100 text-red-800 hover:bg-red-100/80';
-    default:
-      return 'bg-gray-100 text-gray-800 hover:bg-gray-100/80';
-  }
-}
+// function getUserStatusColor(status: UserStatus) {
+//   switch (status) {
+//     case 'active':
+//       return 'bg-green-100 text-green-800 hover:bg-green-100/80';
+//     case 'inactive':
+//       return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80';
+//     case 'banned':
+//       return 'bg-red-100 text-red-800 hover:bg-red-100/80';
+//     default:
+//       return 'bg-gray-100 text-gray-800 hover:bg-gray-100/80';
+//   }
+// }
 
 // Hàm tạo màu cho role badge
 function getUserRoleColor(role: UserRole) {
@@ -304,19 +304,16 @@ export const columns: ColumnDef<User>[] = [
     },
   },
   {
-    accessorKey: 'status',
+    accessorKey: 'active',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Trạng thái" />,
     cell: ({ row }) => {
-      const status = row.getValue('status') as UserStatus;
-      const statusText = {
-        active: 'Hoạt động',
-        inactive: 'Không hoạt động',
-        banned: 'Bị khóa',
-      };
-
+      const status = row.getValue('active') as boolean;
       return (
-        <Badge className={`${getUserStatusColor(status)} font-normal px-2 py-1`} variant="outline">
-          {statusText[status]}
+        <Badge
+          className={`${status ? 'bg-green-100 text-green-800 hover:bg-green-100/80' : 'bg-red-100 text-red-800 hover:bg-red-100/80'} font-normal px-2 py-1`}
+          variant="outline"
+        >
+          {status ? 'Hoạt động' : 'Không hoạt động'}
         </Badge>
       );
     },

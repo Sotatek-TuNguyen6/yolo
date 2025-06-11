@@ -67,9 +67,11 @@ export class UsersService {
         throw new BadRequestException('Người dùng đã tồn tại');
       }
 
+      const password = await bcrypt.hash(createUserDto.password, 10);
       const newUser = new this.userModel({
         ...createUserDto,
         userId,
+        password,
       });
 
       const savedUser = await newUser.save();

@@ -23,6 +23,7 @@ import { useMutationRequest } from '@/hooks/useQuery';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { User } from '@/interface/user.interface';
 
 function ActionCell({ row }: { row: Row<Order> }) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -78,8 +79,7 @@ function ActionCell({ row }: { row: Row<Order> }) {
             </DialogTitle>
             <DialogDescription>
               Bạn có chắc chắn muốn xóa đơn hàng &ldquo;
-              {row.original.orderId || row.original._id}&rdquo;? Hành động này không thể hoàn
-              tác.
+              {row.original.orderId || row.original._id}&rdquo;? Hành động này không thể hoàn tác.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -197,7 +197,9 @@ export const columns: ColumnDef<Order>[] = [
     cell: ({ row }) => {
       return (
         <div className="flex space-x-2">
-          <span className="max-w-[500px] truncate font-medium">{row.original.customerInfo.name}</span>
+          <span className="max-w-[500px] truncate font-medium">
+            {row.original.customerInfo.name}
+          </span>
         </div>
       );
     },
@@ -232,10 +234,7 @@ export const columns: ColumnDef<Order>[] = [
         refunded: 'Đã hoàn tiền',
       };
       return (
-        <Badge
-          variant="outline"
-          className={getPaymentStatusColor(isPayment)}
-        >
+        <Badge variant="outline" className={getPaymentStatusColor(isPayment)}>
           {paymentStatusText[isPayment]}
         </Badge>
       );
@@ -257,14 +256,11 @@ export const columns: ColumnDef<Order>[] = [
         cancelled: 'Đã hủy',
         refunded: 'Đã hoàn tiền',
       };
-      
+
       if (!status) return null;
-      
+
       return (
-        <Badge
-          variant="outline"
-          className={getOrderStatusColor(status)}
-        >
+        <Badge variant="outline" className={getOrderStatusColor(status)}>
           {orderStatusText[status] || status}
         </Badge>
       );
@@ -279,6 +275,14 @@ export const columns: ColumnDef<Order>[] = [
     cell: ({ row }) => {
       const totalValue = (row.getValue('totalPrice') as number) || 0;
       return <div className="font-medium">{totalValue.toLocaleString('vi-VN')} VND</div>;
+    },
+  },
+  {
+    accessorKey: 'userUpdate',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Người cập nhật" />,
+    cell: ({ row }) => {
+      const userUpdate = (row.getValue('userUpdate') as User) || null;
+      return <div className="font-medium">{userUpdate?.fullName || ''}</div>;
     },
   },
   {

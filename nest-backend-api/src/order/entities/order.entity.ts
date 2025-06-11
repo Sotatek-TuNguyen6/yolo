@@ -172,6 +172,13 @@ export class Order {
     default: OrderStatus.PENDING,
   })
   orderStatus: OrderStatus;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: false,
+  })
+  userUpdate: Types.ObjectId;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

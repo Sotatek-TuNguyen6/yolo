@@ -16,33 +16,25 @@ SwiperCore.use([Pagination, Navigation, Autoplay]);
 const sliders = [
   {
     id: 2,
-    image: "/bg-img/curly_hair_girl-1.jpg",
-    imageTablet: "/bg-img/curly_hair_girl-1-tablet.png",
-    imageMobile: "/bg-img/curly_hair_girl-1_mobile.jpg",
-    subtitle: "50% off",
-    titleUp: "New Cocktail",
-    titleDown: "Dresses",
+    image: "/bg-img/banner-bst-lumen-1.jpg",
+    imageTablet: "/bg-img/banner-bst-lumen-1-tablet.jpg",
+    imageMobile: "/bg-img/banner-bst-lumen-1-mobile.jpg",
+    subtitle: "",
+    titleUp: "",
+    titleDown: "",
     rightText: false,
+    isBuyNow: false,
   },
   {
     id: 1,
-    image: "/bg-img/curly_hair_white-1.jpg",
-    imageTablet: "/bg-img/curly_hair_white-1-tablet.png",
-    imageMobile: "/bg-img/curly_hair_white-1_mobile.jpg",
-    subtitle: "Spring Revolution",
-    titleUp: "Night Summer",
-    titleDown: "Dresses",
+    image: "/bg-img/banner-lumen-2.jpg",
+    imageTablet: "/bg-img/banner-lumen-2-tablet.jpg",
+    imageMobile: "/bg-img/banner-lumen-2-mobile.jpg",
+    subtitle: "",
+    titleUp: "",
+    titleDown: "",
     rightText: true,
-  },
-  {
-    id: 3,
-    image: "/bg-img/monigote.jpg",
-    imageTablet: "/bg-img/monigote-tablet.png",
-    imageMobile: "/bg-img/monigote_mobile.jpg",
-    subtitle: "Spring promo",
-    titleUp: "The Weekend",
-    titleDown: "Promotions",
-    rightText: false,
+    isBuyNow: false,
   },
 ];
 
@@ -113,7 +105,7 @@ const Slideshow = () => {
                   {slider.titleUp} <br />
                   {slider.titleDown}
                 </span>
-                <TextButton value={t("shop_now")} />
+                {slider.isBuyNow && <TextButton value={t("shop_now")} />}
               </div>
             </SwiperSlide>
           ))}

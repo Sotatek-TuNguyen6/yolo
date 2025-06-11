@@ -6,6 +6,9 @@ import {
   Param,
   Delete,
   Patch,
+  UseGuards,
+  Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -13,6 +16,9 @@ import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { OrderReportRequestDto } from './dto/order-report-request.dto';
 import { OrderReportResponse } from './dto/order-report.dto';
 import { OrderStatus, PaymentStatus } from 'src/enum';
+import { RolesGuard } from 'src/decorator/roles.guard';
+import { AuthGuard } from '@nestjs/passport';
+import { RequestUser } from 'src/interface/common.interface';
 
 @ApiTags('Order')
 @Controller('orders')
@@ -93,26 +99,45 @@ export class OrderController {
     };
   }
 
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Patch(':productId/payment-status')
   async updatePaymentStatus(
     @Param('productId') productId: string,
     @Body() updateOrderDto: { paymentStatus: PaymentStatus },
+    @Req() req: RequestUser,
   ) {
+    // console.log(req);
+    if (!req.user) {
+      throw new UnauthorizedException('User not found');
+    }
+    const userId = req.user.sub;
     const order = await this.orderService.updatePaymentStatus(
       productId,
       updateOrderDto.paymentStatus,
+      userId.toString(),
     );
     return order;
   }
 
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Patch(':orderId/order-status')
   async updateOrderStatus(
     @Param('orderId') orderId: string,
     @Body() updateOrderDto: { orderStatus: OrderStatus },
+    @Req() req: RequestUser,
   ) {
+    if (!req.user) {
+      throw new UnauthorizedException('User not found');
+    }
+    if (!req.user) {
+      throw new UnauthorizedException('User not authorized');
+    }
+
+    const userId = req.user.sub;
     const order = await this.orderService.updateOrderStatus(
       orderId,
       updateOrderDto.orderStatus,
+      userId.toString(),
     );
     return order;
   }
