@@ -1,13 +1,21 @@
 .card {
-  @apply w-full;
+  @apply w-full transition-all duration-300 hover:shadow-md rounded-md overflow-hidden pb-2 bg-white relative border border-gray100;
 }
 
 .imageContainer {
-  @apply relative overflow-hidden mb-1;
+  @apply relative overflow-hidden mb-2;
+}
+
+.imageContainer img {
+  @apply transition-transform duration-700 ease-in-out;
+}
+
+.card:hover .imageContainer img {
+  @apply transform scale-105;
 }
 
 .addBtn {
-  @apply hidden sm:block bg-white text-gray400 hover:text-gray100 hover:bg-gray500 font-medium whitespace-nowrap px-4 py-2 mx-auto absolute bottom-4 md:-bottom-10 right-1/2 transform translate-x-1/2 transition-all duration-500;
+  @apply hidden sm:block bg-white text-gray400 hover:text-gray100 hover:bg-gray500 font-medium whitespace-nowrap px-4 py-2 mx-auto absolute bottom-4 md:-bottom-10 right-1/2 transform translate-x-1/2 transition-all duration-500 rounded-sm shadow-sm;
 }
 
 .addBtn:focus {
@@ -19,5 +27,18 @@
 }
 
 .itemName {
-  @apply  sm:text-base block no-underline text-gray500 mb-1 truncate;
+  @apply sm:text-base block no-underline text-gray500 mb-1 truncate hover:text-gray400 transition-colors duration-200;
+}
+
+.content {
+  @apply px-2 pt-1;
+}
+
+.card::after {
+  content: '';
+  @apply absolute bottom-0 left-0 w-0 h-0.5 bg-gray500 transition-all duration-500;
+}
+
+.card:hover::after {
+  @apply w-full;
 }

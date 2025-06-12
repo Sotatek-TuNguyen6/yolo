@@ -36,7 +36,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { OrderExportButton } from '@/components/order-export-button';
+import { OrderPrintButton } from '@/components/order-print-button';
 
 type OrderDetailData = CommonResponse<Order>;
 
@@ -90,12 +92,26 @@ export default function OrderDetailPage() {
   const { id } = useParams();
   const [isUpdatingPayment, setIsUpdatingPayment] = useState(false);
   const [isUpdatingOrderStatus, setIsUpdatingOrderStatus] = useState(false);
+  const [printDialogOpen, setPrintDialogOpen] = useState(false);
+  const searchParams = new URLSearchParams(window.location.search);
+  const shouldPrint = searchParams.get('print') === 'true';
 
   // Fetch order details
   const { data: orderData, isLoading } = useQueryRequest<OrderDetailData>({
     url: `/orders/detail/${id}`,
     queryKey: ['order', id],
   });
+  
+  // Effect to open print dialog if print=true in URL
+  useEffect(() => {
+    if (shouldPrint && !isLoading && orderData?.data) {
+      setPrintDialogOpen(true);
+      // Remove print parameter from URL
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, [shouldPrint, isLoading, orderData]);
+
   // Update payment status mutation
   const { mutate: updatePaymentStatus } = useMutationRequest<
     Order,
@@ -196,6 +212,18 @@ export default function OrderDetailPage() {
           >
             {order.isPayment ? 'Đã thanh toán' : 'Chưa thanh toán'}
           </Badge>
+          <OrderExportButton
+            order={order as unknown as Record<string, unknown>}
+            buttonText="Xuất Excel"
+            variant="outline"
+          />
+          <OrderPrintButton
+            order={order as unknown as Record<string, unknown>}
+            buttonText="In hóa đơn"
+            variant="outline"
+            dialogOpen={printDialogOpen}
+            onOpenChange={setPrintDialogOpen}
+          />
         </div>
       </div>
 

@@ -8,7 +8,7 @@ import { CommonResponse } from '@/types/common';
 import { LoadingSpinner } from '@/components/Loading';
 import { Button } from '@/components/ui/button';
 import { FilterConfig } from '../tasks/components/data-table-toolbar';
-import { UserPlus, UserCheck, UserX, UserCog, Users, Download } from 'lucide-react';
+import { UserPlus, UserCheck, UserX, UserCog, Users } from 'lucide-react';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserForm } from './components/user-form';
@@ -78,29 +78,24 @@ export default function UserPage() {
           icon: UserCog,
         },
         {
-          label: 'Nhà quản lý',
-          value: 'manager',
-          icon: UserCog,
-        },
-        {
-          label: 'Người dùng',
-          value: 'user',
+          label: 'Nhân viên',
+          value: 'staff',
           icon: Users,
         },
       ],
     },
     {
-      column: 'status',
+      column: 'active',
       title: 'Trạng thái',
       options: [
         {
           label: 'Hoạt động',
-          value: 'active',
+          value: true,
           icon: UserCheck,
         },
         {
           label: 'Không hoạt động',
-          value: 'inactive',
+          value: false,
           icon: UserX,
         },
       ],
@@ -136,10 +131,10 @@ export default function UserPage() {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Quản lý người dùng</h1>
         <div className="flex space-x-2">
-          <Button variant="outline" onClick={() => window.print()}>
+          {/* <Button variant="outline" onClick={() => window.print()}>
             <Download className="mr-2 h-4 w-4" />
             Xuất danh sách
-          </Button>
+          </Button> */}
           <Button onClick={() => setIsAddUserOpen(true)}>
             <UserPlus className="mr-2 h-4 w-4" />
             Thêm người dùng

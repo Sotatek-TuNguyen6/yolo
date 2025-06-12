@@ -14,6 +14,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
   if (!isAuth) {
     redirect('/login');
   }
+  
 
   return (
     <SidebarProvider>

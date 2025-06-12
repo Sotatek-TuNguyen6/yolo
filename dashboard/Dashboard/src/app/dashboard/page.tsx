@@ -8,6 +8,8 @@ import { RecentSales } from './components/recent-sales';
 import { useQueryRequest } from '@/hooks/useQuery';
 import { Product } from '@/types/product';
 import { CategoryStats } from '@/types/report';
+import React from 'react';
+import RoleBasedElement from '@/components/role-based-element';
 
 // Define the API response type
 interface OrderSummary {
@@ -205,6 +207,55 @@ export default function Dashboard() {
           </TabsContent>
         </Tabs>
       </Main>
+
+      {/* Admin-only content */}
+      <RoleBasedElement allowedRoles={['admin']}>
+        <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+          <h2 className="text-2xl font-bold mb-4">Admin Dashboard</h2>
+          <div className="space-y-4">
+            <div className="rounded-md bg-yellow-50 p-4">
+              <h3 className="font-medium text-yellow-800">System Alerts</h3>
+              <ul className="mt-2 list-disc pl-5 text-sm text-yellow-700">
+                <li>Database backup scheduled for tonight at 2 AM</li>
+                <li>3 new user registrations require approval</li>
+                <li>System update available</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </RoleBasedElement>
+
+      {/* Manager-only content */}
+      <RoleBasedElement allowedRoles={['admin', 'manager']}>
+        <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+          <h2 className="text-2xl font-bold mb-4">Sales Overview</h2>
+          <div className="space-y-4">
+            <div className="rounded-md bg-blue-50 p-4">
+              <h3 className="font-medium text-blue-800">Monthly Performance</h3>
+              <p className="mt-1 text-sm text-blue-700">
+                Sales are up 12% from last month. Top performing category: Electronics.
+              </p>
+            </div>
+          </div>
+        </div>
+      </RoleBasedElement>
+
+      {/* Staff-only content */}
+      <RoleBasedElement allowedRoles={['admin', 'staff']}>
+        <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+          <h2 className="text-2xl font-bold mb-4">Inventory Management</h2>
+          <div className="space-y-4">
+            <div className="rounded-md bg-green-50 p-4">
+              <h3 className="font-medium text-green-800">Stock Alerts</h3>
+              <ul className="mt-2 list-disc pl-5 text-sm text-green-700">
+                <li>5 products are low in stock</li>
+                <li>New shipment arriving tomorrow</li>
+                <li>3 product categories need restocking</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </RoleBasedElement>
     </>
   );
 }

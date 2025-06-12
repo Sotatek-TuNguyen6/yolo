@@ -62,45 +62,33 @@ const Home: React.FC<Props> = ({ products }) => {
         {/* ===== Category Section ===== */}
         <section className="w-full h-auto py-10 border border-b-2 border-gray100">
           <div className="app-max-width app-x-padding h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="w-full sm:col-span-2 lg:col-span-2">
+            <div className="w-full">
               <OverlayContainer
-                imgSrc="/bg-img/banner_minipage1.jpg"
-                imgSrc2="/bg-img/banner_minipage1-tablet.jpg"
-                imgAlt="New Arrivals"
-              >
-                <LinkButton
-                  href="/product-category/new-arrivals"
-                  extraClass="absolute bottom-10-per sm:right-10-per z-20"
-                >
-                  {t("new_arrivals")}
-                </LinkButton>
-              </OverlayContainer>
+                imgSrc="/bg-img/hangmoi.jpg"
+                imgAlt="Hàng mới về"
+                url="/product-category/new-arrivals"
+              />
             </div>
             <div className="w-full">
               <OverlayContainer
-                imgSrc="/bg-img/banner_minipage2.jpg"
-                imgAlt="Women Collection"
-              >
-                <LinkButton
-                  href="/product-category/women"
-                  extraClass="absolute bottom-10-per z-20"
-                >
-                  {t("women_collection")}
-                </LinkButton>
-              </OverlayContainer>
+                imgSrc="/bg-img/quan.jpg"
+                imgAlt="Quần nam"
+                url="/product-category/quan-nam"
+              />
             </div>
             <div className="w-full">
               <OverlayContainer
-                imgSrc="/bg-img/banner_minipage3.jpg"
-                imgAlt="Men Collection"
-              >
-                <LinkButton
-                  href="/product-category/men"
-                  extraClass="absolute bottom-10-per z-20"
-                >
-                  {t("men_collection")}
-                </LinkButton>
-              </OverlayContainer>
+                imgSrc="/bg-img/ao.jpg"
+                imgAlt="Áo nam"
+                url="/product-category/ao-nam"
+              />
+            </div>
+            <div className="w-full">
+              <OverlayContainer
+                imgSrc="/bg-img/sport.jpg"
+                imgAlt="Sport"
+                url="/product-category/sport"
+              />
             </div>
           </div>
         </section>
@@ -110,7 +98,7 @@ const Home: React.FC<Props> = ({ products }) => {
           <div className="flex justify-center">
             <div className="w-3/4 sm:w-1/2 md:w-1/3 text-center mb-8">
               <h2 className="text-3xl mb-4">{t("best_selling")}</h2>
-              <span>{t("best_selling_desc")}</span>
+              {/* <span>{t("best_selling_desc")}</span> */}
             </div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 lg:gap-x-12 gap-y-6 mb-10 app-x-padding">
@@ -140,7 +128,7 @@ const Home: React.FC<Props> = ({ products }) => {
           <div className="text-center mb-6">
             <h2 className="text-3xl">{t("featured_products")}</h2>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-10 sm:gap-y-6 mb-10">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-8 sm:gap-y-10 mb-10">
             {currentItems.map((item) => (
               <Card key={item.productId} item={item} />
             ))}
@@ -159,7 +147,7 @@ const Home: React.FC<Props> = ({ products }) => {
         <section className="app-max-width mt-16 mb-20 flex flex-col justify-center items-center text-center">
           <div className="textBox w-3/4 md:w-2/4 lg:w-2/5 mb-6">
             <h2 className="text-3xl mb-6">{t("our_shop")}</h2>
-            <span className="w-full">{t("our_shop_desc")}</span>
+            {/* <span className="w-full">{t("our_shop_desc")}</span> */}
           </div>
           <div className="w-full app-x-padding flex justify-center">
             <Image src={ourShop} alt="Our Shop" />

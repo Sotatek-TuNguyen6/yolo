@@ -1,53 +1,35 @@
 .imgContainer {
-  transition: opacity 5s;
   @apply relative overflow-hidden flex justify-center items-center;
 }
 
-.imgContainer:hover .imgOverlay {
-  @apply absolute bg-gray500 opacity-50 h-full w-full top-0;
-}
-
 .img {
-  transition: transform 0.5s;
+  @apply transition-transform duration-700 ease-in-out w-full;
 }
 
 .imgContainer:hover .img {
-  transform: scale(1.1, 1.1);
+  @apply transform scale-110;
+}
+
+.imgOverlay {
+  @apply absolute inset-0 bg-gray500 bg-opacity-20 transition-opacity duration-300;
+}
+
+.imgContainer:hover .imgOverlay {
+  @apply bg-opacity-10;
 }
 
 .overlayBorder {
-  @apply w-0 h-0 absolute;
-  right: 10%;
-  bottom: 10%;
-}
-/* @apply w-4/5 h-4/5 absolute; */
-
-.imgContainer:hover .overlayBorder {
-  transition: all 0.3s;
-  transition-delay: 0s, 0.3s;
-  transition-property: width, height;
-  width: 80%;
-  height: 80%;
-  border-left: 1px solid white;
-  /* border-right: 1px solid white; */
-  border-bottom: 1px solid white;
-  /* border-top: 1px solid white; */
+  @apply absolute top-5 right-5 bottom-5 left-5 border border-white border-opacity-50 pointer-events-none transition-all duration-500;
 }
 
 .overlayBorder2 {
-  @apply w-0 h-0 absolute;
-  left: 10%;
-  top: 10%;
+  @apply absolute top-6 right-6 bottom-6 left-6 border border-white border-opacity-20 pointer-events-none transition-all duration-500;
+}
+
+.imgContainer:hover .overlayBorder {
+  @apply top-10 right-10 bottom-10 left-10 border-opacity-70;
 }
 
 .imgContainer:hover .overlayBorder2 {
-  transition: all 0.3s;
-  transition-delay: 0.6s, 0.9s;
-  transition-property: width, height;
-  width: 80%;
-  height: 80%;
-  /* border-left: 1px solid white; */
-  border-right: 1px solid white;
-  /* border-bottom: 1px solid white; */
-  border-top: 1px solid white;
+  @apply top-12 right-12 bottom-12 left-12 border-opacity-30;
 }

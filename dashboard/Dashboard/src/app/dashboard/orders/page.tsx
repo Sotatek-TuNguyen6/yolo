@@ -6,9 +6,11 @@ import { DataTable } from '../tasks/components/data-table';
 import { columns } from './columns';
 import { CommonResponse } from '@/types/common';
 import { LoadingSpinner } from '@/components/Loading';
-import { Button } from '@/components/ui/button';
 import { FilterConfig } from '../tasks/components/data-table-toolbar';
-import { ArrowDownToLine } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { FileDown, FileText } from 'lucide-react';
+import { exportOrdersToExcel } from '@/utils/orderExport';
+import { exportOrdersToPdf } from '@/utils/pdfExport';
 
 type OrderListData = CommonResponse<Order[]>;
 
@@ -69,14 +71,44 @@ export default function OrdersPage() {
     },
   ];
 
+  // Handle export to Excel
+  const handleExportToExcel = () => {
+    if (!orders.length) return;
+    
+    try {
+      exportOrdersToExcel(orders as unknown as Record<string, unknown>[]);
+    } catch (error) {
+      console.error('Error exporting orders:', error);
+      alert('Có lỗi xảy ra khi xuất dữ liệu. Vui lòng thử lại sau.');
+    }
+  };
+
+  // Handle export to PDF
+  const handleExportToPdf = () => {
+    if (!orders.length) return;
+    
+    try {
+      exportOrdersToPdf(orders as unknown as Record<string, unknown>[]);
+    } catch (error) {
+      console.error('Error exporting orders to PDF:', error);
+      alert('Có lỗi xảy ra khi xuất PDF. Vui lòng thử lại sau.');
+    }
+  };
+
   return (
     <div className="container mx-auto py-4">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Quản lý đơn hàng</h1>
-        <Button onClick={() => window.print()}>
-          <ArrowDownToLine className="mr-2 h-4 w-4" />
-          Xuất báo cáo
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleExportToExcel}>
+            <FileDown className="mr-2 h-4 w-4" />
+            Xuất Excel
+          </Button>
+          <Button variant="outline" onClick={handleExportToPdf}>
+            <FileText className="mr-2 h-4 w-4" />
+            Xuất PDF
+          </Button>
+        </div>
       </div>
 
       <div className="bg-white p-4 rounded-md shadow mb-6">

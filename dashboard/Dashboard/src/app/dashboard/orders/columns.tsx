@@ -6,7 +6,7 @@ import { Order, PaymentMethod, PaymentStatus, OrderStatus } from '@/interface/or
 import { DataTableColumnHeader } from '../tasks/components/data-table-column-header';
 import { DataTableRowActions } from '../tasks/components/data-table-row-actions';
 import { Row } from '@tanstack/react-table';
-import { Eye, Edit, Trash, AlertTriangle } from 'lucide-react';
+import { Eye, Edit, Trash, AlertTriangle, Printer } from 'lucide-react';
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -54,6 +54,14 @@ function ActionCell({ row }: { row: Row<Order> }) {
             label: 'Xem chi tiết',
             onClick: () => router.push(`/dashboard/orders/${row.original.orderId}`),
             icon: <Eye className="h-4 w-4" />,
+          },
+          {
+            label: 'In hóa đơn',
+            onClick: () => {
+              // Chuyển đến trang chi tiết đơn hàng với tham số print=true
+              router.push(`/dashboard/orders/${row.original.orderId}?print=true`);
+            },
+            icon: <Printer className="h-4 w-4" />,
           },
           {
             label: 'Chỉnh sửa',

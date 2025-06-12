@@ -10,7 +10,7 @@ interface JwtPayload {
 
 export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
-  const token = cookieStore.get('auth-token')?.value;
+  const token = cookieStore.get('token')?.value;
 
   if (!token) {
     redirect('/login');

@@ -17,19 +17,19 @@ export default function Footer() {
           <div>
             <h3 className={styles.footerHead}>{t("company")}</h3>
             <div className={styles.column}>
-              <a href="example">{t("about_us")}</a>
-              <a href="example">{t("contact_us")}</a>
-              <a href="example">{t("store_location")}</a>
-              <a href="example">{t("careers")}</a>
+              <a href="/">{t("about_us")}</a>
+              <a href="/">{t("contact_us")}</a>
+              <a href="/">{t("store_location")}</a>
+              <a href="/">{t("careers")}</a>
             </div>
           </div>
           <div>
             <h3 className={styles.footerHead}>{t("help")}</h3>
             <div className={styles.column}>
-              <a href="order-tracking">{t("order_tracking")}</a>
-              <a href="example">{t("faqs")}</a>
-              <a href="example">{t("privacy_policy")}</a>
-              <a href="example">{t("terms_conditions")}</a>
+              <a href="/order-tracking">{t("order_tracking")}</a>
+              <a href="/">{t("faqs")}</a>
+              <a href="/">{t("privacy_policy")}</a>
+              <a href="/">{t("terms_conditions")}</a>
             </div>
           </div>
           <div>

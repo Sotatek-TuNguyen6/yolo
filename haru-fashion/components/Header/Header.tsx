@@ -80,12 +80,12 @@ const Header: React.FC<Props> = ({ title }) => {
       {/* ===== Main Navigation ===== */}
       <nav
         className={`${
-          scrolled ? "bg-white sticky top-0 shadow-md z-50" : "bg-transparent"
-        } w-full z-50 h-20 relative`}
+          scrolled ? "bg-white sticky top-0 shadow-lg z-50" : "bg-transparent"
+        } w-full z-50 h-20 relative transition-all duration-300`}
       >
         <div className="app-max-width w-full">
           <div
-            className={`flex justify-between align-baseline app-x-padding ${styles.mainMenu}`}
+            className={`flex justify-between align-baseline app-x-padding ${styles.mainMenu} pt-7`}
           >
             {/* Hamburger Menu and Mobile Nav */}
             <div className="flex-1 lg:flex-0 lg:hidden">
@@ -94,26 +94,27 @@ const Header: React.FC<Props> = ({ title }) => {
 
             {/* Left Nav */}
             <ul className={`flex-0 lg:flex-1 flex ${styles.leftMenu}`}>
+            
               <li>
-                <Link href={`/product-category/men`}>
-                  <a>{t("men")}</a>
+                <Link href={`/product-category/ao-nam`}>
+                  <a>Áo nam</a>
                 </Link>
               </li>
               <li>
-                <Link href={`/product-category/women`}>
-                  <a>{t("women")}</a>
+                <Link href="/product-category/quan-nam">
+                  <a>Quần nam</a>
                 </Link>
               </li>
               <li>
-                <Link href="/product-category/bags">
-                  <a>{t("bags")}</a>
+                <Link href="/product-category/sport">
+                  <a>Sport Wear</a>
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link href="/coming-soon">
                   <a>{t("blogs")}</a>
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <Link href="/order-tracking">
                   <a>{t("order_tracking")}</a>
@@ -122,8 +123,8 @@ const Header: React.FC<Props> = ({ title }) => {
             </ul>
 
             {/* Lumen Logo */}
-            <div className="flex-1 flex justify-center  cursor-pointer">
-              <div className="w-28 h-auto">
+            <div className="flex-1 flex justify-center cursor-pointer">
+              <div className="w-32 h-auto transition-transform duration-200 hover:scale-105">
                 <Link href="/">
                   <a>
                     <Image
@@ -144,11 +145,11 @@ const Header: React.FC<Props> = ({ title }) => {
               <li>
                 <SearchForm />
               </li>
-              <li>
+              {/* <li>
                 <AuthForm>
                   <UserIcon />
                 </AuthForm>
-              </li>
+              </li> */}
               <li>
                 <Link href="/wishlist" passHref>
                   {/* <a className="relative" aria-label="Wishlist"> */}

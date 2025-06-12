@@ -13,18 +13,31 @@
 
 /* Main Menu */
 .mainMenu {
-  @apply py-6;
+  @apply py-4 pt-7 transition-all duration-300;
 }
 /* .leftMenu {
   @apply ml-8 my-6;
 } */
 
 .leftMenu li {
-  @apply mr-12 hidden lg:block whitespace-nowrap;
+  @apply mr-8 hidden lg:block whitespace-nowrap font-medium transition-all duration-200 ease-in-out relative;
+}
+
+.leftMenu li a {
+  @apply py-2 relative;
+}
+
+.leftMenu li a:after {
+  content: '';
+  @apply absolute left-0 bottom-0 w-0 h-0.5 bg-gray500 transition-all duration-300;
+}
+
+.leftMenu li:hover a:after {
+  @apply w-full;
 }
 
 .leftMenu li:hover {
-  @apply text-gray400;
+  @apply text-gray500;
 }
 
 .leftMenu li:last-child {
@@ -32,7 +45,7 @@
 }
 
 .rightMenu li {
-  @apply ml-12;
+  @apply ml-8;
 }
 
 .rightMenu li:not(:last-child) {
@@ -41,4 +54,8 @@
 
 .rightMenu li:nth-child(3) {
   @apply hidden sm:block;
+}
+
+.rightMenu button {
+  @apply transition-transform duration-200 ease-in-out hover:scale-110;
 }

@@ -1,5 +1,5 @@
 // Định nghĩa các kiểu dữ liệu
-export type UserRole = 'admin' | 'user' | 'manager';
+export type UserRole = 'admin' | 'staff';
 export type UserStatus = 'active' | 'inactive' | 'banned';
 export type UserGender = 'male' | 'female' | 'other';
 

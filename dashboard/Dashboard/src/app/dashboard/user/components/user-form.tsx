@@ -43,7 +43,7 @@ import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
 // Định nghĩa UserRole mới
-type UserRole = 'admin' | 'user';
+type UserRole = 'admin' | 'staff';
 
 // Schema xác thực form
 const userFormSchema = z.object({
@@ -64,7 +64,7 @@ const userFormSchema = z.object({
   }),
   phoneNumber: z.string().optional(),
   gender: z.enum(['male', 'female', 'other']),
-  role: z.enum(['admin', 'user']),
+  role: z.enum(['admin', 'staff']),
   status: z.enum(['active', 'inactive', 'banned']),
   dateOfBirth: z.date().optional(),
   avatar: z.string().optional(),
@@ -141,7 +141,7 @@ export function UserForm({ user, open, onOpenChange, readOnly = false, onSuccess
           fullName: user.fullName,
           phoneNumber: user.phoneNumber || '',
           gender: user.gender,
-          role: (user.role === 'manager' ? 'admin' : user.role) as UserRole, // Chuyển đổi role manager sang admin
+          role: user.role , // Chuyển đổi role manager sang admin
           status: user.status,
           dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth) : undefined,
           avatar: user.avatar || '',
@@ -153,7 +153,7 @@ export function UserForm({ user, open, onOpenChange, readOnly = false, onSuccess
           fullName: '',
           phoneNumber: '',
           gender: 'male' as UserGender,
-          role: 'user' as UserRole,
+          role: 'staff' as UserRole,
           status: 'active' as UserStatus,
           dateOfBirth: undefined,
           avatar: '',
@@ -197,7 +197,7 @@ export function UserForm({ user, open, onOpenChange, readOnly = false, onSuccess
 
   const roleOptions = [
     { value: 'admin', label: 'Quản trị viên' },
-    { value: 'user', label: 'Người dùng' },
+    { value: 'staff', label: 'Nhân viên' },
   ];
 
   const statusOptions = [
@@ -319,9 +319,7 @@ export function UserForm({ user, open, onOpenChange, readOnly = false, onSuccess
                     <p className="font-medium">
                       {roleOptions.find(r => r.value === user?.role)
                         ? roleOptions.find(r => r.value === user?.role)?.label
-                        : user.role === 'manager'
-                          ? 'Quản trị viên'
-                          : user.role}
+                        : user.role}
                     </p>
                   </div>
                   <div className="space-y-1">

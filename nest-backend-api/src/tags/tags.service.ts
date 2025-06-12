@@ -17,15 +17,15 @@ export class TagsService {
     return this.tagModel.find();
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return this.tagModel.findById(id);
   }
 
-  update(id: number, updateTagDto: UpdateTagDto) {
-    return this.tagModel.findByIdAndUpdate(id, updateTagDto);
+  update(id: string, updateTagDto: UpdateTagDto) {
+    return this.tagModel.findByIdAndUpdate(id, updateTagDto, { new: true });
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return this.tagModel.findByIdAndDelete(id);
   }
 }

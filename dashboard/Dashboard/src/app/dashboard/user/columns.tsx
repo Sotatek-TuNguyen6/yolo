@@ -42,9 +42,7 @@ function getUserRoleColor(role: UserRole) {
   switch (role) {
     case 'admin':
       return 'bg-blue-100 text-blue-800 hover:bg-blue-100/80';
-    case 'manager':
-      return 'bg-purple-100 text-purple-800 hover:bg-purple-100/80';
-    case 'user':
+    case 'staff':
       return 'bg-gray-100 text-gray-800 hover:bg-gray-100/80';
     default:
       return 'bg-gray-100 text-gray-800 hover:bg-gray-100/80';
@@ -289,8 +287,7 @@ export const columns: ColumnDef<User>[] = [
       const role = row.getValue('role') as UserRole;
       const roleText = {
         admin: 'Quản trị viên',
-        manager: 'Nhà quản lý',
-        user: 'Người dùng',
+        staff: 'Nhân viên',
       };
 
       return (

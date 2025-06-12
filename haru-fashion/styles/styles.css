@@ -9,7 +9,14 @@ html {
   font-weight: bold;
   padding: 0.5rem 0.875rem;
   border-radius: 100%;
-  background-color: #ddd;
+  background-color: rgba(221, 221, 221, 0.8);
+  transition: all 0.3s ease;
+}
+
+.swiper-button-prev:hover::after,
+.swiper-button-next:hover::after {
+  background-color: #282828;
+  color: #fff;
 }
 
 .swiper-button-prev::after {
@@ -36,13 +43,17 @@ html {
 }
 
 .swiper-pagination-bullet {
-  width: 1rem !important;
-  border-radius: 0 !important;
+  width: 2rem !important;
+  border-radius: 0.25rem !important;
   height: 0.35rem !important;
+  transition: all 0.3s ease;
+  opacity: 0.5;
 }
 
 .swiper-pagination-bullet-active {
   background-color: #282828 !important;
+  opacity: 1;
+  width: 2.5rem !important;
 }
 
 /* .swiper-slide {

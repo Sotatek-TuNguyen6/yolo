@@ -249,7 +249,7 @@ const Card: FC<Props> = ({ item }) => {
         </button>
       </div>
 
-      <div className="content">
+      <div className={styles.content}>
         <Link href={itemLink}>
           <a className={styles.itemName}>{name}</a>
         </Link>
