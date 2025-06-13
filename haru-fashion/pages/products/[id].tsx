@@ -412,11 +412,11 @@ const Product: React.FC<Props> = ({ product, products }) => {
           <div className="app-x-padding app-max-width w-full">
             <div className="breadcrumb">
               <Link href="/">
-                <a className="text-gray-400">{t("home")}</a>
+                <a className="text-gray-400 cursor-pointer">{t("home")}</a>
               </Link>{" "}
               /{" "}
               <Link href={`/product-category/${product.slugCategory}`}>
-                <a className="text-gray-400capitalize">
+                <a className="text-gray-400 capitalize cursor-pointer">
                   {t(product.slugCategory as string)}
                 </a>
               </Link>{" "}
@@ -566,7 +566,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
                     <button
                       key={colorItem.colorCode}
                       type="button"
-                      className={`w-8 h-8 rounded-full border-2 ${
+                      className={`w-8 h-8 rounded-full border-2 cursor-pointer ${
                         selectedColorIndex === index
                           ? "border-gray500"
                           : colorItem.colorCode.toLowerCase() === "#ffffff" ||
@@ -592,7 +592,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
                 </span>
                 <button
                   onClick={() => setIsSizeGuideOpen(true)}
-                  className="text-sm bg-gray100 hover:bg-gray200 text-gray600 hover:text-gray800 py-1 px-2 rounded flex items-center transition-colors"
+                  className="text-sm bg-gray100 hover:bg-gray200 text-gray600 hover:text-gray800 py-1 px-2 rounded flex items-center transition-colors cursor-pointer"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -620,11 +620,11 @@ const Product: React.FC<Props> = ({ product, products }) => {
                     }
                     className={`relative px-3 py-2 flex flex-col items-center justify-center border rounded ${
                       size === sizeQty.size
-                        ? "border-gray500 bg-gray-50"
+                        ? "border-gray500 bg-gray-50 cursor-pointer"
                         : sizeQty.quantity > 0
-                        ? "border-gray300 text-gray-400hover:border-gray500"
+                        ? "border-gray300 text-gray-400 hover:border-gray500 cursor-pointer"
                         : "border-gray-200 text-gray-300 cursor-not-allowed bg-gray-50"
-                    } cursor-pointer`}
+                    }`}
                   >
                     <span className="font-medium">{sizeQty.size}</span>
                     {/* <span
@@ -664,8 +664,8 @@ const Product: React.FC<Props> = ({ product, products }) => {
                   className={`${
                     currentQty === 1 || stockForSelectedSize <= 0
                       ? "pointer-events-none opacity-50"
-                      : ""
-                  } h-full w-full sm:w-12 flex justify-center items-center cursor-pointer hover:bg-gray-500 hover:text-gray100`}
+                      : "cursor-pointer"
+                  } h-full w-full sm:w-12 flex justify-center items-center hover:bg-gray-500 hover:text-gray100`}
                 >
                   -
                 </div>
@@ -682,8 +682,8 @@ const Product: React.FC<Props> = ({ product, products }) => {
                     currentQty >= stockForSelectedSize ||
                     stockForSelectedSize <= 0
                       ? "pointer-events-none opacity-50"
-                      : ""
-                  } h-full w-full sm:w-12 flex justify-center items-center cursor-pointer hover:bg-gray-500 hover:text-gray100`}
+                      : "cursor-pointer"
+                  } h-full w-full sm:w-12 flex justify-center items-center hover:bg-gray-500 hover:text-gray100`}
                 >
                   +
                 </div>
@@ -712,7 +712,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
             <Disclosure>
               {({ open }) => (
                 <>
-                  <Disclosure.Button className="py-2 focus:outline-none text-left mb-4 border-b-2 border-gray-200 flex items-center justify-between">
+                  <Disclosure.Button className="py-2 focus:outline-none text-left mb-4 border-b-2 border-gray-200 flex items-center justify-between cursor-pointer">
                     <span>{t("details")}</span>
                     <DownArrow
                       extraClass={`${
@@ -730,8 +730,8 @@ const Product: React.FC<Props> = ({ product, products }) => {
             </Disclosure>
             <div className="flex items-center space-x-4 mt-4">
               <span>{t("share")}</span>
-              <FacebookLogo extraClass="h-4 cursor-pointer text-gray-400hover:text-gray-500" />
-              <InstagramLogo extraClass="h-4 cursor-pointer text-gray-400hover:text-gray-500" />
+              <FacebookLogo extraClass="h-4 cursor-pointer text-gray-400 hover:text-gray-500" />
+              <InstagramLogo extraClass="h-4 cursor-pointer text-gray-400 hover:text-gray-500" />
             </div>
           </div>
         </div>

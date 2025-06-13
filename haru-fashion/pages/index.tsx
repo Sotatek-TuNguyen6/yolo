@@ -73,28 +73,28 @@ const Home: React.FC<Props> = ({ categoryProducts, featuredProducts }) => {
         {/* ===== Category Section ===== */}
         <section className="w-full h-auto py-10 border border-b-2 border-gray-100">
           <div className="app-max-width app-x-padding h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="w-full">
+            <div className="w-full cursor-pointer">
               <OverlayContainer
                 imgSrc="/bg-img/hangmoi.jpg"
                 imgAlt="Hàng mới về"
                 url="/product-category/new-arrivals"
               />
             </div>
-            <div className="w-full">
+            <div className="w-full cursor-pointer">
               <OverlayContainer
                 imgSrc="/bg-img/quan.jpg"
                 imgAlt="Quần nam"
                 url="/product-category/quan-nam"
               />
             </div>
-            <div className="w-full">
+            <div className="w-full cursor-pointer">
               <OverlayContainer
                 imgSrc="/bg-img/ao.jpg"
                 imgAlt="Áo nam"
                 url="/product-category/ao-nam"
               />
             </div>
-            <div className="w-full">
+            <div className="w-full cursor-pointer">
               <OverlayContainer
                 imgSrc="/bg-img/sport.jpg"
                 imgAlt="Sport"
