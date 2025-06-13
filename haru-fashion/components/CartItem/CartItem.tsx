@@ -99,7 +99,7 @@ export default function CartItem() {
           <BagIcon extraClass="h-8 w-8 sm:h-6 sm:w-6" />
           {noOfItems > 0 && (
             <span
-              className={`${animate} absolute text-xs -top-3 bg-gray500 text-gray100 py-1 px-2 rounded-full`}
+              className={`${animate} absolute text-xs -top-3 bg-gray-500 text-gray100 py-1 px-2 rounded-full`}
             >
               {noOfItems}
             </span>
@@ -125,7 +125,7 @@ export default function CartItem() {
               //   leaveFrom="opacity-100"
               //   leaveTo="opacity-0"
             >
-              <Dialog.Overlay className="fixed inset-0 bg-gray500 opacity-50" />
+              <Dialog.Overlay className="fixed inset-0 bg-gray-500 opacity-50" />
             </Transition.Child>
 
             {/* This element is to trick the browser into centering the modal contents. */}
@@ -168,7 +168,7 @@ export default function CartItem() {
                       subtotal += discountedPrice * item.quantity!;
                       return (
                         <div
-                          className="w-full min-h-40 flex flex-col sm:flex-row justify-between items-center px-2 my-2 border-b-2 border-gray100 pb-2"
+                          className="w-full min-h-40 flex flex-col sm:flex-row justify-between items-center px-2 my-2 border-b-2 border-gray-100 pb-2"
                           key={
                             item.productId +
                             (item.selectedColor?.colorCode || "") +
@@ -197,11 +197,11 @@ export default function CartItem() {
                                   item.slug || item.productId
                                 )}`}
                               >
-                                <a className="text-gray400 text-xl font-bold">
+                                <a className="text-gray-400text-xl font-bold">
                                   {item.name}
                                 </a>
                               </Link>
-                              <div className="text-gray400 text-base">
+                              <div className="text-gray-400text-base">
                                 {item.discountPercent &&
                                 item.discountPercent > 0 ? (
                                   <div className="flex items-center">
@@ -224,7 +224,7 @@ export default function CartItem() {
                               {/* Hiển thị thông tin màu sắc đã chọn */}
                               {item.selectedColor && (
                                 <div className="flex items-center mt-1">
-                                  <span className="text-gray400 text-sm">
+                                  <span className="text-gray-400text-sm">
                                     {t("color")}: {item.selectedColor.colorName}
                                   </span>
                                   {item.selectedColor.colorCode && (
@@ -240,7 +240,7 @@ export default function CartItem() {
                               )}
                               {/* Hiển thị thông tin kích thước đã chọn */}
                               {item.size && (
-                                <div className="text-gray400 text-sm">
+                                <div className="text-gray-400text-sm">
                                   {t("size")}: {item.size}
                                 </div>
                               )}
@@ -253,34 +253,34 @@ export default function CartItem() {
                           </div>
                           <div className="flex flex-col items-center">
                             <div className="text-center">
-                              <div className="text-base text-gray400 mb-2">
+                              <div className="text-base text-gray-400mb-2">
                                 {t("quantity")}:
                               </div>
                               <div className="flex justify-center items-center">
                                 <button
                                   type="button"
                                   onClick={() => removeItem!(item)}
-                                  className="w-8 h-8 border border-gray300 text-gray500"
+                                  className="w-8 h-8 border border-gray300 text-gray-500"
                                 >
                                   -
                                 </button>
-                                <div className="w-8 h-8 border-t border-b border-gray300 flex justify-center items-center text-gray500">
+                                <div className="w-8 h-8 border-t border-b border-gray300 flex justify-center items-center text-gray-500">
                                   {item.quantity}
                                 </div>
                                 <button
                                   type="button"
                                   onClick={() => addOne!(item)}
-                                  className="w-8 h-8 border border-gray300 text-gray500"
+                                  className="w-8 h-8 border border-gray300 text-gray-500"
                                 >
                                   +
                                 </button>
                               </div>
                             </div>
                             <div className="text-center mt-2">
-                              <div className="text-base text-gray400 mb-2">
+                              <div className="text-base text-gray-400mb-2">
                                 {t("subtotal")}:
                               </div>
-                              <div className="text-gray400 font-bold">
+                              <div className="text-gray-400font-bold">
                                 {formatPrice(
                                   roundDecimal(
                                     discountedPrice * item!.quantity!

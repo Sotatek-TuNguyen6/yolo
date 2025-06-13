@@ -64,8 +64,8 @@ const Pagination: React.FC<Props> = ({ lastPage, currentPage, orderby }) => {
             }
             className={`${
               currentPage === 1
-                ? "pointer-events-none cursor-not-allowed text-gray400 opacity-50"
-                : "cursor-pointer hover:bg-gray500 hover:text-gray100"
+                ? "pointer-events-none cursor-not-allowed text-gray-400opacity-50"
+                : "cursor-pointer hover:bg-gray-500 hover:text-gray100"
             } focus:outline-none flex justify-center items-center h-10 w-12 border rounded-l-md mx-0.5 transition-colors`}
           >
             <PrevArrow />
@@ -83,13 +83,13 @@ const Pagination: React.FC<Props> = ({ lastPage, currentPage, orderby }) => {
                     `/product-category/${category}?page=1&orderby=${orderby}`
                   )
                 }
-                className={`focus:outline-none cursor-pointer flex justify-center items-center w-10 h-10 border mx-0.5 hover:bg-gray500 hover:text-gray100 transition-colors`}
+                className={`focus:outline-none cursor-pointer flex justify-center items-center w-10 h-10 border mx-0.5 hover:bg-gray-500 hover:text-gray100 transition-colors`}
               >
                 1
               </button>
             </li>
             <li>
-              <span className="flex items-center justify-center w-8 text-gray400">...</span>
+              <span className="flex items-center justify-center w-8 text-gray-400">...</span>
             </li>
           </>
         )}
@@ -111,7 +111,7 @@ const Pagination: React.FC<Props> = ({ lastPage, currentPage, orderby }) => {
                 }
                 className={`${
                   num === currentPage 
-                    ? "bg-gray500 text-gray100" 
+                    ? "bg-gray-500 text-gray100" 
                     : "hover:bg-gray200"
                 } focus:outline-none cursor-pointer flex justify-center items-center w-10 h-10 border mx-0.5 transition-colors`}
               >
@@ -125,7 +125,7 @@ const Pagination: React.FC<Props> = ({ lastPage, currentPage, orderby }) => {
         {showRightEllipsis && (
           <>
             <li>
-              <span className="flex items-center justify-center w-8 text-gray400">...</span>
+              <span className="flex items-center justify-center w-8 text-gray-400">...</span>
             </li>
             <li>
               <button
@@ -135,7 +135,7 @@ const Pagination: React.FC<Props> = ({ lastPage, currentPage, orderby }) => {
                     `/product-category/${category}?page=${lastPage}&orderby=${orderby}`
                   )
                 }
-                className={`focus:outline-none cursor-pointer flex justify-center items-center w-10 h-10 border mx-0.5 hover:bg-gray500 hover:text-gray100 transition-colors`}
+                className={`focus:outline-none cursor-pointer flex justify-center items-center w-10 h-10 border mx-0.5 hover:bg-gray-500 hover:text-gray100 transition-colors`}
               >
                 {lastPage}
               </button>
@@ -156,8 +156,8 @@ const Pagination: React.FC<Props> = ({ lastPage, currentPage, orderby }) => {
             }
             className={`${
               currentPage >= lastPage
-                ? "pointer-events-none cursor-not-allowed text-gray400 opacity-50"
-                : "cursor-pointer hover:bg-gray500 hover:text-gray100"
+                ? "pointer-events-none cursor-not-allowed text-gray-400opacity-50"
+                : "cursor-pointer hover:bg-gray-500 hover:text-gray100"
             } focus:outline-none flex justify-center items-center h-10 w-12 border rounded-r-md mx-0.5 transition-colors`}
           >
             <NextArrow />

@@ -34,7 +34,7 @@ const Search: React.FC<Props> = ({ items, searchWord }) => {
           <div className="app-x-padding app-max-width w-full">
             <div className="breadcrumb">
               <Link href="/">
-                <a className="text-gray400">{t("home")}</a>
+                <a className="text-gray-400">{t("home")}</a>
               </Link>{" "}
               / <span>{t("search_results")}</span>
             </div>

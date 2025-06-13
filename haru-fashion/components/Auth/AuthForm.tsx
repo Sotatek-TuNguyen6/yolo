@@ -103,7 +103,7 @@ const LoginForm: FC<Props> = ({ extraClass, children }) => {
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <Dialog.Overlay className="fixed inset-0 bg-gray500 opacity-50" />
+              <Dialog.Overlay className="fixed inset-0 bg-gray-500 opacity-50" />
             </Transition.Child>
 
             {/* This element is to trick the browser into centering the modal contents. */}

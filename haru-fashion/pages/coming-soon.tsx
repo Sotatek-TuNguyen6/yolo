@@ -14,7 +14,7 @@ const ComingSoon = () => {
         <h1 className="text-3xl tracking-wider leading-10">
           {t("coming_soon")}
         </h1>
-        <h2 className="text-2xl text-gray500 mt-2">
+        <h2 className="text-2xl text-gray-500 mt-2">
           {t("page_not_created_msg")}
         </h2>
         <Image
@@ -23,10 +23,10 @@ const ComingSoon = () => {
           width={400}
           height={300}
         />
-        <span className="text-gray400">
+        <span className="text-gray-400">
           {t("go_back_to")}{" "}
           <Link href="/">
-            <a className="underline font-bold hover:text-gray500">home page</a>
+            <a className="underline font-bold hover:text-gray-500">home page</a>
           </Link>
           ?
         </span>

@@ -71,7 +71,7 @@ const Home: React.FC<Props> = ({ categoryProducts, featuredProducts }) => {
 
       <main id="main-content" className="-mt-20">
         {/* ===== Category Section ===== */}
-        <section className="w-full h-auto py-10 border border-b-2 border-gray100">
+        <section className="w-full h-auto py-10 border border-b-2 border-gray-100">
           <div className="app-max-width app-x-padding h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="w-full">
               <OverlayContainer
@@ -165,7 +165,7 @@ const Home: React.FC<Props> = ({ categoryProducts, featuredProducts }) => {
           ))}
         </section>
 
-        <div className="border-gray100 border-b-2"></div>
+        <div className="border-gray-100 border-b-2"></div>
 
         {/* ===== Our Shop Section */}
         <section className="app-max-width mt-16 mb-20 flex flex-col justify-center items-center text-center">

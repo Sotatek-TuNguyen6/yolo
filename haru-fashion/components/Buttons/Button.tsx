@@ -35,8 +35,8 @@ const Button: FC<Props> = ({
       disabled={disabled || loading}
       className={`text-xl sm:text-base ${btnSize} border border-gray500 ${
         disabled || loading
-          ? "bg-gray400 text-gray300 cursor-not-allowed"
-          : "bg-gray500 text-gray100 hover:text-gray300"
+          ? "bg-gray400 text-gray-300 cursor-not-allowed"
+          : "bg-gray-500 text-gray100 hover:text-gray-300"
       } ${extraClass} relative`}
     >
       {loading ? (

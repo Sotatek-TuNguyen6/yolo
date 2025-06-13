@@ -526,18 +526,18 @@ const ShoppingCart = () => {
               <h2 className="text-xl font-semibold mb-2">
                 Đang xử lý đơn hàng
               </h2>
-              <p className="text-gray500">Vui lòng đợi trong giây lát...</p>
+              <p className="text-gray-500">Vui lòng đợi trong giây lát...</p>
             </div>
           </div>
         )}
 
         {/* ===== Heading & Continue Shopping */}
-        <div className="app-max-width px-4 sm:px-8 md:px-20 w-full border-t-2 border-gray100">
+        <div className="app-max-width px-4 sm:px-8 md:px-20 w-full border-t-2 border-gray-100">
           <h1 className="text-2xl sm:text-4xl text-center sm:text-left mt-6 mb-2 animatee__animated animate__bounce">
             {t("checkout")}
           </h1>
           {!auth.user && (
-            <h2 className="text-base sm:text-lg text-gray400 text-center sm:text-left mb-4">
+            <h2 className="text-base sm:text-lg text-gray-400text-center sm:text-left mb-4">
               {t("guest_checkout") || "Guest Checkout"}
             </h2>
           )}
@@ -615,7 +615,7 @@ const ShoppingCart = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                   <div>
-                    <label htmlFor="city" className="text-sm text-gray500">
+                    <label htmlFor="city" className="text-sm text-gray-500">
                       {t("city") || "Tỉnh/Thành phố"}
                     </label>
                     <select
@@ -642,7 +642,7 @@ const ShoppingCart = () => {
                   </div>
 
                   <div>
-                    <label htmlFor="district" className="text-sm text-gray500">
+                    <label htmlFor="district" className="text-sm text-gray-500">
                       {t("district") || "Quận/Huyện"}
                     </label>
                     <select
@@ -670,7 +670,7 @@ const ShoppingCart = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="ward" className="text-sm text-gray500">
+                    <label htmlFor="ward" className="text-sm text-gray-500">
                       {t("ward") || "Phường/Xã"}
                     </label>
                     <select
@@ -695,7 +695,7 @@ const ShoppingCart = () => {
                   <div>
                     <label
                       htmlFor="specificAddress"
-                      className="text-sm text-gray500"
+                      className="text-sm text-gray-500"
                     >
                       {t("specific_address") || "Địa chỉ cụ thể"}
                     </label>
@@ -742,7 +742,7 @@ const ShoppingCart = () => {
                     <div>
                       <label
                         htmlFor="shipping_city"
-                        className="text-sm text-gray500"
+                        className="text-sm text-gray-500"
                       >
                         {t("city") || "Tỉnh/Thành phố"}
                       </label>
@@ -774,7 +774,7 @@ const ShoppingCart = () => {
                     <div>
                       <label
                         htmlFor="shipping_district"
-                        className="text-sm text-gray500"
+                        className="text-sm text-gray-500"
                       >
                         {t("district") || "Quận/Huyện"}
                       </label>
@@ -807,7 +807,7 @@ const ShoppingCart = () => {
                     <div>
                       <label
                         htmlFor="shipping_ward"
-                        className="text-sm text-gray500"
+                        className="text-sm text-gray-500"
                       >
                         {t("ward") || "Phường/Xã"}
                       </label>
@@ -835,7 +835,7 @@ const ShoppingCart = () => {
                     <div>
                       <label
                         htmlFor="shipping_specificAddress"
-                        className="text-sm text-gray500"
+                        className="text-sm text-gray-500"
                       >
                         {t("specific_address") || "Địa chỉ cụ thể"}
                       </label>
@@ -858,7 +858,7 @@ const ShoppingCart = () => {
               )} */}
 
               {!auth.user && (
-                <div className="text-sm text-gray400 mt-8 leading-6">
+                <div className="text-sm text-gray-400mt-8 leading-6">
                   {t("guest_checkout_note") ||
                     "You are checking out as a guest. No account will be created."}
                 </div>
@@ -890,7 +890,7 @@ const ShoppingCart = () => {
                       >
                         <div className="text-base font-medium">
                           {item.name}{" "}
-                          <span className="text-gray400">
+                          <span className="text-gray-400">
                             x {item.quantity}
                           </span>
                           {(item.selectedColor || item.size) && (
@@ -1081,7 +1081,7 @@ const ShoppingCart = () => {
                       <span className="font-semibold text-gray-500 leading-tight capitalize">
                         {getPaymentMethodName("BANK_TRANSFER")}
                       </span>
-                      <span className="text-gray400 text-sm mt-1">
+                      <span className="text-gray-400text-sm mt-1">
                         {t("bank_transfer_desc")}
                       </span>
                       <input
@@ -1173,7 +1173,7 @@ const ShoppingCart = () => {
           </div>
         ) : (
           <div className="app-max-width px-4 sm:px-8 md:px-20 mb-14 mt-6">
-            <div className="text-gray400 text-base">{t("thank_you_note")}</div>
+            <div className="text-gray-400text-base">{t("thank_you_note")}</div>
             <div className="flex flex-col md:flex-row">
               <div className="h-full w-full md:w-1/2 mt-2 lg:mt-4">
                 <div className="border border-gray500 p-6 divide-y-2 divide-gray200">

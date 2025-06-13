@@ -92,7 +92,7 @@ const Wishlist = () => {
 
       <main id="main-content">
         {/* ===== Heading & Continue Shopping */}
-        <div className="app-max-width px-4 sm:px-8 md:px-20 w-full border-t-2 border-gray100">
+        <div className="app-max-width px-4 sm:px-8 md:px-20 w-full border-t-2 border-gray-100">
           <h1 className="text-2xl sm:text-4xl text-center sm:text-left mt-6 mb-2 animatee__animated animate__bounce">
             {t("wishlist")}
           </h1>
@@ -111,7 +111,7 @@ const Wishlist = () => {
           <div className="h-full w-full">
             <table className="w-full mb-6">
               <thead>
-                <tr className="border-t-2 border-b-2 border-gray200">
+                <tr className="border-t-2 border-b-2 border-gray-200">
                   <th className="font-normal hidden md:table-cell text-left sm:text-center py-2 xl:w-72">
                     {t("product_image")}
                   </th>
@@ -141,14 +141,14 @@ const Wishlist = () => {
               </thead>
               <tbody>
                 {wishlist.length === 0 ? (
-                  <tr className="w-full text-center h-60 border-b-2 border-gray200">
+                  <tr className="w-full text-center h-60 border-b-2 border-gray-200">
                     <td colSpan={5}>{t("wishlist_is_empty")}</td>
                   </tr>
                 ) : (
                   wishlist.map((item) => {
                     subtotal += item.price * item.quantity!;
                     return (
-                      <tr className="border-b-2 border-gray200" key={item.id}>
+                      <tr className="border-b-2 border-gray-200" key={item.id}>
                         <td className="my-3 flex justify-center flex-col items-start sm:items-center">
                           <Link
                             href={`/products/${encodeURIComponent(item.id)}`}
@@ -195,10 +195,10 @@ const Wishlist = () => {
                             )}
                           </div>
                         </td>
-                        <td className="text-right text-gray400">
+                        <td className="text-right text-gray-400">
                           {formatPrice(roundDecimal(item.price))}
                         </td>
-                        <td className="text-center hidden sm:table-cell max-w-xs text-gray400">
+                        <td className="text-center hidden sm:table-cell max-w-xs text-gray-400">
                           <Button
                             value={t("add_to_cart")}
                             extraClass="hidden sm:block m-auto"
@@ -217,7 +217,7 @@ const Wishlist = () => {
                           <button
                             onClick={() => deleteWishlistItem!(item)}
                             type="button"
-                            className="outline-none text-gray300 hover:text-gray500 focus:outline-none text-4xl sm:text-2xl"
+                            className="outline-none text-gray-300 hover:text-gray-500 focus:outline-none text-4xl sm:text-2xl"
                           >
                             &#10005;
                           </button>

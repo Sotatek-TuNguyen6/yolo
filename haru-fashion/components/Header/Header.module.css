@@ -4,11 +4,11 @@
 }
 
 .topLeftMenu li {
-  @apply text-xs my-2 mr-4 hover:text-gray300;
+  @apply text-xs my-2 mr-4 hover:text-gray-300;
 }
 
 .topRightMenu li {
-  @apply text-xs my-2 ml-4 hover:text-gray300;
+  @apply text-xs my-2 ml-4 hover:text-gray-300;
 }
 
 /* Main Menu */
@@ -29,7 +29,7 @@
 
 .leftMenu li a:after {
   content: '';
-  @apply absolute left-0 bottom-0 w-0 h-0.5 bg-gray500 transition-all duration-300;
+  @apply absolute left-0 bottom-0 w-0 h-0.5 bg-gray-500 transition-all duration-300;
 }
 
 .leftMenu li:hover a:after {
@@ -37,7 +37,7 @@
 }
 
 .leftMenu li:hover {
-  @apply text-gray500;
+  @apply text-gray-500;
 }
 
 .leftMenu li:last-child {

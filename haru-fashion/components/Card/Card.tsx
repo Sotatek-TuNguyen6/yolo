@@ -256,7 +256,7 @@ const Card: FC<Props> = ({ item }) => {
         <div className="flex items-center space-x-2">
           {hasDiscount ? (
             <>
-              <span className="text-gray400 line-through">
+              <span className="text-gray-400line-through">
                 {formatPrice(price)}
               </span>
               <span className="text-red-500 font-medium">
@@ -264,7 +264,7 @@ const Card: FC<Props> = ({ item }) => {
               </span>
             </>
           ) : (
-            <span className="text-gray400">{formatPrice(price)}</span>
+            <span className="text-gray-400">{formatPrice(price)}</span>
           )}
         </div>
 

@@ -99,7 +99,7 @@ const ShoppingCart = () => {
         `}</style>
 
         {/* ===== Heading & Continue Shopping */}
-        <div className="app-max-width px-4 sm:px-8 md:px-20 w-full border-t-2 border-gray100">
+        <div className="app-max-width px-4 sm:px-8 md:px-20 w-full border-t-2 border-gray-100">
           <h1 className="text-2xl sm:text-4xl text-center sm:text-left mt-6 mb-2 animatee__animated animate__bounce">
             {t("shopping_cart")}
           </h1>
@@ -118,7 +118,7 @@ const ShoppingCart = () => {
           <div className="h-full w-full lg:w-4/6 mr-4">
             <table className="w-full mb-6">
               <thead>
-                <tr className="border-t-2 border-b-2 border-gray200">
+                <tr className="border-t-2 border-b-2 border-gray-200">
                   <th className="font-normal text-left sm:text-center py-2 xl:w-72">
                     {t("product_details")}
                   </th>
@@ -139,7 +139,7 @@ const ShoppingCart = () => {
               </thead>
               <tbody>
                 {cart.length === 0 ? (
-                  <tr className="w-full text-center h-60 border-b-2 border-gray200">
+                  <tr className="w-full text-center h-60 border-b-2 border-gray-200">
                     <td colSpan={5}>{t("cart_is_empty")}</td>
                   </tr>
                 ) : (
@@ -148,7 +148,7 @@ const ShoppingCart = () => {
                     subtotal += discountedPrice * item.quantity!;
                     return (
                       <tr
-                        className="border-b-2 border-gray200"
+                        className="border-b-2 border-gray-200"
                         key={
                           item.productId +
                           (item.selectedColor?.colorCode || "") +
@@ -200,7 +200,7 @@ const ShoppingCart = () => {
                             )}
                           </div>
                         </td>
-                        <td className="text-right text-gray400 hidden sm:table-cell">
+                        <td className="text-right text-gray-400hidden sm:table-cell">
                           {item.discountPercent && item.discountPercent > 0 ? (
                             <div>
                               <span className="line-through text-gray-400">
@@ -223,7 +223,7 @@ const ShoppingCart = () => {
                           <div className="w-12 h-32 sm:h-auto sm:w-3/4 md:w-2/6 mx-auto flex flex-col-reverse sm:flex-row border border-gray300 sm:divide-x-2 divide-gray300">
                             <div
                               onClick={() => removeItem!(item)}
-                              className="h-full w-12 flex justify-center items-center cursor-pointer hover:bg-gray500 hover:text-gray100"
+                              className="h-full w-12 flex justify-center items-center cursor-pointer hover:bg-gray-500 hover:text-gray100"
                             >
                               -
                             </div>
@@ -232,13 +232,13 @@ const ShoppingCart = () => {
                             </div>
                             <div
                               onClick={() => addOne!(item)}
-                              className="h-full w-12 flex justify-center items-center cursor-pointer hover:bg-gray500 hover:text-gray100"
+                              className="h-full w-12 flex justify-center items-center cursor-pointer hover:bg-gray-500 hover:text-gray100"
                             >
                               +
                             </div>
                           </div>
                         </td>
-                        <td className="text-right text-gray400">
+                        <td className="text-right text-gray-400">
                           {formatPrice(
                             roundDecimal(discountedPrice * item.quantity!)
                           )}
@@ -251,7 +251,7 @@ const ShoppingCart = () => {
                           <button
                             onClick={() => deleteItem!(item)}
                             type="button"
-                            className="outline-none text-gray300 hover:text-gray500 focus:outline-none text-4xl sm:text-2xl"
+                            className="outline-none text-gray-300 hover:text-gray-500 focus:outline-none text-4xl sm:text-2xl"
                           >
                             &#10005;
                           </button>

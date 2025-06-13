@@ -52,7 +52,7 @@ const ProductCategory: React.FC<Props> = ({
           <div className="app-x-padding app-max-width w-full">
             <div className="breadcrumb">
               <Link href="/">
-                <a className="text-gray400">{t("home")}</a>
+                <a className="text-gray-400">{t("home")}</a>
               </Link>{" "}
               / <span className="capitalize">{t(category as string)}</span>
             </div>
@@ -183,7 +183,7 @@ const SortMenu: React.FC<{ orderby: OrderType }> = ({ orderby }) => {
       <Menu.Button as="a" href="#" className="flex items-center capitalize">
         {t(currentOrder)} <DownArrow />
       </Menu.Button>
-      <Menu.Items className="flex flex-col z-10 items-start text-xs sm:text-sm w-auto sm:right-0 absolute p-1 border border-gray200 bg-white mt-2 outline-none">
+      <Menu.Items className="flex flex-col z-10 items-start text-xs sm:text-sm w-auto sm:right-0 absolute p-1 border border-gray-200 bg-white mt-2 outline-none">
         <Menu.Item>
           {({ active }) => (
             <button
@@ -192,9 +192,9 @@ const SortMenu: React.FC<{ orderby: OrderType }> = ({ orderby }) => {
                 router.push(`/product-category/${category}?orderby=latest`)
               }
               className={`${
-                active ? "bg-gray100 text-gray500" : "bg-white"
+                active ? "bg-gray100 text-gray-500" : "bg-white"
               } py-2 px-4 text-left w-full focus:outline-none whitespace-nowrap ${
-                currentOrder === "sort_by_latest" && "bg-gray500 text-gray100"
+                currentOrder === "sort_by_latest" && "bg-gray-500 text-gray100"
               }`}
             >
               {t("sort_by_latest")}
@@ -209,9 +209,9 @@ const SortMenu: React.FC<{ orderby: OrderType }> = ({ orderby }) => {
                 router.push(`/product-category/${category}?orderby=price`)
               }
               className={`${
-                active ? "bg-gray100 text-gray500" : "bg-white"
+                active ? "bg-gray100 text-gray-500" : "bg-white"
               } py-2 px-4 text-left w-full focus:outline-none whitespace-nowrap ${
-                currentOrder === "sort_by_price" && "bg-gray500 text-gray100"
+                currentOrder === "sort_by_price" && "bg-gray-500 text-gray100"
               }`}
             >
               {t("sort_by_price")}
@@ -226,10 +226,10 @@ const SortMenu: React.FC<{ orderby: OrderType }> = ({ orderby }) => {
                 router.push(`/product-category/${category}?orderby=price-desc`)
               }
               className={`${
-                active ? "bg-gray100 text-gray500" : "bg-white"
+                active ? "bg-gray100 text-gray-500" : "bg-white"
               } py-2 px-4 text-left w-full focus:outline-none whitespace-nowrap ${
                 currentOrder === "sort_by_price_desc" &&
-                "bg-gray500 text-gray100"
+                "bg-gray-500 text-gray100"
               }`}
             >
               {t("sort_by_price_desc")}

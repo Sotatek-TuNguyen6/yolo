@@ -33,8 +33,6 @@ import { itemType as WishlistItemType } from "../../context/wishlist/wishlist-ty
 import { useCart } from "../../context/cart/CartProvider";
 import HeartSolid from "../../public/icons/HeartSolid";
 
-import chonSize from "../../public/bg-img/huong_dan_chon_size.jpeg";
-
 // install Swiper modules
 SwiperCore.use([Pagination, Navigation]);
 
@@ -372,7 +370,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
                   </Dialog.Title>
                   <button
                     type="button"
-                    className="text-gray500 hover:text-gray700 focus:outline-none"
+                    className="text-gray-500 hover:text-gray700 focus:outline-none"
                     onClick={() => setIsSizeGuideOpen(false)}
                   >
                     <svg
@@ -394,7 +392,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
                 <div className="mt-4">
                   <div className="relative w-full" style={{ height: "60vh" }}>
                     <Image
-                      src={chonSize}
+                      src="/bg-img/huong_dan_chon_size.jpeg"
                       alt="Size Guide"
                       layout="fill"
                       objectFit="contain"
@@ -410,15 +408,15 @@ const Product: React.FC<Props> = ({ product, products }) => {
 
       <main id="main-content">
         {/* ===== Breadcrumb Section ===== */}
-        <div className="bg-lightgreen h-16 w-full flex items-center border-t-2 border-gray200">
+        <div className="bg-lightgreen h-16 w-full flex items-center border-t-2 border-gray-200">
           <div className="app-x-padding app-max-width w-full">
             <div className="breadcrumb">
               <Link href="/">
-                <a className="text-gray400">{t("home")}</a>
+                <a className="text-gray-400">{t("home")}</a>
               </Link>{" "}
               /{" "}
               <Link href={`/product-category/${product.slugCategory}`}>
-                <a className="text-gray400 capitalize">
+                <a className="text-gray-400capitalize">
                   {t(product.slugCategory as string)}
                 </a>
               </Link>{" "}
@@ -537,7 +535,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
             <h1 className="text-3xl mb-4">{product.name}</h1>
             {product.discountPercent && product.discountPercent > 0 ? (
               <div className="flex items-center space-x-3 mb-2">
-                <span className="text-2xl text-gray400 line-through">
+                <span className="text-2xl text-gray-400line-through">
                   {formatPrice(product.price)}
                 </span>
                 <span className="text-2xl text-red-500">
@@ -551,7 +549,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
                 </span>
               </div>
             ) : (
-              <span className="text-2xl text-gray400 mb-2">
+              <span className="text-2xl text-gray-400mb-2">
                 {formatPrice(product.price)}
               </span>
             )}
@@ -624,8 +622,8 @@ const Product: React.FC<Props> = ({ product, products }) => {
                       size === sizeQty.size
                         ? "border-gray500 bg-gray-50"
                         : sizeQty.quantity > 0
-                        ? "border-gray300 text-gray400 hover:border-gray500"
-                        : "border-gray200 text-gray300 cursor-not-allowed bg-gray-50"
+                        ? "border-gray300 text-gray-400hover:border-gray500"
+                        : "border-gray-200 text-gray-300 cursor-not-allowed bg-gray-50"
                     } cursor-pointer`}
                   >
                     <span className="font-medium">{sizeQty.size}</span>
@@ -667,7 +665,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
                     currentQty === 1 || stockForSelectedSize <= 0
                       ? "pointer-events-none opacity-50"
                       : ""
-                  } h-full w-full sm:w-12 flex justify-center items-center cursor-pointer hover:bg-gray500 hover:text-gray100`}
+                  } h-full w-full sm:w-12 flex justify-center items-center cursor-pointer hover:bg-gray-500 hover:text-gray100`}
                 >
                   -
                 </div>
@@ -685,7 +683,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
                     stockForSelectedSize <= 0
                       ? "pointer-events-none opacity-50"
                       : ""
-                  } h-full w-full sm:w-12 flex justify-center items-center cursor-pointer hover:bg-gray500 hover:text-gray100`}
+                  } h-full w-full sm:w-12 flex justify-center items-center cursor-pointer hover:bg-gray-500 hover:text-gray100`}
                 >
                   +
                 </div>
@@ -714,7 +712,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
             <Disclosure>
               {({ open }) => (
                 <>
-                  <Disclosure.Button className="py-2 focus:outline-none text-left mb-4 border-b-2 border-gray200 flex items-center justify-between">
+                  <Disclosure.Button className="py-2 focus:outline-none text-left mb-4 border-b-2 border-gray-200 flex items-center justify-between">
                     <span>{t("details")}</span>
                     <DownArrow
                       extraClass={`${
@@ -723,7 +721,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
                     />
                   </Disclosure.Button>
                   <Disclosure.Panel
-                    className={`text-gray400 animate__animated animate__bounceIn`}
+                    className={`text-gray-400animate__animated animate__bounceIn`}
                   >
                     {product.detail}
                   </Disclosure.Panel>
@@ -732,13 +730,13 @@ const Product: React.FC<Props> = ({ product, products }) => {
             </Disclosure>
             <div className="flex items-center space-x-4 mt-4">
               <span>{t("share")}</span>
-              <FacebookLogo extraClass="h-4 cursor-pointer text-gray400 hover:text-gray500" />
-              <InstagramLogo extraClass="h-4 cursor-pointer text-gray400 hover:text-gray500" />
+              <FacebookLogo extraClass="h-4 cursor-pointer text-gray-400hover:text-gray-500" />
+              <InstagramLogo extraClass="h-4 cursor-pointer text-gray-400hover:text-gray-500" />
             </div>
           </div>
         </div>
         {/* ===== Horizontal Divider ===== */}
-        <div className="border-b-2 border-gray200"></div>
+        <div className="border-b-2 border-gray-200"></div>
 
         {/* ===== You May Also Like Section ===== */}
         <div className="recSection my-8 app-max-width app-x-padding">

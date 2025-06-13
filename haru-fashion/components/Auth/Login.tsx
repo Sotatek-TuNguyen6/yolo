@@ -71,7 +71,7 @@ const Login: React.FC<Props> = ({
           </div>
         )}
         <div className="flex justify-between mb-4">
-          <div className="flex items-center text-gray400 focus:outline-none">
+          <div className="flex items-center text-gray-400focus:outline-none">
             <input
               type="checkbox"
               id="remember"
@@ -84,7 +84,7 @@ const Login: React.FC<Props> = ({
           </div>
           <span
             onClick={onForgotPassword}
-            className="text-gray400 text-sm hover:text-gray500 focus:outline-none focus:text-gray500"
+            className="text-gray-400text-sm hover:text-gray-500 focus:outline-none focus:text-gray-500"
           >
             {t("forgot_password")}
           </span>
@@ -95,11 +95,11 @@ const Login: React.FC<Props> = ({
           extraClass="w-full text-center text-xl mb-4"
           size="lg"
         />
-        <div className="text-center text-gray400">
+        <div className="text-center text-gray-400">
           {t("not_member")}{" "}
           <span
             onClick={onRegister}
-            className="text-gray500 focus:outline-none focus:underline cursor-pointer"
+            className="text-gray-500 focus:outline-none focus:underline cursor-pointer"
           >
             {t("register")}
           </span>

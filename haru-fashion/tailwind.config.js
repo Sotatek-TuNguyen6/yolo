@@ -37,6 +37,14 @@ module.exports = {
         red: "#F05454",
         yellow: "#F5B461",
         blue: "#66BFBF",
+        gray: {
+          ...defaultTheme.colors.gray,
+          100: '#f5f5f5',
+          200: '#eeeeee',
+          300: '#e0e0e0',
+          400: '#bdbdbd',
+          500: '#282828',
+        },
         rose: {
           400: '#FB7185',
           500: '#F43F5E',

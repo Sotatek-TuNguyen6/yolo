@@ -97,7 +97,7 @@ export default function SearchForm() {
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <Dialog.Overlay className="fixed inset-0 bg-gray500 opacity-50" />
+              <Dialog.Overlay className="fixed inset-0 bg-gray-500 opacity-50" />
             </Transition.Child>
 
             {/* This element is to trick the browser into centering the modal contents. */}
@@ -135,7 +135,7 @@ export default function SearchForm() {
                       {isFetching ? (
                         <Loading />
                       ) : (
-                        <SearchIcon extraClass="text-gray300 w-8 h-8" />
+                        <SearchIcon extraClass="text-gray-300 w-8 h-8" />
                       )}
                       <input
                         type="search"

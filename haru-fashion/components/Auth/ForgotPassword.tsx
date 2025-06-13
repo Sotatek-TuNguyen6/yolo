@@ -64,11 +64,11 @@ const ForgotPassword: React.FC<Props> = ({
           extraClass="w-full text-center text-xl mb-4"
           size="lg"
         />
-        <div className="text-center text-gray400">
+        <div className="text-center text-gray-400">
           {t("go_back_to")}{" "}
           <span
             onClick={onLogin}
-            className="text-gray500 focus:outline-none focus:underline cursor-pointer"
+            className="text-gray-500 focus:outline-none focus:underline cursor-pointer"
           >
             {t("login")}
           </span>

@@ -112,7 +112,7 @@ const Register: React.FC<Props> = ({
           </div>
         )}
         <div className="flex justify-between mb-4">
-          <p className="text-gray400 text-xs">{t("register_desc")}</p>
+          <p className="text-gray-400text-xs">{t("register_desc")}</p>
         </div>
         <Button
           type="submit"
@@ -120,11 +120,11 @@ const Register: React.FC<Props> = ({
           extraClass="w-full text-center text-xl mb-4"
           size="lg"
         />
-        <div className="text-center text-gray400">
+        <div className="text-center text-gray-400">
           {t("already_member")}{" "}
           <span
             onClick={onLogin}
-            className="text-gray500 focus:outline-none focus:underline cursor-pointer"
+            className="text-gray-500 focus:outline-none focus:underline cursor-pointer"
           >
             {t("login")}
           </span>

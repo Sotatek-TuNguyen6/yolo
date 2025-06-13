@@ -121,7 +121,7 @@ export default function Menu() {
         >
           <div className="min-h-screen">
             <Transition.Child as={Fragment}>
-              <Dialog.Overlay className="fixed inset-0 bg-gray500 opacity-50" />
+              <Dialog.Overlay className="fixed inset-0 bg-gray-500 opacity-50" />
             </Transition.Child>
             <Transition.Child
               as={Fragment}
@@ -163,7 +163,7 @@ export default function Menu() {
                       className="flex w-full justify-between items-center mt-5 mb-1 border-gray300 border-b-2 relative"
                       onSubmit={handleSubmit}
                     >
-                      <SearchIcon extraClass="text-gray300 w-6 h-6" />
+                      <SearchIcon extraClass="text-gray-300 w-6 h-6" />
                       <input
                         type="search"
                         placeholder={t("search_anything")}
@@ -175,7 +175,7 @@ export default function Menu() {
                       {/* {searchTerm && (
                         <button
                           type="button"
-                          className="absolute right-0 mr-2 text-gray400"
+                          className="absolute right-0 mr-2 text-gray-400"
                           onClick={() => {
                             setSearchTerm("");
                             setSearchResults([]);
@@ -188,9 +188,9 @@ export default function Menu() {
                     </form>
                     {searchTerm && (
                       <div className="w-full relative">
-                        <div className="absolute w-full bg-white shadow-lg rounded-b-md z-50 max-h-96 overflow-y-auto border border-gray200">
+                        <div className="absolute w-full bg-white shadow-lg rounded-b-md z-50 max-h-96 overflow-y-auto border border-gray-200">
                           {isSearching ? (
-                            <div className="p-4 text-center text-gray500">
+                            <div className="p-4 text-center text-gray-500">
                               <div className="w-6 h-6 border-2 border-t-2 border-gray500 rounded-full animate-spin mx-auto mb-2"></div>
                               {t("searching")}...
                             </div>
@@ -204,7 +204,7 @@ export default function Menu() {
                                   key={product._id}
                                 >
                                   <a
-                                    className="flex items-center p-3 border-b border-gray200 hover:bg-gray100"
+                                    className="flex items-center p-3 border-b border-gray-200 hover:bg-gray100"
                                     onClick={closeModal}
                                   >
                                     {product.images && product.images[0] && (
@@ -223,7 +223,7 @@ export default function Menu() {
                                         {product.name}
                                       </h4>
                                       <div className="flex items-center mt-1">
-                                        <span className="text-sm font-medium text-gray500">
+                                        <span className="text-sm font-medium text-gray-500">
                                           {locale === "vi"
                                             ? `${new Intl.NumberFormat(
                                                 "vi-VN"
@@ -233,7 +233,7 @@ export default function Menu() {
                                         {product.discountPercent &&
                                           product.discountPercent > 0 && (
                                             <>
-                                              <span className="text-xs line-through text-gray400 ml-2">
+                                              <span className="text-xs line-through text-gray-400ml-2">
                                                 {locale === "vi"
                                                   ? `${new Intl.NumberFormat(
                                                       "vi-VN"
@@ -269,7 +269,7 @@ export default function Menu() {
                               </Link>
                             </>
                           ) : (
-                            <div className="p-4 text-center text-gray500">
+                            <div className="p-4 text-center text-gray-500">
                               {t("no_results_found")}
                             </div>
                           )}
@@ -347,7 +347,7 @@ export default function Menu() {
                           <WhistlistIcon />
                           {noOfWishlist > 0 && (
                             <span
-                              className={`absolute text-xs -top-0 -left-7 bg-gray500 text-gray100 py-1 px-2 rounded-full`}
+                              className={`absolute text-xs -top-0 -left-7 bg-gray-500 text-gray100 py-1 px-2 rounded-full`}
                             >
                               {noOfWishlist}
                             </span>
@@ -375,7 +375,7 @@ export default function Menu() {
                         <DownArrow />
                       </HMenu.Button>
                       <HMenu.Items
-                        className="flex flex-col w-full right-0 absolute p-1 border border-gray200 bg-white mt-2 outline-none"
+                        className="flex flex-col w-full right-0 absolute p-1 border border-gray-200 bg-white mt-2 outline-none"
                         style={{ zIndex: 9999 }}
                       >
                         <HMenu.Item>
@@ -383,8 +383,8 @@ export default function Menu() {
                             <a
                               className={`${
                                 locale === "en"
-                                  ? "bg-gray200 text-gray500"
-                                  : "bg-white text-gray500"
+                                  ? "bg-gray200 text-gray-500"
+                                  : "bg-white text-gray-500"
                               } py-2 px-4 text-center focus:outline-none`}
                             >
                               {t("english")}
@@ -396,8 +396,8 @@ export default function Menu() {
                             <a
                               className={`${
                                 locale === "my"
-                                  ? "bg-gray200 text-gray500"
-                                  : "bg-white text-gray500"
+                                  ? "bg-gray200 text-gray-500"
+                                  : "bg-white text-gray-500"
                               } py-2 px-4 text-center focus:outline-none`}
                             >
                               {t("myanmar")}
@@ -410,8 +410,8 @@ export default function Menu() {
                             <a
                               className={`${
                                 locale === "vi"
-                                  ? "bg-gray200 text-gray500"
-                                  : "bg-white text-gray500"
+                                  ? "bg-gray200 text-gray-500"
+                                  : "bg-white text-gray-500"
                               } py-2 px-4 text-center focus:outline-none`}
                             >
                               {t("vietnamese") || "Tiếng Việt"}
@@ -431,7 +431,7 @@ export default function Menu() {
                         {t("usd")} <DownArrow />
                       </HMenu.Button>
                       <HMenu.Items
-                        className="flex flex-col w-full right-0 absolute p-1 border border-gray200 bg-white mt-2 outline-none"
+                        className="flex flex-col w-full right-0 absolute p-1 border border-gray-200 bg-white mt-2 outline-none"
                         style={{ zIndex: 9999 }}
                       >
                         <HMenu.Item>
@@ -440,8 +440,8 @@ export default function Menu() {
                               href="#"
                               className={`${
                                 active
-                                  ? "bg-gray100 text-gray500"
-                                  : "bg-white text-gray500"
+                                  ? "bg-gray100 text-gray-500"
+                                  : "bg-white text-gray-500"
                               } py-2 px-4 text-center focus:outline-none`}
                             >
                               {t("usd")}
@@ -454,8 +454,8 @@ export default function Menu() {
                               href="#"
                               className={`${
                                 active
-                                  ? "bg-gray100 text-gray500"
-                                  : "bg-white text-gray500"
+                                  ? "bg-gray100 text-gray-500"
+                                  : "bg-white text-gray-500"
                               } py-2 px-4 text-center focus:outline-none`}
                             >
                               {t("mmk")}
@@ -468,14 +468,14 @@ export default function Menu() {
                     <div className="flex my-10 w-2/5 space-x-6 justify-center">
                       <a
                         href="https://www.facebook.com/lumenvn/"
-                        className="text-gray400 w-10 h-10 py-1 px-auto flex justify-center rounded-md active:bg-gray300"
+                        className="text-gray-400w-10 h-10 py-1 px-auto flex justify-center rounded-md active:bg-gray300"
                         aria-label="Lumen Fashion Facebook Page"
                       >
                         <FacebookLogo extraClass="h-8" />
                       </a>
                       <a
                         href="#"
-                        className="text-gray400 w-10 h-10 py-1 px-auto flex justify-center rounded-md active:bg-gray300"
+                        className="text-gray-400w-10 h-10 py-1 px-auto flex justify-center rounded-md active:bg-gray300"
                         aria-label="Lumen Fashion Facebook Page"
                       >
                         <InstagramLogo extraClass="h-8" />

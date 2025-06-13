@@ -8,7 +8,7 @@
 }
 
 .subtitle {
-  @apply bg-gray500 text-gray100 inline-block text-base sm:text-xs p-1 rounded-md;
+  @apply bg-gray-500 text-gray100 inline-block text-base sm:text-xs p-1 rounded-md;
 }
 
 .title {

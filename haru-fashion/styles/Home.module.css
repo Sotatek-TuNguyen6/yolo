@@ -4,7 +4,7 @@
 }
 
 .imgContainer:hover .imgOverlay {
-  @apply absolute bg-gray500 opacity-80 h-full w-full top-0;
+  @apply absolute bg-gray-500 opacity-80 h-full w-full top-0;
 }
 
 .img {

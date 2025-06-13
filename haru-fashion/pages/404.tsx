@@ -18,10 +18,10 @@ const Custom404 = () => {
           width={400}
           height={300}
         />
-        <span className="text-gray400">
+        <span className="text-gray-400">
           {t("go_back_to")}{" "}
           <Link href="/">
-            <a className="underline font-bold hover:text-gray500">home page</a>
+            <a className="underline font-bold hover:text-gray-500">home page</a>
           </Link>
           ?
         </span>

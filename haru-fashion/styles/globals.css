@@ -34,7 +34,7 @@
   border-color: #282828;
 }
 .toggle-checkbox:checked + .toggle-label {
-  @apply: bg-gray500;
+  @apply: bg-gray-500;
   background-color: #282828;
 }
 /* @layer utilities { */

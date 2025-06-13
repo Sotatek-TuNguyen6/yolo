@@ -189,8 +189,8 @@ const OrderTracking: React.FC = () => {
           {t("order_tracking")}
         </h1>
 
-        <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-sm border border-gray200">
-          <p className="mb-6 text-gray500">
+        <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+          <p className="mb-6 text-gray-500">
             Để theo dõi đơn hàng của bạn, vui lòng nhập mã đơn hàng và địa chỉ
             email mà bạn đã sử dụng khi đặt hàng.
           </p>
@@ -209,7 +209,7 @@ const OrderTracking: React.FC = () => {
                 placeholder="Nhập mã đơn hàng của bạn"
                 required
               />
-              <p className="text-sm text-gray400 mt-1">
+              <p className="text-sm text-gray-400mt-1">
                 Mã đơn hàng được gửi trong email xác nhận đơn hàng của bạn.
               </p>
             </div>
@@ -245,26 +245,26 @@ const OrderTracking: React.FC = () => {
           </form>
 
           {orderResult && (
-            <div className="mt-8 border-t border-gray200 pt-6">
+            <div className="mt-8 border-t border-gray-200 pt-6">
               <h2 className="text-xl font-medium mb-4">Thông tin đơn hàng</h2>
 
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
-                  <p className="text-gray500">Mã đơn hàng:</p>
+                  <p className="text-gray-500">Mã đơn hàng:</p>
                   <p className="font-medium">{orderResult.orderId}</p>
                 </div>
                 <div>
-                  <p className="text-gray500">Ngày đặt hàng:</p>
+                  <p className="text-gray-500">Ngày đặt hàng:</p>
                   <p className="font-medium">{orderResult.orderDate}</p>
                 </div>
                 <div>
-                  <p className="text-gray500">Trạng thái:</p>
+                  <p className="text-gray-500">Trạng thái:</p>
                   <p className="font-medium text-green-600">
                     {mappingStatus(orderResult.orderStatus)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-gray500">Tổng tiền:</p>
+                  <p className="text-gray-500">Tổng tiền:</p>
                   <p className="font-medium">
                     {formatPrice(orderResult.totalPrice)}
                   </p>
@@ -272,7 +272,7 @@ const OrderTracking: React.FC = () => {
               </div>
 
               <div className="mb-6">
-                <p className="text-gray500">Địa chỉ giao hàng:</p>
+                <p className="text-gray-500">Địa chỉ giao hàng:</p>
                 <p className="font-medium">{orderResult.shippingAddress}</p>
               </div>
 
@@ -280,7 +280,7 @@ const OrderTracking: React.FC = () => {
                 <h3 className="font-medium mb-2">Sản phẩm đã đặt:</h3>
                 <table className="w-full border-collapse">
                   <thead>
-                    <tr className="border-b border-gray200">
+                    <tr className="border-b border-gray-200">
                       <th className="text-left py-2">Hình ảnh</th>
                       <th className="text-left py-2">Sản phẩm</th>
                       <th className="text-center py-2">Số lượng</th>
@@ -290,7 +290,7 @@ const OrderTracking: React.FC = () => {
                   <tbody>
                     {(orderResult.orderDetails || []).map(
                       (item: OrderItemExtended) => (
-                        <tr key={item._id} className="border-b border-gray200">
+                        <tr key={item._id} className="border-b border-gray-200">
                           <td className="py-2">
                             {item.product ? (
                               <Image
