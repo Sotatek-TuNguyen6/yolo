@@ -45,7 +45,9 @@ const MyApp = ({ Component, pageProps }: AppCustomProps) => {
       <ProvideAuth>
         <ProvideWishlist>
           <ProvideCart>
-            <Component {...pageProps} />
+            <div className="flex flex-col min-h-screen">
+              <Component {...pageProps} />
+            </div>
           </ProvideCart>
         </ProvideWishlist>
       </ProvideAuth>

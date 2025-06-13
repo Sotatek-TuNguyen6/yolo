@@ -118,9 +118,9 @@ export class ProductsService {
     }
 
     if (query.category) {
-      // Find category by name first
+      // Find category by slug first
       const category = await this.categoryModel.findOne({
-        name: { $regex: query.category, $options: 'i' },
+        slug: query.category,
       });
 
       if (category) {

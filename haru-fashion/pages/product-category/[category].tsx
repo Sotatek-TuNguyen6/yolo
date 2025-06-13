@@ -44,7 +44,7 @@ const ProductCategory: React.FC<Props> = ({
   return (
     <div>
       {/* ===== Head Section ===== */}
-      <Header title={`${capitalizedCategory} - Lumen Fashion`} />
+      <Header title={`${t(category as string)} - Lumen Fashion`} />
 
       <main id="main-content">
         {/* ===== Breadcrumb Section ===== */}
@@ -108,6 +108,7 @@ export const getServerSideProps: GetServerSideProps = async ({
 
   let numberOfProducts = 0;
 
+  console.log("paramCategory", paramCategory);
   if (paramCategory !== "new-arrivals") {
     try {
       const numberOfProductsResponse = await axios.get(
