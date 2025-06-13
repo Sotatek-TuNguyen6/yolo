@@ -5,6 +5,9 @@ import { Document } from 'mongoose';
 export class Tag extends Document {
   @Prop({ required: true })
   name: string;
+
+  @Prop({ required: true })
+  slug: string;
 }
 
 export const TagSchema = SchemaFactory.createForClass(Tag);

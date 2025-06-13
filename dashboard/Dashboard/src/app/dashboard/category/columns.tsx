@@ -18,7 +18,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Edit, Eye, Trash, AlertTriangle } from 'lucide-react';
 import { Row } from '@tanstack/react-table';
 import React from 'react';
@@ -41,6 +41,11 @@ const categoryFormSchema = z.object({
   name: z.string().min(1, {
     message: 'Tên danh mục phải có ít nhất 3 ký tự',
   }),
+  slug: z.string().min(1, {
+    message: 'Slug không được để trống',
+  }).regex(/^[a-z0-9-]+$/, {
+    message: 'Slug chỉ được chứa chữ thường, số và dấu gạch ngang',
+  }),
   description: z.string().min(1, {
     message: 'Mô tả phải có ít nhất 10 ký tự',
   })
@@ -49,7 +54,21 @@ const categoryFormSchema = z.object({
 // Define form type
 type CategoryFormValues = {
   name: string;
+  slug: string;
   description: string;
+};
+
+// Hàm tạo slug từ tên
+const createSlug = (name: string): string => {
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[đĐ]/g, 'd')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
 };
 
 // Category Detail Dialog Component
@@ -69,9 +88,20 @@ function CategoryDetailDialog({
     resolver: zodResolver(categoryFormSchema),
     defaultValues: {
       name: category.name,
+      slug: category.slug,
       description: category.description,
     },
   });
+
+  // Tự động tạo slug khi tên thay đổi
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'name' && value.name) {
+        form.setValue('slug', createSlug(value.name));
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
 
   const { mutate: mutateUpdateCategory, isPending } = useMutationRequest<
     Category,
@@ -127,6 +157,20 @@ function CategoryDetailDialog({
                     <FormLabel>Tên danh mục</FormLabel>
                     <FormControl>
                       <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="slug"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Slug</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Slug sẽ được tự động tạo" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -197,6 +241,11 @@ function CategoryDetailDialog({
             <div>
               <Label className="font-bold">Tên danh mục</Label>
               <p className="text-sm text-muted-foreground">{category.name}</p>
+            </div>
+
+            <div>
+              <Label className="font-bold">Slug</Label>
+              <p className="text-sm text-muted-foreground font-mono">{category.slug}</p>
             </div>
 
             <div>
@@ -415,6 +464,13 @@ export const columns: ColumnDef<Category>[] = [
       );
     },
     enableSorting: false,
+  },
+  {
+    accessorKey: 'slug',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Slug" />,
+    cell: ({ row }) => {
+      return <div className="flex space-x-2">{row.getValue('slug')}</div>;
+    },
   },
   {
     accessorKey: 'createdAt',

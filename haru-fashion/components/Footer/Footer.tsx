@@ -1,102 +1,155 @@
-import Link from "next/link";
-import { useTranslations } from "next-intl";
+import Link from "next/link"
+import Image from "next/image"
+import { Facebook, Instagram, Twitter, Youtube, MapPin, Phone, Mail } from "lucide-react"
+import styles from "./Footer.module.css"
 
-import FacebookLogo from "../../public/icons/FacebookLogo";
-import InstagramLogo from "../../public/icons/InstagramLogo";
-import Button from "../Buttons/Button";
-import Input from "../Input/Input";
-import styles from "./Footer.module.css";
-
-export default function Footer() {
-  const t = useTranslations("Navigation");
-
+export function Footer() {
   return (
-    <>
-      <div className={styles.footerContainer}>
-        <div className={`app-max-width app-x-padding ${styles.footerContents}`}>
-          <div>
-            <h3 className={styles.footerHead}>{t("company")}</h3>
-            <div className={styles.column}>
-              <Link href="/">{t("about_us")}</Link>
-              <Link href="/">{t("contact_us")}</Link>
-              <Link href="/">{t("store_location")}</Link>
-              <Link href="/">{t("careers")}</Link>
+    <footer className="bg-black text-white">
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+          {/* Thông tin cửa hàng */}
+          <div className="lg:col-span-2">
+            <a href="/" className="inline-block mb-6">
+              <h2 className="text-2xl font-bold">Lumen Fashion</h2>
+            </a>
+            <p className="text-gray-400 mb-6 max-w-md">
+              Chúng tôi cung cấp những sản phẩm thời trang chất lượng cao, theo xu hướng mới nhất với giá cả phải chăng
+              cho tất cả mọi người.
+            </p>
+            <div className="space-y-3">
+              <div className="flex items-start space-x-3">
+                <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
+                <span className="text-gray-400">Khu đô thị Ngôi Sao, thị trấn Thọ Xuân, huyện Thọ Xuân, Thanh Hóa</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Phone className="w-5 h-5 text-gray-400" />
+                <span className="text-gray-400">+84 942-471-636</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Mail className="w-5 h-5 text-gray-400" />
+                <span className="text-gray-400">contact@lumenfashion.com</span>
+              </div>
             </div>
           </div>
+
+          {/* Danh mục */}
           <div>
-            <h3 className={styles.footerHead}>{t("help")}</h3>
-            <div className={styles.column}>
-              <Link href="/order-tracking">{t("order_tracking")}</Link>
-              <Link href="/">{t("faqs")}</Link>
-              <Link href="/">{t("privacy_policy")}</Link>
-              <Link href="/">{t("terms_conditions")}</Link>
+            <h3 className={`text-lg font-semibold mb-6 ${styles.sectionTitle}`}>
+              Danh mục
+            </h3>
+            <ul className="space-y-3">
+              <li>
+                <a href="/product-category/ao-nam" className="text-gray-400 hover:text-rose-400 transition-colors">
+                  Áo nam
+                </a>
+              </li>
+              <li>
+                <a href="/product-category/quan-nam" className="text-gray-400 hover:text-rose-400 transition-colors">
+                  Quần nam
+                </a>
+              </li>
+              <li>
+                <a href="/product-category/sport-wear" className="text-gray-400 hover:text-rose-400 transition-colors">
+                  Sportswear
+                </a>
+              </li>
+              {/* <li>
+                <a href="#" className="text-gray-400 hover:text-rose-400 transition-colors">
+                  S
+                </a>
+              </li> */}
+              <li>
+                <a href="/product-category/new-arrivals" className="text-gray-400 hover:text-rose-400 transition-colors">
+                  Bộ sưu tập mới
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Thông tin */}
+          <div>
+            <h3 className={`text-lg font-semibold mb-6 ${styles.sectionTitle}`}>
+              Thông tin
+            </h3>
+            <ul className="space-y-3">
+              <li>
+                <a href="/" className="text-gray-400 hover:text-rose-400 transition-colors">
+                  Về chúng tôi
+                </a>
+              </li>
+              <li>
+                <a href="/" className="text-gray-400 hover:text-rose-400 transition-colors">
+                  Liên hệ
+                </a>
+              </li>
+              <li>
+                <a href="/" className="text-gray-400 hover:text-rose-400 transition-colors">
+                  Chính sách đổi trả
+                </a>
+              </li>
+              <li>
+                <a href="/" className="text-gray-400 hover:text-rose-400 transition-colors">
+                  Chính sách bảo mật
+                </a>
+              </li>
+              <li>
+                <a href="/" className="text-gray-400 hover:text-rose-400 transition-colors">
+                  Điều khoản dịch vụ
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Đăng ký nhận tin */}
+          <div>
+            <h3 className={`text-lg font-semibold mb-6 ${styles.sectionTitle}`}>
+              Đăng ký nhận tin
+            </h3>
+            <p className="text-gray-400 mb-4">Nhận thông tin về sản phẩm mới và khuyến mãi đặc biệt</p>
+            <div className="flex flex-col space-y-3">
+              <input
+                type="email"
+                placeholder="Email của bạn"
+                className="px-4 py-2 rounded bg-gray-900 border border-gray-700 focus:border-rose-500 focus:outline-none text-white"
+              />
+              <button className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded transition-colors">
+                Đăng ký
+              </button>
+            </div>
+            <div className="flex space-x-4 mt-6">
+              <a href="#" className="text-gray-400 hover:text-rose-400 transition-colors">
+                <Facebook className="w-5 h-5" />
+                <span className="sr-only">Facebook</span>
+              </a>
+              <a href="#" className="text-gray-400 hover:text-rose-400 transition-colors">
+                <Instagram className="w-5 h-5" />
+                <span className="sr-only">Instagram</span>
+              </a>
+              <a href="#" className="text-gray-400 hover:text-rose-400 transition-colors">
+                <Twitter className="w-5 h-5" />
+                <span className="sr-only">Twitter</span>
+              </a>
+              <a href="#" className="text-gray-400 hover:text-rose-400 transition-colors">
+                <Youtube className="w-5 h-5" />
+                <span className="sr-only">Youtube</span>
+              </a>
             </div>
           </div>
-          <div>
-            <h3 className={styles.footerHead}>{t("store")}</h3>
-            <div className={styles.column}>
-              <Link href={`/product-category/women`}>{t("women")}</Link>
-              <Link href={`/product-category/men`}>{t("men")}</Link>
-              <Link href={`/product-category/bags`}>{t("bags")}</Link>
-            </div>
-          </div>
-          <div>
-            <h3 className={styles.footerHead}>{t("keep_in_touch")}</h3>
-            <div className={styles.column}>
-              <span>
-                {t("address.detail")}
-                {/* <br />
-                {t("address.road")}
-                <br />
-                {t("address.city")} */}
-              </span>
-              <span>{t("phone_number")}</span>
-              <span>
-                {t("open_all_days")} <br />- {t("opening_hours")}
-              </span>
-            </div>
+        </div>
+
+        {/* Thanh toán và bản quyền */}
+        <div className="border-t border-gray-800 mt-12 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <p className="text-gray-400 text-sm">
+              © {new Date().getFullYear()} Lumen Fashion. Tất cả các quyền được bảo lưu.
+            </p>
+        
           </div>
         </div>
       </div>
-      {/* <div className="flex flex-col items-center pb-16">
-        <h4 className="text-3xl mb-4">{t("newsletter")}</h4>
-        <span className="px-6 text-center">{t("newsletter_desc")}</span>
-        <div className="mt-5 px-6 flex w-full sm:w-auto flex-col sm:flex-row">
-          <Input
-            label="Newsletter Input Box"
-            name="email"
-            type="email"
-            extraClass=" w-full sm:w-auto"
-          />{" "}
-          <Button
-            size="lg"
-            value={t("send")}
-            extraClass="ml-0 mt-4 sm:mt-0 tracking-widest sm:tracking-normal sm:mt-0 sm:ml-4 w-auto w-full sm:w-auto"
-          />
-        </div>
-      </div> */}
-      <div className={styles.bottomFooter}>
-        <div className="app-max-width app-x-padding w-full flex justify-between">
-          <span className="">@2025 Lumen. {t("all_rights_reserved")}</span>
-          <span className="flex items-center">
-            <span className="hidden sm:block">
-              {t("follow_us_on_social_media")}:
-            </span>{" "}
-            <a
-              href="https://www.facebook.com/lumenvn/"
-              aria-label="Facebook Page for Lumen"
-            >
-              <FacebookLogo />
-            </a>
-            <a
-              href="www.ig.com"
-              aria-label="Instagram Account for Lumen Fashion"
-            >
-              <InstagramLogo />
-            </a>
-          </span>
-        </div>
-      </div>
-    </>
-  );
+    </footer>
+  )
 }
+
+export default Footer

@@ -50,6 +50,7 @@ type Props = {
 };
 
 const Product: React.FC<Props> = ({ product, products }) => {
+  console.log("product", product);
   const { addItem } = useCart();
   const { wishlist, addToWishlist, deleteWishlistItem } = useWishlist();
   const [size, setSize] = useState("");
@@ -416,9 +417,9 @@ const Product: React.FC<Props> = ({ product, products }) => {
                 <a className="text-gray400">{t("home")}</a>
               </Link>{" "}
               /{" "}
-              <Link href={`/product-category/${product.categoryName}`}>
+              <Link href={`/product-category/${product.slugCategory}`}>
                 <a className="text-gray400 capitalize">
-                  {t(product.categoryName as string)}
+                  {t(product.slugCategory as string)}
                 </a>
               </Link>{" "}
               / <span>{product.name}</span>
@@ -807,12 +808,17 @@ export const getServerSideProps: GetServerSideProps = async ({
     images: fetchedProduct.images,
     categoryName: fetchedProduct.category.name,
     discountPercent: fetchedProduct.discountPercent,
+    slugCategory: fetchedProduct.category.slug || "",
   };
+
+  console.log("product", product);
+  const encodedQuery = encodeURIComponent(product.categoryName as string);
 
   // Might be temporary solution for suggested products
   const randomProductRes = await axios.get(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/products?category=${product.categoryName}`
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/products?category=${encodedQuery}`
   );
+  console.log("randomProductRes", randomProductRes);
   const fetchedProducts: apiProductsType[] = randomProductRes.data.data;
 
   // Shuffle array

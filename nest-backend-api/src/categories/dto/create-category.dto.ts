@@ -9,4 +9,7 @@ export class CreateCategoryDto {
 
   @ApiProperty({ description: 'Category image' })
   thumbnailImage: string;
+
+  @ApiProperty({ description: 'Category slug' })
+  slug: string;
 }

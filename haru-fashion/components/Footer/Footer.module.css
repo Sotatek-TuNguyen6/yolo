@@ -34,3 +34,19 @@
 .bottomFooter a {
   @apply ml-4;
 }
+
+/* Thêm style mới cho heading có gạch chân */
+.sectionTitle {
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+
+.sectionTitle::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 3rem;
+  background-color: #F43F5E; /* rose-500 */
+}

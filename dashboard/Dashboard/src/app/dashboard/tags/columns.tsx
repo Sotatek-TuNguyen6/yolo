@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useState } from 'react';
-import { Edit, Eye, Trash, AlertTriangle } from 'lucide-react';
+import { Edit, Trash, AlertTriangle } from 'lucide-react';
 import { Row } from '@tanstack/react-table';
 import React from 'react';
 import { useMutationRequest } from '@/hooks/useQuery';
@@ -33,6 +33,11 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+// import { Badge } from '@/components/ui/badge';
 
 // Define the form schema
 const tagFormSchema = z.object({
@@ -167,8 +172,8 @@ function TagDetailDialog({
 // Action cell component
 function ActionCell({ row }: { row: Row<Tag> }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const router = useRouter();
 
   const { mutate: deleteTag, isPending: isDeleting } = useMutationRequest<
     { success: boolean },
@@ -179,12 +184,12 @@ function ActionCell({ row }: { row: Row<Tag> }) {
     successMessage: 'Xóa tag thành công',
     errorMessage: 'Xóa tag thất bại',
     queryKey: ['tags'],
+    mutationOptions: {
+      onSuccess: () => {
+        setIsDeleteDialogOpen(false);
+      },
+    },
   });
-
-  const handleDelete = () => {
-    deleteTag(undefined);
-    setIsDeleteDialogOpen(false);
-  };
 
   return (
     <>
@@ -192,25 +197,15 @@ function ActionCell({ row }: { row: Row<Tag> }) {
         row={row}
         actions={[
           {
-            label: 'Xem chi tiết',
-            icon: <Eye className="mr-2 h-4 w-4" />,
-            onClick: () => {
-              setIsEditMode(false);
-              setIsDialogOpen(true);
-            },
-          },
-          {
             label: 'Chỉnh sửa',
-            icon: <Edit className="mr-2 h-4 w-4" />,
-            onClick: () => {
-              setIsEditMode(true);
-              setIsDialogOpen(true);
-            },
+            onClick: () => router.push(`/dashboard/tags/${row.original._id}/edit`),
+            icon: <Edit className="h-4 w-4" />,
           },
           {
             label: 'Xóa',
-            icon: <Trash className="mr-2 h-4 w-4" />,
             onClick: () => setIsDeleteDialogOpen(true),
+            icon: <Trash className="h-4 w-4" />,
+            shortcut: '⌘⌫',
           },
         ]}
       />
@@ -220,7 +215,7 @@ function ActionCell({ row }: { row: Row<Tag> }) {
         <TagDetailDialog
           tag={row.original}
           onClose={() => setIsDialogOpen(false)}
-          initialEditMode={isEditMode}
+          initialEditMode={false}
         />
       </Dialog>
 
@@ -229,21 +224,24 @@ function ActionCell({ row }: { row: Row<Tag> }) {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center">
-              <AlertTriangle className="h-5 w-5 text-destructive mr-2" />
-              Xác nhận xóa
+              <AlertTriangle className="h-5 w-5 text-red-500 mr-2" />
+              Xác nhận xóa tag
             </DialogTitle>
             <DialogDescription>
-              Bạn có chắc chắn muốn xóa tag <strong>{row.original.name}</strong>?
-              <br />
-              Hành động này không thể hoàn tác.
+              Bạn có chắc chắn muốn xóa tag &ldquo;{row.original.name}&rdquo;? Hành động này không thể
+              hoàn tác.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="gap-2 sm:justify-end">
+          <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
               Hủy
             </Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
-              {isDeleting ? 'Đang xóa...' : 'Xóa'}
+            <Button
+              variant="destructive"
+              onClick={() => deleteTag(undefined)}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Đang xóa...' : 'Xóa tag'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -263,6 +261,7 @@ export const columns: ColumnDef<Tag>[] = [
         }
         onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
+        className="translate-y-[2px]"
       />
     ),
     cell: ({ row }) => (
@@ -270,6 +269,7 @@ export const columns: ColumnDef<Tag>[] = [
         checked={row.getIsSelected()}
         onCheckedChange={value => row.toggleSelected(!!value)}
         aria-label="Select row"
+        className="translate-y-[2px]"
       />
     ),
     enableSorting: false,
@@ -278,29 +278,46 @@ export const columns: ColumnDef<Tag>[] = [
   {
     accessorKey: 'name',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Tên tag" />,
-    cell: ({ row }) => <div className="font-medium">{row.getValue('name')}</div>,
+    cell: ({ row }) => {
+      return (
+        <div className="flex space-x-2">
+          <Link
+            href={`/dashboard/tags/${row.original._id}`}
+            className="font-medium hover:underline text-blue-600"
+          >
+            {row.getValue('name')}
+          </Link>
+        </div>
+      );
+    },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id));
+    },
+  },
+  {
+    accessorKey: 'slug',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Slug" />,
+    cell: ({ row }) => {
+      return (
+        <div className="flex space-x-2">
+          <span className="font-mono text-sm">{row.getValue('slug')}</span>
+        </div>
+      );
+    },
   },
   {
     accessorKey: 'createdAt',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Ngày tạo" />,
-    cell: ({ row }) => (
-      <div>
-        {row.original.createdAt
-          ? new Date(row.original.createdAt).toLocaleDateString('vi-VN')
-          : 'N/A'}
-      </div>
-    ),
-  },
-  {
-    accessorKey: 'updatedAt',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Cập nhật lần cuối" />,
-    cell: ({ row }) => (
-      <div>
-        {row.original.updatedAt
-          ? new Date(row.original.updatedAt).toLocaleDateString('vi-VN')
-          : 'N/A'}
-      </div>
-    ),
+    cell: ({ row }) => {
+      return (
+        <div className="flex space-x-2">
+          <span className="font-medium">
+            {row.original.createdAt &&
+              format(new Date(row.original.createdAt), 'dd/MM/yyyy HH:mm', { locale: vi })}
+          </span>
+        </div>
+      );
+    },
   },
   {
     id: 'actions',

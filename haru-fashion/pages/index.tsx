@@ -87,7 +87,7 @@ const Home: React.FC<Props> = ({ products }) => {
               <OverlayContainer
                 imgSrc="/bg-img/sport.jpg"
                 imgAlt="Sport"
-                url="/product-category/sport"
+                url="/product-category/sport-wear"
               />
             </div>
           </div>
@@ -119,7 +119,6 @@ const Home: React.FC<Props> = ({ products }) => {
 
         {/* ===== Testimonial Section ===== */}
         <section className="w-full hidden h-full py-16 md:flex flex-col items-center bg-lightgreen">
-          <h2 className="text-3xl">{t("testimonial")}</h2>
           <TestiSlider />
         </section>
 
@@ -166,6 +165,8 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
   const res = await axios.get(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/products?order_by=createdAt.desc&limit=10`
   );
+  console.log("🔥 Fetching products in getStaticProps...");
+  console.log("🛒 res.data:", JSON.stringify(res.data, null, 2));
   // console.log("🔥 Fetching products in getStaticProps...");
   // console.log("🛒 res.data:", JSON.stringify(res.data, null, 2));
   const fetchedProducts = res.data;

@@ -1,3 +1,6 @@
+const defaultTheme = require('tailwindcss/defaultTheme');
+const plugin = require('tailwindcss/plugin');
+
 module.exports = {
   purge: ["./pages/**/*.{js,ts,jsx,tsx}", "./components/**/*.{js,ts,jsx,tsx}"],
   darkMode: false, // or 'media' or 'class'
@@ -27,25 +30,20 @@ module.exports = {
         '"Noto Color Emoji"',
       ],
     },
-    colors: {
-      transparent: "transparent",
-      current: "currentColor",
-
-      white: "#FFFFFF",
-
-      gray100: "#EEEEEE",
-      gray200: "#ECECEC",
-      gray300: "#C1C1C1",
-      gray400: "#686868",
-      gray500: "#282828",
-
-      red: "#F05454",
-      yellow: "#F5B461",
-      green: "#9BDEAC",
-      blue: "#66BFBF",
-      lightgreen: "#F2FDFB",
+    extend: {
+      colors: {
+        green: "#9BDEAC",
+        lightgreen: "#F2FDFB",
+        red: "#F05454",
+        yellow: "#F5B461",
+        blue: "#66BFBF",
+        rose: {
+          400: '#FB7185',
+          500: '#F43F5E',
+          600: '#E11D48',
+        },
+      },
     },
-    extend: {},
   },
   variants: {
     extend: {
@@ -58,5 +56,27 @@ module.exports = {
     },
     // divideColor: ['group-hover'],
   },
-  plugins: [],
+  plugins: [
+    // Thêm plugin để hỗ trợ pseudo-elements
+    plugin(function({ addComponents, theme }) {
+      const afterStyles = {
+        '.after-border-rose': {
+          position: 'relative',
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            left: '0',
+            bottom: '0',
+            height: '2px',
+            width: '3rem',
+            backgroundColor: theme('colors.rose.500'),
+          }
+        }
+      }
+      addComponents(afterStyles)
+    })
+  ],
+  safelist: [
+    'after-border-rose'
+  ],
 };

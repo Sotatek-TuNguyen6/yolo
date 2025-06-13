@@ -34,6 +34,13 @@ export class Category {
   })
   @ApiProperty()
   thumbnailImage: string;
+
+  @Prop({
+    type: String,
+    required: true,
+  })
+  @ApiProperty()
+  slug: string;
 }
 export type CategoryDocument = Category & Document;
 

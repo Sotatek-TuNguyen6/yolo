@@ -31,6 +31,7 @@ export type commonType = {
     thumbnailImage?: string;
     createdAt?: string;
     updatedAt?: string | null;
+    slug?: string;
   };
   slug?: string;
 };
@@ -68,6 +69,7 @@ export interface itemType extends commonType {
   size?: string;
   cartImage?: string;
   discountPercent?: number;
+  slugCategory?: string;
 }
 
 export interface apiProductsType extends commonType {

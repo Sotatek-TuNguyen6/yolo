@@ -9,7 +9,7 @@ import { LoadingSpinner } from '@/components/Loading';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { FilterConfig } from '../tasks/components/data-table-toolbar';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -37,6 +37,7 @@ type CategoryListData = CommonResponse<Category[]>;
 // Define form type
 type CategoryFormValues = {
   name: string;
+  slug: string;
   description: string;
 };
 
@@ -45,10 +46,28 @@ const categoryFormSchema = z.object({
   name: z.string().min(1, {
     message: 'Tên danh mục phải có ít nhất 3 ký tự',
   }),
+  slug: z.string().min(1, {
+    message: 'Slug không được để trống',
+  }).regex(/^[a-z0-9-]+$/, {
+    message: 'Slug chỉ được chứa chữ thường, số và dấu gạch ngang',
+  }),
   description: z.string().min(1, {
     message: 'Mô tả phải có ít nhất 10 ký tự',
   }),
 });
+
+// Hàm tạo slug từ tên
+const createSlug = (name: string): string => {
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[đĐ]/g, 'd')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+};
 
 export default function CategoryPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -60,9 +79,20 @@ export default function CategoryPage() {
     resolver: zodResolver(categoryFormSchema),
     defaultValues: {
       name: '',
+      slug: '',
       description: '',
     },
   });
+
+  // Tự động tạo slug khi tên thay đổi
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'name' && value.name) {
+        form.setValue('slug', createSlug(value.name));
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
 
   // For easier access to form methods
   const {
@@ -193,6 +223,20 @@ export default function CategoryPage() {
                         <FormLabel>Tên danh mục</FormLabel>
                         <FormControl>
                           <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="slug"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Slug</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Slug sẽ được tự động tạo" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

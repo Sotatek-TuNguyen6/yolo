@@ -1,12 +1,14 @@
-export type Category = {
+export interface Category {
   _id: string;
   categoryId: string;
   name: string;
+  slug: string;
   description: string;
   thumbnailImage: string;
   createdAt: string;
   updatedAt: string;
-};
+  __v?: number;
+}
 
 export type SubCategory = {
   _id: string;

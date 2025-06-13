@@ -1,7 +1,8 @@
 export interface Tag {
   _id: string;
   name: string;
-  createdAt?: string;
-  updatedAt?: string;
+  slug: string;
+  createdAt: string;
+  updatedAt: string;
   __v?: number;
 } 
