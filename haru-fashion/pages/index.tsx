@@ -3,6 +3,7 @@ import { GetServerSideProps, GetStaticProps } from "next";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import axios from "axios";
+import Link from "next/link";
 
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
@@ -17,14 +18,21 @@ import LinkButton from "../components/Buttons/LinkButton";
 // /bg-img/ourshop.png
 import ourShop from "../public/bg-img/ourshop.png";
 
-type Props = {
+type CategoryProductsType = {
+  categoryId: string;
+  categoryName: string;
+  categorySlug: string;
   products: itemType[];
 };
 
-const Home: React.FC<Props> = ({ products }) => {
-  console.log(products);
+type Props = {
+  categoryProducts: CategoryProductsType[];
+  featuredProducts: itemType[];
+};
+
+const Home: React.FC<Props> = ({ categoryProducts, featuredProducts }) => {
   const t = useTranslations("Index");
-  const [currentItems, setCurrentItems] = useState(products);
+  const [currentItems, setCurrentItems] = useState(featuredProducts);
   const [isFetching, setIsFetching] = useState(false);
 
   useEffect(() => {
@@ -49,6 +57,9 @@ const Home: React.FC<Props> = ({ products }) => {
     e.preventDefault();
     setIsFetching(true);
   };
+
+  // Lấy 4 sản phẩm bán chạy nhất (có thể thay bằng logic khác)
+  const bestSellingProducts = featuredProducts.slice(0, 4);
 
   return (
     <>
@@ -102,18 +113,9 @@ const Home: React.FC<Props> = ({ products }) => {
             </div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 lg:gap-x-12 gap-y-6 mb-10 app-x-padding">
-            {currentItems[1] && (
-              <Card key={currentItems[1]?.productId} item={currentItems[1]} />
-            )}
-            {currentItems[2] && (
-              <Card key={currentItems[2]?.productId} item={currentItems[2]} />
-            )}
-            {currentItems[3] && (
-              <Card key={currentItems[3]?.productId} item={currentItems[3]} />
-            )}
-            {currentItems[4] && (
-              <Card key={currentItems[4]?.productId} item={currentItems[4]} />
-            )}
+            {bestSellingProducts.map((item) => (
+              <Card key={item.productId} item={item} />
+            ))}
           </div>
         </section>
 
@@ -127,17 +129,40 @@ const Home: React.FC<Props> = ({ products }) => {
           <div className="text-center mb-6">
             <h2 className="text-3xl">{t("featured_products")}</h2>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-8 sm:gap-y-10 mb-10">
-            {currentItems.map((item) => (
-              <Card key={item.productId} item={item} />
-            ))}
-          </div>
-          <div className="flex justify-center">
-            <Button
-              value={!isFetching ? t("see_more") : t("loading")}
-              onClick={handleSeemore}
-            />
-          </div>
+
+          {/* Hiển thị sản phẩm theo danh mục */}
+          {categoryProducts.map((category) => (
+            <div key={category.categoryId} className="mb-12">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold">{category.categoryName}</h3>
+                <Link
+                  href={`/product-category/${category.categorySlug}`}
+                  passHref
+                >
+                  <span className="text-rose-500 hover:text-rose-600 font-medium flex items-center">
+                    Xem tất cả
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 ml-1"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </span>
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-8 mb-8">
+                {category.products.slice(0, 4).map((product) => (
+                  <Card key={product.productId} item={product} />
+                ))}
+              </div>
+            </div>
+          ))}
         </section>
 
         <div className="border-gray100 border-b-2"></div>
@@ -161,24 +186,23 @@ const Home: React.FC<Props> = ({ products }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
-  let products: itemType[] = [];
-  const res = await axios.get(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/products?order_by=createdAt.desc&limit=10`
-  );
-  console.log("🔥 Fetching products in getStaticProps...");
-  console.log("🛒 res.data:", JSON.stringify(res.data, null, 2));
-  // console.log("🔥 Fetching products in getStaticProps...");
-  // console.log("🛒 res.data:", JSON.stringify(res.data, null, 2));
-  const fetchedProducts = res.data;
-  console.log(
-    "Fetched raw data:",
-    JSON.stringify(fetchedProducts.data, null, 2)
-  );
+  try {
+    // Lấy sản phẩm theo danh mục
+    const categoryRes = await axios.get(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/products/group-product-by-category`
+    );
 
-  fetchedProducts.data.forEach((product: apiProductsType) => {
-    products = [
-      ...products,
-      {
+    // Lấy sản phẩm nổi bật
+    const featuredRes = await axios.get(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/products?limit=10`
+    );
+
+    // Xử lý dữ liệu sản phẩm theo danh mục
+    const categoryProducts = categoryRes.data.data.map((category: any) => ({
+      categoryId: category.categoryId,
+      categoryName: category.categoryName,
+      categorySlug: category.categorySlug,
+      products: category.products.map((product: apiProductsType) => ({
         _id: product._id,
         productId: product.productId,
         name: product.name,
@@ -187,18 +211,44 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
         tags: product.tags,
         discountPercent: product.discountPercent,
         slug: product?.slug || "",
+      })),
+    }));
+
+    // Xử lý dữ liệu sản phẩm nổi bật
+    const featuredProducts = featuredRes.data.data.map(
+      (product: apiProductsType) => ({
+        _id: product._id,
+        productId: product.productId,
+        name: product.name,
+        price: product.price,
+        images: product.images,
+        tags: product.tags,
+        discountPercent: product.discountPercent,
+        slug: product?.slug || "",
+      })
+    );
+
+    return {
+      props: {
+        messages: {
+          ...require(`../messages/common/${locale}.json`),
+        },
+        categoryProducts,
+        featuredProducts,
       },
-    ];
-  });
-  return {
-    props: {
-      messages: {
-        // ...require(`../messages/index/${locale}.json`),
-        ...require(`../messages/common/${locale}.json`),
+    };
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    return {
+      props: {
+        messages: {
+          ...require(`../messages/common/${locale}.json`),
+        },
+        categoryProducts: [],
+        featuredProducts: [],
       },
-      products,
-    }, // will be passed to the page component as props
-  };
+    };
+  }
 };
 
 export default Home;

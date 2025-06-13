@@ -699,4 +699,57 @@ export class ProductsService {
     if (!product) throw new NotFoundException('Không tìm thấy sản phẩm này');
     return product;
   }
+
+  // group product by category
+  async groupProductByCategory() {
+    // Lấy tất cả sản phẩm và sắp xếp theo thời gian tạo mới nhất
+    const products = await this.productModel
+      .find()
+      .populate(populate)
+      .sort({ createdAt: -1 });
+
+    // Nhóm sản phẩm theo danh mục
+    const groupedProducts: Record<
+      string,
+      {
+        categoryId: string;
+        categoryName: string;
+        categorySlug: string;
+        products: Product[];
+      }
+    > = {};
+
+    products.forEach((product) => {
+      // Kiểm tra xem product.category có tồn tại và có thuộc tính name không
+      if (product.category && 'name' in product.category) {
+        const category = product.category as unknown as CategoryWithName;
+        const categoryName = category.name;
+
+        if (!groupedProducts[categoryName]) {
+          groupedProducts[categoryName] = {
+            categoryId: category._id as string,
+            categoryName,
+            categorySlug: category.slug as string,
+            products: [],
+          };
+        }
+
+        // Thêm tất cả sản phẩm vào danh mục
+        groupedProducts[categoryName].products.push(product);
+      }
+    });
+
+    // Cắt mỗi danh mục chỉ còn 4 sản phẩm mới nhất
+    const result = Object.keys(groupedProducts).map((categoryName) => {
+      const category = groupedProducts[categoryName];
+      return {
+        categoryId: category.categoryId,
+        categoryName: category.categoryName,
+        categorySlug: category.categorySlug,
+        products: category.products.slice(0, 4), // Chỉ lấy 4 sản phẩm đầu tiên (đã được sắp xếp mới nhất)
+      };
+    });
+
+    return result;
+  }
 }

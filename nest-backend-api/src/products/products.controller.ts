@@ -161,6 +161,12 @@ export class ProductsController {
     };
   }
 
+  @Get('/group-product-by-category')
+  async groupProductByCategory() {
+    const products = await this.productsService.groupProductByCategory();
+    return products;
+  }
+
   @Get('/search/any/product')
   @ApiOperation({ summary: 'Search products' })
   @ApiResponse({
