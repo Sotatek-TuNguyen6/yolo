@@ -5,42 +5,42 @@ const allTestimonials = [
     content:
       "Tôi rất hài lòng với chất lượng áo sơ mi từ Lumen Fashion. Vải cotton cao cấp, đường may tỉ mỉ và kiểu dáng vừa vặn. Đặc biệt là dịch vụ giao hàng nhanh chóng, chỉ 2 ngày là đã nhận được.",
     author: "Nguyễn Văn Minh",
-    role: "Khách hàng tại Hà Nội",
+    role: "vanminh***@gmail.com",
     rating: 5,
   },
   {
     content:
       "Quần jean nam của shop rất đẹp và bền. Tôi đã mua 3 chiếc và tất cả đều giữ form tốt sau nhiều lần giặt. Giá cả hợp lý so với chất lượng nhận được.",
     author: "Trần Thị Lan",
-    role: "Khách hàng thân thiết",
+    role: "lanthitran***@yahoo.com",
     rating: 5,
   },
   {
     content:
       "Áo phông có nhiều mẫu đẹp, hợp xu hướng. Tôi thích cách shop tư vấn size và màu sắc phù hợp với từng khách hàng. Sẽ tiếp tục ủng hộ shop trong tương lai.",
     author: "Lê Thanh Hải",
-    role: "Khách hàng tại TP.HCM",
+    role: "haile***@gmail.com",
     rating: 5,
   },
   {
     content:
       "Bộ sưu tập mùa hè rất thoáng mát và thời trang. Tôi đặc biệt thích chất liệu linen nhẹ nhàng. Chỉ tiếc là một số mẫu hot bán hết quá nhanh, mong shop nhập thêm hàng.",
     author: "Phạm Quốc Bảo",
-    role: "Khách hàng tại Đà Nẵng",
+    role: "quocbao***@gmail.com",
     rating: 4,
   },
   {
     content:
       "Đồ thể thao rất thoải mái khi vận động, thấm hút mồ hôi tốt. Tôi đã mua cả set để tập gym và rất hài lòng. Đường may chắc chắn, không bị giãn sau nhiều lần sử dụng.",
     author: "Hoàng Minh Tuấn",
-    role: "HLV thể hình",
+    role: "minhtuan***@outlook.com",
     rating: 5,
   },
   {
     content:
       "Váy dự tiệc của Lumen Fashion giúp tôi nổi bật trong mọi sự kiện. Thiết kế tinh tế, chất liệu cao cấp. Dù giá hơi cao nhưng xứng đáng với chất lượng. Sẽ tiếp tục ủng hộ.",
     author: "Võ Thị Mai",
-    role: "Khách hàng VIP",
+    role: "maivo***@gmail.com",
     rating: 5,
   },
   // Thêm các đánh giá mới
@@ -48,42 +48,42 @@ const allTestimonials = [
     content:
       "Áo khoác mùa đông của Lumen Fashion vừa ấm vừa thời trang. Tôi đặc biệt thích chi tiết túi ẩn bên trong rất tiện lợi để cất giữ đồ có giá trị khi đi du lịch.",
     author: "Đỗ Hồng Nhung",
-    role: "Khách hàng tại Hải Phòng",
+    role: "nhungdo***@gmail.com",
     rating: 5,
   },
   {
     content:
       "Đồ ngủ rất thoải mái và mềm mại. Sau nhiều lần giặt vẫn giữ được màu sắc và không bị co rút. Tôi đã mua tặng cả gia đình và ai cũng rất thích.",
     author: "Ngô Thanh Tùng",
-    role: "Khách hàng tại Cần Thơ",
+    role: "tungngo***@hotmail.com",
     rating: 5,
   },
   {
     content:
       "Tôi đã mua bộ vest cưới tại Lumen Fashion và rất hài lòng với sự tỉ mỉ trong từng đường kim mũi chỉ. Nhân viên tư vấn nhiệt tình, giúp tôi chọn được mẫu phù hợp nhất.",
     author: "Trần Đức Anh",
-    role: "Khách hàng mới",
+    role: "ducanh***@gmail.com",
     rating: 5,
   },
   {
     content:
       "Đặt online rất tiện lợi, giao diện dễ sử dụng. Tuy nhiên có một lần shop gửi nhầm size, nhưng đã xử lý đổi trả rất nhanh và chuyên nghiệp nên tôi vẫn rất hài lòng.",
     author: "Lý Mỹ Hạnh",
-    role: "Khách hàng online",
+    role: "hanhly***@gmail.com",
     rating: 4,
   },
   {
     content:
       "Áo len mùa đông ấm áp và không gây ngứa như nhiều shop khác. Tôi đặc biệt thích cách phối màu tinh tế của các mẫu áo len năm nay. Sẽ tiếp tục ủng hộ shop.",
     author: "Nguyễn Thị Hồng",
-    role: "Giáo viên",
+    role: "hongnt***@gmail.com",
     rating: 5,
   },
   {
     content:
       "Quần tây công sở vừa vặn hoàn hảo, không cần chỉnh sửa gì thêm. Chất vải bền, không nhăn và giữ form tốt. Đây là lần thứ 3 tôi mua hàng và chưa bao giờ thất vọng.",
     author: "Đặng Minh Quân",
-    role: "Nhân viên văn phòng",
+    role: "quandang***@gmail.com",
     rating: 5,
   },
 ];
